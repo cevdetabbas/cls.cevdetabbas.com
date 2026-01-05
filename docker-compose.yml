@@ -1,0 +1,10 @@
+services:
+  web:
+    image: httpd:2.4
+    container_name: cls.cevdetabbas.com
+    ports:
+      - "2880:80"
+    volumes:
+      - ./htdocs:/usr/local/apache2/htdocs:ro
+    restart: unless-stopped
+

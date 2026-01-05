@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tech App with Mr. Oz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #050816;
+      color: #f5f5f5;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      text-align: center;
+      padding: 20px 10px;
+      background: radial-gradient(circle at top, #3b82f6 0, #050816 55%);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    header span.subtitle {
+      display: block;
+      margin-top: 6px;
+      font-size: 0.95rem;
+      opacity: 0.8;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 30px 20px;
+    }
+
+    .card-row {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .stage-card {
+      background: linear-gradient(145deg, #0b1020, #111827);
+      border-radius: 16px;
+      padding: 20px;
+      position: relative;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.7);
+      border: 1px solid rgba(148,163,184,0.4);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+      min-width: 200px;
+      flex: 1;
+      max-width: 220px;
+    }
+
+    .stage-card.active {
+      transform: translateY(-8px);
+    }
+
+    .stage-card[data-stage="0"].active { border-color: #3b82f6; box-shadow: 0 0 0 1px rgba(59,130,246,0.7), 0 18px 40px rgba(59,130,246,0.4); }
+    .stage-card[data-stage="1"].active { border-color: #10b981; box-shadow: 0 0 0 1px rgba(16,185,129,0.7), 0 18px 40px rgba(16,185,129,0.4); }
+    .stage-card[data-stage="2"].active { border-color: #f59e0b; box-shadow: 0 0 0 1px rgba(245,158,11,0.7), 0 18px 40px rgba(245,158,11,0.4); }
+    .stage-card[data-stage="3"].active { border-color: #ec4899; box-shadow: 0 0 0 1px rgba(236,72,153,0.7), 0 18px 40px rgba(236,72,153,0.4); }
+
+    .stage-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .stage-time {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      text-align: center;
+    }
+
+    .stage-image {
+      flex: 1;
+      border-radius: 12px;
+      background-size: cover;
+      background-position: center;
+      min-height: 100px;
+    }
+
+    .img-login   { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .img-learn   { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+    .img-typing  { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+    .img-logout  { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+
+    footer {
+      padding: 20px 20px 25px;
+      background: #020617;
+      border-top: 1px solid rgba(30,64,175,0.7);
+    }
+
+    .timer-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .time-label {
+      font-size: 0.95rem;
+      opacity: 0.9;
+      min-width: 120px;
+    }
+
+    .time-label span {
+      font-weight: 700;
+      opacity: 1;
+      color: #3b82f6;
+    }
+
+    .timer-bar {
+      flex: 1;
+      height: 24px;
+      background: #020617;
+      border-radius: 999px;
+      border: 2px solid rgba(51,65,85,0.9);
+      overflow: hidden;
+      position: relative;
+      min-width: 350px;
+    }
+
+    /* new: smooth fill that grows every second in BOTH modes */
+    .smooth-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      transition: width 0.2s linear;
+      opacity: 0.95;
+      pointer-events: none;
+    }
+
+    /* units are now a subtle "texture" layer */
+    .progress-unit {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      width: calc(100% / 45);
+      opacity: 0.15;
+      transition: opacity 0.2s ease;
+      border-radius: 999px;
+      pointer-events: none;
+    }
+
+    .progress-unit.stage-0 { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+    .progress-unit.stage-1 { background: linear-gradient(90deg, #10b981, #34d399); }
+    .progress-unit.stage-2 { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .progress-unit.stage-3 { background: linear-gradient(90deg, #ec4899, #f472b6); }
+
+    .progress-unit.active {
+      opacity: 0.35;
+      animation: none;
+      box-shadow: none;
+    }
+
+    .stage-markers {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      height: 30px;
+      display: flex;
+      justify-content: space-between;
+      padding-top: 6px;
+    }
+
+    .marker {
+      width: 2px;
+      height: 12px;
+      background: rgba(148,163,184,0.6);
+      border-radius: 1px;
+    }
+
+    .marker.major {
+      width: 4px;
+      height: 20px;
+      background: #3b82f6;
+      box-shadow: 0 0 8px rgba(59,130,246,0.6);
+    }
+
+    .mode-switch {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .switch-label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #94a3b8;
+    }
+
+    .switch-container {
+      position: relative;
+      width: 70px;
+      height: 34px;
+    }
+
+    .switch-input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .switch-slider {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, #64748b, #334155);
+      border-radius: 34px;
+      transition: 0.3s ease;
+      cursor: pointer;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .switch-input:checked + .switch-slider {
+      background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+      box-shadow: 0 0 10px rgba(59,130,246,0.5);
+    }
+
+    .switch-slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background: white;
+      border-radius: 50%;
+      transition: 0.3s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .switch-input:checked + .switch-slider:before {
+      transform: translateX(36px);
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 25px;
+      padding: 10px 20px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: #e5e7eb;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(59,130,246,0.4);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(59,130,246,0.6);
+    }
+
+    .btn.secondary {
+      background: linear-gradient(135deg, #64748b, #334155);
+      box-shadow: 0 4px 15px rgba(100,116,139,0.4);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .status-text {
+      text-align: center;
+      font-size: 0.95rem;
+      opacity: 0.85;
+      margin-top: 8px;
+      font-weight: 500;
+    }
+
+    @media (max-width: 768px) {
+      .card-row { flex-direction: column; gap: 15px; }
+      header h1 { font-size: 2rem; }
+      .stage-card { max-width: none; flex: 1; min-width: 250px; }
+      .timer-bar { min-width: 300px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Tech App with Mr. Oz</h1>
+    <span class="subtitle">45 Unit Multi-Color Progress Timer</span>
+  </header>
+
+  <main>
+    <div class="card-row">
+      <div class="stage-card" data-stage="0">
+        <div class="stage-title">Login</div>
+        <div class="stage-time">5 units</div>
+        <div class="stage-image img-login"></div>
+      </div>
+      <div class="stage-card" data-stage="1">
+        <div class="stage-title">Learning.com</div>
+        <div class="stage-time">30 units</div>
+        <div class="stage-image img-learn"></div>
+      </div>
+      <div class="stage-card" data-stage="2">
+        <div class="stage-title">Typing.com</div>
+        <div class="stage-time">5 units</div>
+        <div class="stage-image img-typing"></div>
+      </div>
+      <div class="stage-card" data-stage="3">
+        <div class="stage-title">Logout</div>
+        <div class="stage-time">5 units</div>
+        <div class="stage-image img-logout"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="timer-row">
+      <div class="time-label">
+        <span id="modeLabel">Simulation</span> · <span id="timeLeftLabel">00:45</span>
+      </div>
+      <div class="timer-bar" id="timerBar">
+        <div class="stage-markers">
+          <div class="marker major"></div>
+          <div class="marker"></div>
+          <div class="marker major"></div>
+          <div class="marker"></div>
+          <div class="marker major"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mode-switch">
+      <div class="switch-label">Simulation (45s)</div>
+      <label class="switch-container">
+        <input type="checkbox" class="switch-input" id="modeSwitch">
+        <span class="switch-slider"></span>
+      </label>
+      <div class="switch-label">Real (45min)</div>
+    </div>
+
+    <div class="controls">
+      <button class="btn" id="startBtn">▶ Start</button>
+      <button class="btn secondary" id="resetBtn">🔄 Reset</button>
+      <div class="status-text" id="statusText">Ready. Switch mode & start!</div>
+    </div>
+
+    <audio id="stageSound" src="beep.mp3" preload="auto"></audio>
+  </footer>
+
+  <script>
+    const TOTAL_UNITS = 45;
+    const simulationDurations = [5, 30, 5, 5];  // 45 unit
+    const realDurations       = [5, 30, 5, 5];  // 45 unit
+
+    let isSimulationMode = true;
+    let durations = [...simulationDurations];
+
+    let timer = null;
+    let startMs = null;
+
+    let currentUnit = 0;   // 0..45
+    let lastUnit = -1;
+
+    const stageCards  = document.querySelectorAll('.stage-card');
+    const stageSound  = document.getElementById('stageSound');
+    const startBtn    = document.getElementById('startBtn');
+    const resetBtn    = document.getElementById('resetBtn');
+    const modeSwitch  = document.getElementById('modeSwitch');
+    const modeLabel   = document.getElementById('modeLabel');
+    const timeLeftLabel = document.getElementById('timeLeftLabel');
+    const statusText  = document.getElementById('statusText');
+    const timerBar    = document.getElementById('timerBar');
+
+    let smoothFillEl = null;
+
+    function buildGradient() {
+      const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ec4899']; // stage colors
+      const total = durations.reduce((a, b) => a + b, 0);
+
+      let acc = 0;
+      const stops = [];
+
+      for (let i = 0; i < durations.length; i++) {
+        const startPct = (acc / total) * 100;
+        acc += durations[i];
+        const endPct = (acc / total) * 100;
+
+        stops.push(`${colors[i]} ${startPct.toFixed(3)}%`);
+        stops.push(`${colors[i]} ${endPct.toFixed(3)}%`);
+      }
+      return `linear-gradient(90deg, ${stops.join(', ')})`;
+    }
+
+    function createUnits() {
+      timerBar.innerHTML =
+        '<div class="stage-markers">' +
+          '<div class="marker major"></div>' +
+          '<div class="marker"></div>' +
+          '<div class="marker major"></div>' +
+          '<div class="marker"></div>' +
+          '<div class="marker major"></div>' +
+        '</div>';
+
+      // smooth fill layer
+      smoothFillEl = document.createElement('div');
+      smoothFillEl.id = 'smoothFill';
+      smoothFillEl.className = 'smooth-fill';
+      smoothFillEl.style.background = buildGradient();
+      smoothFillEl.style.width = '0%';
+      timerBar.appendChild(smoothFillEl);
+
+      // 45 unit texture
+      for (let i = 0; i < TOTAL_UNITS; i++) {
+        const unit = document.createElement('div');
+        unit.className = 'progress-unit';
+
+        let cumulative = 0;
+        for (let stage = 0; stage < durations.length; stage++) {
+          cumulative += durations[stage];
+          if (i < cumulative) {
+            unit.classList.add(`stage-${stage}`);
+            break;
+          }
+        }
+
+        unit.style.left = `${i * (100 / TOTAL_UNITS)}%`;
+        timerBar.appendChild(unit);
+      }
+    }
+
+    function formatTime(sec) {
+      sec = Math.max(0, Math.floor(sec));
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      const s = sec % 60;
+
+      if (!isSimulationMode) {
+        return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+      }
+
+      const mm = Math.floor(sec / 60);
+      return String(mm).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    }
+
+    function getCurrentStage(unit) {
+      let cumulative = 0;
+      for (let i = 0; i < durations.length; i++) {
+        cumulative += durations[i];
+        if (unit < cumulative) return i;
+      }
+      return durations.length - 1;
+    }
+
+    function playStageSound() {
+      stageSound.currentTime = 0;
+      stageSound.play().catch(() => {});
+    }
+
+    function updateVisuals(elapsedSec) {
+      const unitDurationSec = isSimulationMode ? 1 : 60;
+
+      currentUnit = Math.min(TOTAL_UNITS, Math.floor(elapsedSec / unitDurationSec));
+
+      // unit texture fill
+      const allUnits = timerBar.querySelectorAll('.progress-unit');
+      allUnits.forEach((u, idx) => {
+        u.classList.toggle('active', idx < currentUnit);
+      });
+
+      // stage highlight
+      const stage = getCurrentStage(Math.min(currentUnit, TOTAL_UNITS - 1));
+      stageCards.forEach((card, idx) => {
+        card.classList.toggle('active', idx === stage);
+      });
+
+      // time remaining
+      const totalSec = TOTAL_UNITS * unitDurationSec;
+      const remainingSec = Math.max(0, totalSec - elapsedSec);
+      timeLeftLabel.textContent = formatTime(remainingSec);
+
+      // smooth bar progress every second in BOTH modes
+      const pct = Math.max(0, Math.min(100, (elapsedSec / totalSec) * 100));
+      if (smoothFillEl) smoothFillEl.style.width = pct + '%';
+
+      modeLabel.textContent = isSimulationMode ? 'Simulation' : 'Real';
+      statusText.textContent =
+        `${isSimulationMode ? '45s' : '45m'} | Unit ${currentUnit}/${TOTAL_UNITS} | Stage ${stage + 1}/4`;
+    }
+
+    function tick() {
+      const now = Date.now();
+      const elapsedSec = (now - startMs) / 1000;
+
+      const unitDurationSec = isSimulationMode ? 1 : 60;
+      const unitNow = Math.min(TOTAL_UNITS, Math.floor(elapsedSec / unitDurationSec));
+
+      // beep only when stage changes (based on unit boundaries)
+      if (unitNow !== lastUnit) {
+        const prevUnit = Math.max(0, unitNow - 1);
+        const prevStage = getCurrentStage(Math.min(prevUnit, TOTAL_UNITS - 1));
+        const currStage = getCurrentStage(Math.min(unitNow, TOTAL_UNITS - 1));
+
+        if (lastUnit !== -1 && prevStage !== currStage) {
+          playStageSound();
+        }
+
+        lastUnit = unitNow;
+      }
+
+      updateVisuals(elapsedSec);
+
+      if (unitNow >= TOTAL_UNITS) {
+        stopTimer(true);
+      }
+    }
+
+    function startTimer() {
+      if (timer) return;
+
+      startMs = Date.now();
+      lastUnit = -1;
+
+      startBtn.disabled = true;
+      startBtn.textContent = '⏸ Running...';
+      statusText.textContent = 'Running...';
+
+      timer = setInterval(tick, 250);
+      tick();
+    }
+
+    function stopTimer(completed = false) {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+      startBtn.disabled = false;
+      startBtn.textContent = '▶ Start';
+      statusText.textContent = completed ? '✅ Session complete!' : 'Paused/Stopped.';
+    }
+
+    function resetTimer() {
+      stopTimer(false);
+      currentUnit = 0;
+      lastUnit = -1;
+
+      timeLeftLabel.textContent = isSimulationMode ? '00:45' : '00:45:00';
+      statusText.textContent = 'Ready. Switch mode & start!';
+
+      // clear visuals
+      const allUnits = timerBar.querySelectorAll('.progress-unit');
+      allUnits.forEach(u => u.classList.remove('active'));
+      stageCards.forEach(c => c.classList.remove('active'));
+
+      if (smoothFillEl) {
+        smoothFillEl.style.width = '0%';
+        smoothFillEl.style.background = buildGradient();
+      }
+    }
+
+    function toggleMode() {
+      isSimulationMode = !isSimulationMode;
+      durations = isSimulationMode ? [...simulationDurations] : [...realDurations];
+      createUnits();
+      resetTimer();
+    }
+
+    startBtn.addEventListener('click', startTimer);
+    resetBtn.addEventListener('click', resetTimer);
+    modeSwitch.addEventListener('change', toggleMode);
+
+    // init
+    createUnits();
+    resetTimer();
+  </script>
+</body>
+</html>
