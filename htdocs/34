@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tech App with Mr. Oz</title>
+  <style>
+    :root {
+      --bg: #f5f5f7;
+      --card: rgba(255, 255, 255, 0.8);
+      --text: #1d1d1f;
+      --muted: #86868b;
+      --blue: #0071e3;
+      --green: #34c759;
+      --line: rgba(0,0,0,0.1);
+      --rainbow: linear-gradient(120deg, #ff3b30, #ff9500, #ffcc00, #34c759, #007aff, #5856d6, #ff2d55);
+    }
+
+    * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* SIMULATION TOGGLE */
+    .controls-top {
+      position: fixed;
+      top: 15px;
+      right: 20px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255,255,255,0.6);
+      padding: 8px 15px;
+      border-radius: 999px;
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--line);
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 46px;
+      height: 24px;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    input:checked + .slider { background-color: var(--blue); }
+    input:checked + .slider:before { transform: translateX(22px); }
+
+    /* HEADER */
+    header {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--line);
+      padding: 15px 30px;
+    }
+    .hdr-grid {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .chip {
+      background: #1d1d1f;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 1.2rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .chip.light { background: white; color: #1d1d1f; border: 1px solid var(--line); }
+    h1 { margin: 0; font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em; }
+
+    /* ANNOUNCEMENT BANNER */
+    #banner {
+      position: fixed;
+      top: 90px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: var(--blue);
+      color: white;
+      padding: 12px 30px;
+      border-radius: 999px;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0,113,227,0.3);
+      opacity: 0;
+      transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+      z-index: 900;
+    }
+    #banner.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* CARDS */
+    main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      width: 100%;
+      max-width: 1400px;
+    }
+    .card {
+      background: var(--card);
+      border-radius: 24px;
+      padding: 20px;
+      text-align: center;
+      border: 1px solid var(--line);
+      transition: all 0.5s ease;
+      position: relative;
+      opacity: 0.3;
+    }
+    .card.active {
+      opacity: 1;
+      transform: scale(1.05);
+      background: white;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+    
+    /* RAINBOW EFFECT */
+    .card.active::after {
+      content: '';
+      position: absolute;
+      top: -3px; left: -3px; right: -3px; bottom: -3px;
+      z-index: -1;
+      background: var(--rainbow);
+      background-size: 300% 300%;
+      border-radius: 27px;
+      animation: rainbowMove 4s linear infinite;
+      opacity: 0.8;
+    }
+    @keyframes rainbowMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .title { font-weight: 800; font-size: 1.5rem; margin-bottom: 10px; }
+    .img-wrap {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      overflow: hidden;
+      margin: 15px 0;
+      border: 5px solid var(--bg);
+    }
+    .img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+    .cd { font-weight: 800; font-size: 2.5rem; font-variant-numeric: tabular-nums; opacity: 0; }
+    .card.active .cd { opacity: 1; }
+
+    /* FOOTER */
+    footer {
+      background: white;
+      padding: 20px 40px;
+      border-top: 1px solid var(--line);
+    }
+    .big-display {
+      background: #1d1d1f;
+      color: white;
+      border-radius: 20px;
+      padding: 20px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .big-info h2 { margin: 0; font-size: 1.8rem; font-weight: 700; }
+    .big-info p { margin: 5px 0 0; color: var(--muted); font-weight: 600; }
+    .big-timer { font-size: 5rem; font-weight: 900; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+
+  <div class="controls-top">
+    <span>Simulation</span>
+    <label class="switch">
+      <input type="checkbox" id="simToggle">
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <div id="banner">SESSION STARTED</div>
+
+  <header>
+    <div class="hdr-grid">
+      <div class="chip light" id="dateChip">00/00/0000</div>
+      <h1>Tech App with Mr. Oz</h1>
+      <div style="text-align: right;"><div class="chip" id="timeChip">00:00:00</div></div>
+    </div>
+  </header>
+
+  <main>
+    <div class="grid">
+      <div class="card" id="card0">
+        <div class="title">Login</div>
+        <div class="img-wrap"><img src="./images/login.png"></div>
+        <div class="cd">00:00</div>
+      </div>
+      <div class="card" id="card1">
+        <div class="title">Learning.com</div>
+        <div class="img-wrap"><img src="./images/learning.png"></div>
+        <div class="cd">00:00</div>
+      </div>
+      <div class="card" id="card2">
+        <div class="title">Typing.com</div>
+        <div class="img-wrap"><img src="./images/typing.png"></div>
+        <div class="cd">00:00</div>
+      </div>
+      <div class="card" id="card3">
+        <div class="title">Logout</div>
+        <div class="img-wrap"><img src="./images/logout.png"></div>
+        <div class="cd">00:00</div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="big-display">
+      <div class="big-info">
+        <h2 id="currentPeriod">Class Name</h2>
+        <p id="currentPhase">Waiting for session...</p>
+      </div>
+      <div class="big-timer" id="bigTimer">00:00</div>
+    </div>
+  </footer>
+
+  <script>
+    const assignedMinutes = [3, 30, 10, 2];
+    const TZ = 'America/Chicago';
+    let simulationOn = false;
+    let lastStage = -1;
+
+    // Simulation logic
+    const simToggle = document.getElementById('simToggle');
+    simToggle.addEventListener('change', (e) => {
+      simulationOn = e.target.checked;
+      simReset();
+    });
+
+    let simAnchorReal = null;
+    let simAnchorSchedule = null;
+    function simReset() { simAnchorReal = null; }
+
+    function getNow() {
+      const realNow = new Date();
+      if (!simulationOn) return realNow;
+      if (!simAnchorReal) {
+        simAnchorReal = Date.now();
+        simAnchorSchedule = realNow.getHours() * 3600 + realNow.getMinutes() * 60 + realNow.getSeconds();
+      }
+      const elapsed = (Date.now() - simAnchorReal) / 1000 * 60; // 60x speed
+      const fakeSeconds = simAnchorSchedule + elapsed;
+      const d = new Date();
+      d.setHours(0, 0, 0, 0);
+      d.setSeconds(fakeSeconds);
+      return d;
+    }
+
+    // Announcements
+    function announce(text) {
+      const banner = document.getElementById('banner');
+      banner.textContent = text.toUpperCase();
+      banner.classList.add('show');
+      setTimeout(() => banner.classList.remove('show'), 4000);
+
+      // Text to Speech
+      const msg = new SpeechSynthesisUtterance(text);
+      msg.rate = 0.9; 
+      msg.pitch = 1;
+      window.speechSynthesis.speak(msg);
+    }
+
+    function tick() {
+      const now = getNow();
+      
+      // Update Clocks
+      document.getElementById('dateChip').textContent = now.toLocaleDateString();
+      document.getElementById('timeChip').textContent = now.toLocaleTimeString();
+
+      // Dummy Schedule Logic for Demo (Real one used in your prev code)
+      // Simulating being in a 45 min class
+      const startMin = 8 * 60; // 08:00
+      const nowMin = now.getHours() * 60 + now.getMinutes();
+      const elapsedSec = (nowMin - startMin) * 60 + now.getSeconds();
+      const totalPeriodSec = 45 * 60;
+
+      if (elapsedSec > 0 && elapsedSec < totalPeriodSec) {
+        let acc = 0;
+        let stage = -1;
+        const durations = assignedMinutes.map(m => (m / 45) * totalPeriodSec);
+
+        for (let i = 0; i < durations.length; i++) {
+          if (elapsedSec >= acc && elapsedSec < acc + durations[i]) {
+            stage = i;
+            const remaining = Math.ceil(acc + durations[i] - elapsedSec);
+            document.querySelectorAll('.cd')[i].textContent = formatTime(remaining);
+            document.getElementById('bigTimer').textContent = formatTime(remaining);
+            break;
+          }
+          acc += durations[i];
+        }
+
+        // Handle Stage Changes
+        if (stage !== lastStage && stage !== -1) {
+          const names = ["Login", "Learning.com", "Typing.com", "Logout"];
+          document.querySelectorAll('.card').forEach((c, idx) => {
+            c.classList.toggle('active', idx === stage);
+          });
+          document.getElementById('currentPhase').textContent = "Now: " + names[stage];
+          announce(names[stage] + " session started");
+          lastStage = stage;
+        }
+      }
+    }
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+
+    setInterval(tick, 500);
+  </script>
+</body>
+</html>

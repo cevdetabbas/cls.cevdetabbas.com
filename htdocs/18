@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tech App with Mr. Oz - Classroom Timer</title>
+
+  <style>
+    :root{
+      --bg: #f5f5f7;
+      --card: rgba(255,255,255,0.86);
+      --text: #1d1d1f;
+      --muted: rgba(29,29,31,0.68);
+      --line: rgba(0,0,0,0.10);
+      --shadow: 0 18px 45px rgba(0,0,0,0.10);
+      --shadow2: 0 10px 24px rgba(0,0,0,0.10);
+
+      --blue:  #0071e3;
+      --green: #34c759;
+      --amber: #ff9f0a;
+      --pink:  #ff2d55;
+    }
+
+    html, body { height: 100%; }
+
+    body {
+      margin: 0;
+      font-family:
+        -apple-system, BlinkMacSystemFont,
+        "SF Pro Display", "SF Pro Text",
+        "Helvetica Neue", Helvetica, Arial,
+        "Segoe UI", Roboto, "Noto Sans",
+        "Liberation Sans", sans-serif;
+      background: radial-gradient(1200px 700px at 50% 0%, #ffffff 0%, var(--bg) 55%, #efeff2 100%);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      letter-spacing: -0.01em;
+    }
+
+    header {
+      text-align: center;
+      padding: 22px 10px 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.90), rgba(245,245,247,0.74));
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::after{
+      content:"";
+      position:absolute;
+      inset:-60px -80px -80px -80px;
+      background:
+        radial-gradient(520px 190px at 15% 40%, rgba(0,113,227,0.18), transparent 60%),
+        radial-gradient(520px 190px at 85% 40%, rgba(255,45,85,0.14), transparent 60%),
+        radial-gradient(520px 210px at 50% 120%, rgba(52,199,89,0.12), transparent 60%);
+      filter: blur(10px);
+      pointer-events:none;
+      z-index:0;
+    }
+
+    .header-top{
+      position: relative;
+      z-index: 2;
+      display:flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 16px;
+      max-width: 1200px;
+      margin: 0 auto 8px;
+      padding: 0 18px;
+    }
+
+    .clock-left, .clock-right{
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      line-height: 1.0;
+      white-space: nowrap;
+      font-size: clamp(32px, 3.4vw, 52px);
+    }
+
+    .neon{
+      color: #ffffff;
+      background: rgba(0,0,0,0.74);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 18px;
+      padding: 12px 16px;
+      box-shadow:
+        0 16px 46px rgba(0,0,0,0.22),
+        0 0 22px rgba(0,113,227,0.18),
+        0 0 26px rgba(255,45,85,0.10);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .clock-right .ampm{
+      font-size: 0.62em;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+      margin-left: 10px;
+      opacity: 0.95;
+      text-transform: uppercase;
+      vertical-align: baseline;
+      color: rgba(255,255,255,0.92);
+    }
+
+    .clock-right .colon{
+      display:inline-block;
+      width: 0.32em;
+      text-align:center;
+      opacity: 1;
+      transition: opacity 0.15s linear;
+    }
+    .clock-right.blink .colon{ opacity: 0.18; }
+
+    header h1 {
+      position: relative;
+      z-index: 2;
+      margin: 6px 0 0;
+      font-size: clamp(36px, 3.6vw, 56px);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      font-weight: 900;
+      color: var(--text);
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      padding: 24px 20px 18px;
+    }
+
+    .card-row {
+      width: min(1320px, 100%);
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .stage-card {
+      background: var(--card);
+      border-radius: 24px;
+      padding: 18px;
+      position: relative;
+      box-shadow: var(--shadow2);
+      border: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow: hidden;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      transform: translateY(0);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+    }
+
+    .stage-card.dimmed {
+      opacity: 0.40;
+      transform: none !important;
+    }
+
+    .stage-card.active {
+      transform: translateY(-8px);
+      box-shadow: var(--shadow);
+      border-color: rgba(0,0,0,0.16);
+    }
+
+    .stage-title {
+      font-size: clamp(24px, 2.2vw, 34px);
+      line-height: 1.15;
+      font-weight: 900;
+      text-align: center;
+      letter-spacing: -0.02em;
+    }
+
+    /* big rectangular progress area that fills over time */
+    .stage-fillbox{
+      position: relative;
+      flex: 1;
+      border-radius: 18px;
+      min-height: 170px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.65);
+      overflow: hidden;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+      display: grid;
+      place-items: center;
+    }
+
+    /* image sits above fill */
+    .stage-fillbox img{
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 12px;
+      display: block;
+      user-select: none;
+      -webkit-user-drag: none;
+      opacity: 0.95;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,0.10));
+      z-index: 2;
+    }
+
+    /* the filling rectangle */
+    .fill{
+      position:absolute;
+      left:0;
+      bottom:0;
+      width:100%;
+      height:0%;
+      z-index:1;
+      opacity: 0.92;
+      transition: height 0.12s linear;
+      filter: saturate(1.05);
+    }
+
+    /* subtle shading on top of the fill (gives “screen” look) */
+    .fill::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.20), rgba(0,0,0,0.12));
+      opacity: 0.55;
+      pointer-events:none;
+    }
+
+    .fill.stage-0{ background: linear-gradient(180deg, rgba(0,113,227,0.95), rgba(0,113,227,0.55)); }
+    .fill.stage-1{ background: linear-gradient(180deg, rgba(52,199,89,0.95), rgba(52,199,89,0.55)); }
+    .fill.stage-2{ background: linear-gradient(180deg, rgba(255,159,10,0.95), rgba(255,159,10,0.55)); }
+    .fill.stage-3{ background: linear-gradient(180deg, rgba(255,45,85,0.95), rgba(255,45,85,0.55)); }
+
+    footer {
+      padding: 16px 20px 22px;
+      background: linear-gradient(180deg, rgba(245,245,247,0.80), rgba(255,255,255,0.82));
+      border-top: 1px solid var(--line);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .big-timer-wrap{
+      width: min(1320px, 100%);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    /* giant countdown for the back of the room */
+    .big-countdown{
+      background: rgba(0,0,0,0.78);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 24px;
+      padding: 16px 18px;
+      box-shadow:
+        0 18px 52px rgba(0,0,0,0.20),
+        0 0 26px rgba(0,113,227,0.14),
+        0 0 22px rgba(255,45,85,0.10);
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 14px;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .big-left{
+      display: grid;
+      gap: 8px;
+      align-content: center;
+    }
+
+    .big-segment{
+      font-size: clamp(22px, 2.2vw, 34px);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      opacity: 0.95;
+    }
+
+    .big-stage{
+      font-size: clamp(18px, 1.8vw, 28px);
+      font-weight: 800;
+      opacity: 0.88;
+    }
+
+    .big-time{
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      font-size: clamp(56px, 7.0vw, 110px);
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      text-shadow:
+        0 0 10px rgba(0,113,227,0.22),
+        0 0 18px rgba(52,199,89,0.14),
+        0 10px 40px rgba(0,0,0,0.28);
+    }
+
+    /* big progress bar under the big countdown */
+    .giant-bar{
+      height: 42px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.14);
+      background: rgba(255,255,255,0.88);
+      overflow: hidden;
+      position: relative;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+    }
+
+    .giant-fill{
+      position:absolute;
+      left:0;
+      top:0;
+      height:100%;
+      width:0%;
+      border-radius: 999px;
+      transition: width 0.12s linear;
+      opacity: 0.95;
+    }
+
+    .giant-fill.stage-0{ background: linear-gradient(90deg, rgba(0,113,227,0.95), rgba(0,113,227,0.55)); }
+    .giant-fill.stage-1{ background: linear-gradient(90deg, rgba(52,199,89,0.95), rgba(52,199,89,0.55)); }
+    .giant-fill.stage-2{ background: linear-gradient(90deg, rgba(255,159,10,0.95), rgba(255,159,10,0.55)); }
+    .giant-fill.stage-3{ background: linear-gradient(90deg, rgba(255,45,85,0.95), rgba(255,45,85,0.55)); }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .btn {
+      border: 1px solid rgba(0,0,0,0.12);
+      border-radius: 999px;
+      padding: 14px 22px;
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+      background: linear-gradient(180deg, rgba(0,113,227,0.95), rgba(0,113,227,0.80));
+      color: #fff;
+      font-weight: 900;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 10px 22px rgba(0,113,227,0.18);
+      letter-spacing: -0.01em;
+    }
+
+    .btn:hover { transform: translateY(-2px); }
+
+    .btn.secondary {
+      background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(245,245,247,0.92));
+      color: var(--text);
+      box-shadow: 0 10px 22px rgba(0,0,0,0.10);
+    }
+
+    .status-text {
+      text-align: center;
+      font-size: 16px;
+      color: rgba(29,29,31,0.70);
+      margin-top: 6px;
+      font-weight: 700;
+      letter-spacing: -0.005em;
+    }
+
+    @media (max-width: 1100px) {
+      .card-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .stage-fillbox { min-height: 190px; }
+    }
+
+    @media (max-width: 700px) {
+      .header-top{
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+      .card-row { grid-template-columns: 1fr; }
+      .big-countdown{ grid-template-columns: 1fr; }
+      .big-time{ text-align: left; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .fill, .giant-fill, .clock-right .colon { transition: none; }
+      .stage-card { transition: none; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="header-top">
+      <div class="clock-left neon" id="dateText">--/--/----</div>
+
+      <div class="clock-right neon" id="timeWrap">
+        <span id="timeHH">--</span><span class="colon">:</span><span id="timeMM">--</span><span class="colon">:</span><span id="timeSS">--</span>
+        <span class="ampm" id="ampmText">--</span>
+      </div>
+    </div>
+
+    <h1>Tech App with Mr. Oz</h1>
+  </header>
+
+  <main>
+    <div class="card-row">
+      <div class="stage-card" data-stage="0">
+        <div class="stage-title">Login</div>
+        <div class="stage-fillbox">
+          <div class="fill stage-0" id="fill0"></div>
+          <img src="./images/login.png" alt="Login" />
+        </div>
+      </div>
+
+      <div class="stage-card" data-stage="1">
+        <div class="stage-title">Learning.com</div>
+        <div class="stage-fillbox">
+          <div class="fill stage-1" id="fill1"></div>
+          <img src="./images/learning.png" alt="Learning.com" />
+        </div>
+      </div>
+
+      <div class="stage-card" data-stage="2">
+        <div class="stage-title">Typing.com</div>
+        <div class="stage-fillbox">
+          <div class="fill stage-2" id="fill2"></div>
+          <img src="./images/typing.png" alt="Typing.com" />
+        </div>
+      </div>
+
+      <div class="stage-card" data-stage="3">
+        <div class="stage-title">Logout</div>
+        <div class="stage-fillbox">
+          <div class="fill stage-3" id="fill3"></div>
+          <img src="./images/logout.png" alt="Logout" />
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="big-timer-wrap">
+      <div class="big-countdown">
+        <div class="big-left">
+          <div class="big-segment" id="bigSegment">...</div>
+          <div class="big-stage" id="bigStage">...</div>
+        </div>
+        <div class="big-time" id="bigTime">--:--</div>
+      </div>
+
+      <div class="giant-bar" aria-hidden="true">
+        <div class="giant-fill stage-0" id="giantFill"></div>
+      </div>
+
+      <div class="controls">
+        <button class="btn secondary" id="toggleSimBtn">Simulation: OFF</button>
+        <button class="btn" id="resetSimBtn">Reset Sim</button>
+      </div>
+
+      <div class="status-text" id="statusText">Uses local computer time. Simulation lets you test fast.</div>
+
+      <audio id="stageSound" src="beep.mp3" preload="auto"></audio>
+    </div>
+  </footer>
+
+  <script>
+    /*
+      Classroom version:
+      - Big countdown (back of room readable)
+      - Cards show only the stage names + a rectangular fill area (no rainbow ring, no duration text)
+      - The active stage card is highlighted; its fill rises as that stage progresses
+      - The footer bar shows overall progress across the whole period segment
+      - Header clock is big + AM/PM + blinking colons
+    */
+
+    // Header clock
+    const dateText = document.getElementById('dateText');
+    const timeWrap = document.getElementById('timeWrap');
+    const timeHH = document.getElementById('timeHH');
+    const timeMM = document.getElementById('timeMM');
+    const timeSS = document.getElementById('timeSS');
+    const ampmText = document.getElementById('ampmText');
+
+    function formatMDY(d){
+      const m = d.getMonth() + 1;
+      const day = d.getDate();
+      const y = d.getFullYear();
+      return `${m}/${day}/${y}`;
+    }
+
+    function updateHeaderClock(now){
+      dateText.textContent = formatMDY(now);
+
+      let h = now.getHours();
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12;
+      if (h === 0) h = 12;
+
+      timeHH.textContent = String(h).padStart(2,'0');
+      timeMM.textContent = String(now.getMinutes()).padStart(2,'0');
+      timeSS.textContent = String(now.getSeconds()).padStart(2,'0');
+      ampmText.textContent = ampm;
+
+      timeWrap.classList.toggle('blink', now.getSeconds() % 2 === 0);
+    }
+
+    // Helper: HH:MM -> minutes since midnight
+    function hmToMin(hm) {
+      const [h, m] = hm.split(':').map(Number);
+      return h * 60 + m;
+    }
+
+    const scheduleMonThu = [
+      { name: 'Breakfast', type: 'nonclass', start: '07:20', end: '07:47' },
+      { name: 'Passing',   type: 'nonclass', start: '07:47', end: '07:50' },
+
+      { name: 'Period 1',  type: 'class',    start: '07:50', end: '08:38' },
+      { name: 'Passing',   type: 'nonclass', start: '08:38', end: '08:41' },
+
+      { name: 'Period 2',  type: 'class',    start: '08:41', end: '09:29' },
+      { name: 'Passing',   type: 'nonclass', start: '09:29', end: '09:32' },
+
+      { name: 'Period 3',  type: 'class',    start: '09:32', end: '10:20' },
+      { name: 'Passing',   type: 'nonclass', start: '10:20', end: '10:23' },
+
+      { name: 'Period 4',  type: 'class',    start: '10:23', end: '11:10' },
+      { name: 'Passing',   type: 'nonclass', start: '11:10', end: '11:13' },
+
+      { name: 'Period 5',  type: 'class',    start: '11:13', end: '12:01' },
+      { name: 'Passing',   type: 'nonclass', start: '12:01', end: '12:04' },
+
+      { name: 'Period 6',  type: 'class',    start: '12:04', end: '12:52' },
+      { name: 'Passing',   type: 'nonclass', start: '12:52', end: '12:55' },
+
+      { name: 'Period 7',  type: 'class',    start: '12:55', end: '13:43' },
+      { name: 'Passing',   type: 'nonclass', start: '13:43', end: '13:46' },
+
+      { name: 'Period 8',  type: 'class',    start: '13:46', end: '14:34' },
+      { name: 'Passing',   type: 'nonclass', start: '14:34', end: '14:37' },
+
+      { name: 'Period 9',  type: 'class',    start: '14:37', end: '15:25' }
+    ];
+
+    const scheduleFriday = [
+      { name: 'Breakfast', type: 'nonclass', start: '07:20', end: '07:47' },
+      { name: 'Passing',   type: 'nonclass', start: '07:47', end: '07:50' },
+
+      { name: 'Period 1',  type: 'class',    start: '07:50', end: '08:34' },
+      { name: 'Passing',   type: 'nonclass', start: '08:34', end: '08:37' },
+
+      { name: 'Period 2',  type: 'class',    start: '08:37', end: '09:21' },
+      { name: 'Passing',   type: 'nonclass', start: '09:21', end: '09:24' },
+
+      { name: 'Period 3',  type: 'class',    start: '09:24', end: '10:08' },
+      { name: 'Passing',   type: 'nonclass', start: '10:08', end: '10:11' },
+
+      { name: 'Period 4',  type: 'class',    start: '10:11', end: '10:54' },
+      { name: 'Passing',   type: 'nonclass', start: '10:54', end: '10:57' },
+
+      { name: 'Period 5',  type: 'class',    start: '10:57', end: '11:41' },
+      { name: 'Passing',   type: 'nonclass', start: '11:41', end: '11:44' },
+
+      { name: 'Period 6',  type: 'class',    start: '11:44', end: '12:28' },
+      { name: 'Passing',   type: 'nonclass', start: '12:28', end: '12:31' },
+
+      { name: 'Period 7',  type: 'class',    start: '12:31', end: '13:15' }
+    ];
+
+    function getDaySchedule(dateObj) {
+      const day = dateObj.getDay(); // 0 Sun ... 5 Fri ... 6 Sat
+      if (day === 5) return { type: 'Friday', items: scheduleFriday };
+      if (day >= 1 && day <= 4) return { type: 'Mon-Thu', items: scheduleMonThu };
+      return { type: 'Weekend', items: [] };
+    }
+
+    // Routine (scaled into current period length)
+    const routineUnits = [5, 30, 5, 5]; // Login, Learning, Typing, Logout
+    const TOTAL_UNITS = routineUnits.reduce((a,b)=>a+b,0);
+    const SCALE_TO_PERIOD = true;
+
+    // Simulation
+    let simulationOn = false;
+    const SIM_SPEED = 60;
+
+    // UI hooks
+    const stageCards = document.querySelectorAll('.stage-card');
+    const stageSound = document.getElementById('stageSound');
+
+    const bigSegment = document.getElementById('bigSegment');
+    const bigStage = document.getElementById('bigStage');
+    const bigTime = document.getElementById('bigTime');
+
+    const statusText = document.getElementById('statusText');
+    const toggleSimBtn = document.getElementById('toggleSimBtn');
+    const resetSimBtn = document.getElementById('resetSimBtn');
+
+    const fillEls = [
+      document.getElementById('fill0'),
+      document.getElementById('fill1'),
+      document.getElementById('fill2'),
+      document.getElementById('fill3'),
+    ];
+
+    const giantFill = document.getElementById('giantFill');
+
+    function playStageSound() {
+      stageSound.currentTime = 0;
+      stageSound.play().catch(() => {});
+    }
+
+    function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+    function formatHMS(totalSeconds) {
+      totalSeconds = Math.max(0, Math.floor(totalSeconds));
+      const h = Math.floor(totalSeconds / 3600);
+      const m = Math.floor((totalSeconds % 3600) / 60);
+      const s = totalSeconds % 60;
+      if (h > 0) return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+      return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    }
+
+    function toMinSinceMidnight(dateObj) {
+      return dateObj.getHours() * 60 + dateObj.getMinutes() + dateObj.getSeconds()/60;
+    }
+
+    function getSegmentForNow(scheduleItems, nowMin) {
+      for (let i = 0; i < scheduleItems.length; i++) {
+        const it = scheduleItems[i];
+        const s = hmToMin(it.start);
+        const e = hmToMin(it.end);
+        if (nowMin >= s && nowMin < e) {
+          const next = scheduleItems[i+1] || null;
+          return { current: it, startMin: s, endMin: e, next };
+        }
+      }
+      const upcoming = scheduleItems.find(it => nowMin < hmToMin(it.start)) || null;
+      return { current: null, startMin: null, endMin: null, next: upcoming };
+    }
+
+    function routineStageAt(progressSec, periodLenSec) {
+      const total = periodLenSec;
+      const unitSec = SCALE_TO_PERIOD ? (total / TOTAL_UNITS) : 60;
+      const scaled = routineUnits.map(u => u * unitSec);
+
+      let acc = 0;
+      for (let i = 0; i < scaled.length; i++) {
+        const start = acc;
+        const end = acc + scaled[i];
+        if (progressSec >= start && progressSec < end) {
+          return { stage: i, stageStart: start, stageEnd: end, unitSec };
+        }
+        acc = end;
+      }
+      return { stage: 3, stageStart: total - scaled[3], stageEnd: total, unitSec };
+    }
+
+    let lastStage = -1;
+    let simAnchorRealMs = null;
+    let simAnchorScheduleMin = null;
+
+    function getNowForEngine() {
+      const realNow = new Date();
+      if (!simulationOn) return realNow;
+
+      if (simAnchorRealMs === null) {
+        simAnchorRealMs = Date.now();
+        simAnchorScheduleMin = toMinSinceMidnight(realNow);
+      }
+      const elapsedRealSec = (Date.now() - simAnchorRealMs) / 1000;
+      const elapsedScheduleSec = elapsedRealSec * SIM_SPEED;
+
+      const totalMin = simAnchorScheduleMin + (elapsedScheduleSec / 60);
+      const baseMidnight = new Date(realNow);
+      baseMidnight.setHours(0,0,0,0);
+
+      const fake = new Date(realNow);
+      fake.setTime(baseMidnight.getTime() + totalMin * 60 * 1000);
+      return fake;
+    }
+
+    function setStageFill(stageIdx, pct) {
+      for (let i = 0; i < fillEls.length; i++) {
+        fillEls[i].style.height = (i === stageIdx ? pct : 0) + '%';
+      }
+    }
+
+    function setGiantFill(stageIdx, pct) {
+      giantFill.className = 'giant-fill stage-' + stageIdx;
+      giantFill.style.width = clamp(pct, 0, 100) + '%';
+    }
+
+    function stageName(i){
+      return ['Login', 'Learning.com', 'Typing.com', 'Logout'][i] || '';
+    }
+
+    function tick() {
+      const now = getNowForEngine();
+
+      updateHeaderClock(now);
+
+      const dayInfo = getDaySchedule(now);
+      const items = dayInfo.items;
+
+      if (dayInfo.type === 'Weekend' || items.length === 0) {
+        bigSegment.textContent = 'Weekend';
+        bigStage.textContent = 'No schedule';
+        bigTime.textContent = '--:--';
+        statusText.textContent = 'Weekend mode. (No bell schedule configured.)';
+
+        stageCards.forEach(c => { c.classList.remove('active'); c.classList.add('dimmed'); });
+        setStageFill(-1, 0);
+        setGiantFill(0, 0);
+        lastStage = -1;
+        return;
+      }
+
+      const nowMin = toMinSinceMidnight(now);
+      const seg = getSegmentForNow(items, nowMin);
+
+      if (!seg.current) {
+        const label = seg.next ? ('Waiting for ' + seg.next.name + ' @ ' + seg.next.start) : 'After school';
+        bigSegment.textContent = label;
+        bigStage.textContent = '';
+        bigTime.textContent = '--:--';
+        statusText.textContent = seg.next ? ('Next: ' + seg.next.name) : 'Schedule complete.';
+
+        stageCards.forEach(c => { c.classList.remove('active'); c.classList.add('dimmed'); });
+        setStageFill(-1, 0);
+        setGiantFill(0, 0);
+        lastStage = -1;
+        return;
+      }
+
+      const segStart = seg.startMin;
+      const segEnd = seg.endMin;
+
+      const segLenSec = (segEnd - segStart) * 60;
+      const segElapsedSec = clamp((nowMin - segStart) * 60, 0, segLenSec);
+      const segRemainingSec = Math.max(0, segLenSec - segElapsedSec);
+
+      // Overall progress for the whole segment
+      const overallPct = (segElapsedSec / segLenSec) * 100;
+
+      // Non-class segments: show big countdown, dim cards, fill bar in a neutral stage-0 color
+      if (seg.current.type !== 'class') {
+        bigSegment.textContent = seg.current.name + ' (' + seg.current.start + '–' + seg.current.end + ')';
+        bigStage.textContent = 'Non-class segment';
+        bigTime.textContent = formatHMS(segRemainingSec);
+
+        statusText.textContent = 'Non-class segment: ' + seg.current.name;
+
+        stageCards.forEach(c => { c.classList.remove('active'); c.classList.add('dimmed'); });
+        setStageFill(-1, 0);
+        setGiantFill(0, overallPct);
+
+        lastStage = -1;
+        return;
+      }
+
+      // Class segment
+      const info = routineStageAt(segElapsedSec, segLenSec);
+      const stage = info.stage;
+
+      stageCards.forEach(c => c.classList.remove('dimmed'));
+      stageCards.forEach((card, idx) => card.classList.toggle('active', idx === stage));
+
+      // stage progress inside its rectangle
+      const stagePct = ((segElapsedSec - info.stageStart) / (info.stageEnd - info.stageStart)) * 100;
+      setStageFill(stage, clamp(stagePct, 0, 100));
+      setGiantFill(stage, overallPct);
+
+      // sound on stage change
+      if (lastStage !== -1 && stage !== lastStage) playStageSound();
+      lastStage = stage;
+
+      const stageRemaining = Math.max(0, info.stageEnd - segElapsedSec);
+
+      bigSegment.textContent = seg.current.name + ' (' + seg.current.start + '–' + seg.current.end + ')';
+      bigStage.textContent = 'Now: ' + stageName(stage) + ' | Stage left: ' + formatHMS(stageRemaining);
+      bigTime.textContent = formatHMS(segRemainingSec);
+
+      statusText.textContent = (simulationOn ? 'Simulation ON' : 'Auto') + ' | ' + dayInfo.type;
+    }
+
+    toggleSimBtn.addEventListener('click', () => {
+      simulationOn = !simulationOn;
+      toggleSimBtn.textContent = 'Simulation: ' + (simulationOn ? 'ON' : 'OFF');
+
+      simAnchorRealMs = null;
+      simAnchorScheduleMin = null;
+      lastStage = -1;
+      tick();
+    });
+
+    resetSimBtn.addEventListener('click', () => {
+      simAnchorRealMs = null;
+      simAnchorScheduleMin = null;
+      lastStage = -1;
+      tick();
+    });
+
+    toggleSimBtn.textContent = 'Simulation: OFF';
+    setInterval(tick, 250);
+    tick();
+  </script>
+</body>
+</html>
+

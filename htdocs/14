@@ -46,52 +46,116 @@
 
     header {
       text-align: center;
-      padding: 22px 10px;
+      padding: 28px 10px 22px;
       background: linear-gradient(180deg, rgba(255,255,255,0.86), rgba(245,245,247,0.70));
       border-bottom: 1px solid var(--line);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
+      position: relative;
+      overflow: hidden;
     }
 
-    header h1 {
-      margin: 0;
-      font-size: clamp(32px, 3.3vw, 44px);
-      line-height: 1.06;
+    /* subtle neon wash behind header */
+    header::after{
+      content:"";
+      position:absolute;
+      inset:-60px -80px -80px -80px;
+      background:
+        radial-gradient(500px 180px at 15% 40%, rgba(0,113,227,0.22), transparent 60%),
+        radial-gradient(520px 190px at 85% 40%, rgba(255,45,85,0.18), transparent 60%),
+        radial-gradient(520px 210px at 50% 120%, rgba(52,199,89,0.14), transparent 60%);
+      filter: blur(10px);
+      pointer-events:none;
+      z-index:0;
+    }
+
+    /* Big alarm-clock style date/time row */
+    .header-top{
+      position: relative;
+      z-index: 2;
+      display:flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 16px;
+      max-width: 1100px;
+      margin: 0 auto 6px;
+      padding: 0 16px;
+    }
+
+    .clock-left, .clock-right{
+      font-weight: 800;
       letter-spacing: -0.02em;
-      font-weight: 700;
+      line-height: 1.0;
+      white-space: nowrap;
+      font-size: clamp(28px, 3.2vw, 44px);
       color: var(--text);
+      text-shadow:
+        0 1px 0 rgba(255,255,255,0.35),
+        0 10px 30px rgba(0,0,0,0.12);
     }
 
-    header .subtitle {
-      display: block;
-      margin-top: 10px;
-      font-size: 17px;
-      line-height: 1.35;
-      color: rgba(29,29,31,0.75);
-      letter-spacing: -0.005em;
-      font-weight: 500;
-    }
-
-    header .subrow {
-      margin-top: 8px;
-      font-size: 14px;
-      color: rgba(29,29,31,0.68);
-      font-weight: 600;
-      letter-spacing: -0.005em;
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    header .pill {
-      background: rgba(255,255,255,0.75);
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 6px 10px;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+    /* neon/alarm glow */
+    .neon{
+      color: #ffffff;
+      background: rgba(0,0,0,0.72);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 18px;
+      padding: 10px 14px;
+      box-shadow:
+        0 14px 40px rgba(0,0,0,0.22),
+        0 0 22px rgba(0,113,227,0.20),
+        0 0 26px rgba(255,45,85,0.12);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
+    }
+
+    .clock-left{
+      text-shadow:
+        0 0 10px rgba(0,113,227,0.35),
+        0 0 22px rgba(0,113,227,0.18),
+        0 10px 30px rgba(0,0,0,0.22);
+    }
+
+    .clock-right{
+      text-shadow:
+        0 0 10px rgba(52,199,89,0.30),
+        0 0 22px rgba(255,159,10,0.16),
+        0 10px 30px rgba(0,0,0,0.22);
+    }
+
+    .clock-right .ampm{
+      font-size: 0.62em;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+      margin-left: 8px;
+      opacity: 0.95;
+      text-transform: uppercase;
+      vertical-align: baseline;
+      color: rgba(255,255,255,0.92);
+      text-shadow:
+        0 0 10px rgba(255,159,10,0.25),
+        0 0 18px rgba(255,45,85,0.14);
+    }
+
+    /* blinking colon vibe */
+    .clock-right .colon{
+      display:inline-block;
+      width: 0.32em;
+      text-align:center;
+      opacity: 1;
+      transition: opacity 0.15s linear;
+    }
+    .clock-right.blink .colon{ opacity: 0.18; }
+
+    header h1 {
+      position: relative;
+      z-index: 2;
+      margin: 6px 0 0;
+      font-size: clamp(30px, 3.3vw, 44px);
+      line-height: 1.06;
+      letter-spacing: -0.02em;
+      font-weight: 800;
+      color: var(--text);
     }
 
     main {
@@ -225,8 +289,6 @@
       -webkit-user-drag: none;
     }
 
-    /* Optional: if you want "cover" instead of contain, change object-fit to cover above. */
-
     footer {
       padding: 18px 20px 24px;
       background: linear-gradient(180deg, rgba(245,245,247,0.78), rgba(255,255,255,0.78));
@@ -350,9 +412,22 @@
     @media (prefers-reduced-motion: reduce) {
       .stage-card, .stage-card::before { transition: none; animation: none; }
       .smooth-fill { transition: none; }
+      .clock-right .colon { transition: none; }
     }
 
     @media (max-width: 768px) {
+      .header-top{
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+      .clock-left, .clock-right{
+        width: 100%;
+        text-align: center;
+      }
+      .neon{ border-radius: 16px; }
+
       .card-row { flex-direction: column; gap: 15px; }
       .stage-card { max-width: none; flex: 1; min-width: 250px; }
       .timer-bar { min-width: 300px; }
@@ -362,13 +437,16 @@
 </head>
 <body>
   <header>
-    <h1>Tech App with Mr. Oz</h1>
-    <span class="subtitle">Real-time bell schedule + in-period routine</span>
-    <div class="subrow">
-      <div class="pill" id="todayTypePill">Today: ...</div>
-      <div class="pill" id="nowPill">Now: ...</div>
-      <div class="pill" id="nextPill">Next: ...</div>
+    <div class="header-top">
+      <div class="clock-left neon" id="dateText">--/--/----</div>
+
+      <div class="clock-right neon" id="timeWrap">
+        <span id="timeHH">--</span><span class="colon">:</span><span id="timeMM">--</span><span class="colon">:</span><span id="timeSS">--</span>
+        <span class="ampm" id="ampmText">--</span>
+      </div>
     </div>
+
+    <h1>Tech App with Mr. Oz</h1>
   </header>
 
   <main>
@@ -426,13 +504,43 @@
 
   <script>
     /*
+      Header date/time:
+      - Date format: M/D/YYYY (ex: 1/8/2026)
+      - Time format: HH:MM:SS AM/PM (alarm style) + blinking colons
+    */
+    const dateText = document.getElementById('dateText');
+    const timeWrap = document.getElementById('timeWrap');
+    const timeHH = document.getElementById('timeHH');
+    const timeMM = document.getElementById('timeMM');
+    const timeSS = document.getElementById('timeSS');
+    const ampmText = document.getElementById('ampmText');
+
+    function formatMDY(d){
+      const m = d.getMonth() + 1;
+      const day = d.getDate();
+      const y = d.getFullYear();
+      return `${m}/${day}/${y}`;
+    }
+
+    function updateHeaderClock(now){
+      dateText.textContent = formatMDY(now);
+
+      let h = now.getHours();
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12;
+      if (h === 0) h = 12;
+
+      timeHH.textContent = String(h).padStart(2,'0');
+      timeMM.textContent = String(now.getMinutes()).padStart(2,'0');
+      timeSS.textContent = String(now.getSeconds()).padStart(2,'0');
+      ampmText.textContent = ampm;
+
+      timeWrap.classList.toggle('blink', now.getSeconds() % 2 === 0);
+    }
+
+    /*
       Real bell schedule: Mon-Thu vs Friday.
       When inside a Period segment, run 4-step routine scaled to that period length.
-      Images are loaded from:
-        ./images/login.png
-        ./images/learning.png
-        ./images/typing.png
-        ./images/logout.png
     */
 
     // Helper: HH:MM -> minutes since midnight
@@ -521,10 +629,6 @@
     const timeLeftLabel = document.getElementById('timeLeftLabel');
     const segmentLabel = document.getElementById('segmentLabel');
     const statusText = document.getElementById('statusText');
-
-    const todayTypePill = document.getElementById('todayTypePill');
-    const nowPill = document.getElementById('nowPill');
-    const nextPill = document.getElementById('nextPill');
 
     const timerBar = document.getElementById('timerBar');
 
@@ -654,22 +758,16 @@
       return fake;
     }
 
-    function setPill(el, text) { el.textContent = text; }
-
     function tick() {
       const now = getNowForEngine();
+
+      // header date/time follows engine time (auto OR sim)
+      updateHeaderClock(now);
+
       const dayInfo = getDaySchedule(now);
       const items = dayInfo.items;
 
-      setPill(todayTypePill, 'Today: ' + dayInfo.type);
-
-      const hh = String(now.getHours()).padStart(2,'0');
-      const mm = String(now.getMinutes()).padStart(2,'0');
-      const ss = String(now.getSeconds()).padStart(2,'0');
-      setPill(nowPill, 'Time: ' + hh + ':' + mm + ':' + ss);
-
       if (dayInfo.type === 'Weekend' || items.length === 0) {
-        setPill(nextPill, 'Next: —');
         modeLabel.textContent = simulationOn ? 'Sim' : 'Auto';
         segmentLabel.textContent = 'Weekend';
         timeLeftLabel.textContent = '--:--';
@@ -681,9 +779,6 @@
 
       const nowMin = toMinSinceMidnight(now);
       const seg = getSegmentForNow(items, nowMin);
-
-      const nextText = seg.next ? (seg.next.name + ' @ ' + seg.next.start) : '—';
-      setPill(nextPill, 'Next: ' + nextText);
 
       modeLabel.textContent = simulationOn ? 'Sim' : 'Auto';
 
@@ -790,3 +885,4 @@
   </script>
 </body>
 </html>
+

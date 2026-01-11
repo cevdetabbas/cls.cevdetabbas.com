@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tech App with Mr. Oz</title>
+
+  <style>
+    :root{
+      --bg:#f5f5f7;
+      --card: rgba(255,255,255,0.86);
+      --text:#1d1d1f;
+      --muted: rgba(29,29,31,0.62);
+      --line: rgba(0,0,0,0.10);
+
+      --blue:#0071e3;
+      --teal:#00a3a3;
+      --indigo:#5e5ce6;
+      --pink:#ff2d55;
+
+      --shadow: 0 10px 28px rgba(0,0,0,0.10);
+      --shadow2: 0 18px 54px rgba(0,0,0,0.14);
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+
+    body{
+      margin:0;
+      font-family:
+        -apple-system, BlinkMacSystemFont,
+        "SF Pro Display","SF Pro Text",
+        "Helvetica Neue", Helvetica, Arial,
+        "Segoe UI", Roboto, sans-serif;
+      background: radial-gradient(1200px 700px at 50% 0%, #ffffff 0%, var(--bg) 55%, #efeff2 100%);
+      color: var(--text);
+      display:flex;
+      flex-direction:column;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      letter-spacing: -0.01em;
+    }
+
+    /* HEADER */
+    header{
+      background: rgba(255,255,255,0.78);
+      border-bottom: 1px solid var(--line);
+      padding: 12px 16px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .hdr{
+      display:grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items:center;
+      max-width: 1400px;
+      margin: 0 auto;
+      gap: 12px;
+    }
+
+    h1{
+      margin:0;
+      text-align:center;
+      font-size: clamp(30px, 2.8vw, 54px);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+
+    .chipWrap{
+      display:inline-flex;
+      flex-direction:column;
+      gap:6px;
+    }
+
+    .chipLabel{
+      font-size: clamp(12px, 1.0vw, 16px);
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: rgba(29,29,31,0.60);
+      padding-left: 4px;
+    }
+
+    .chip{
+      display:inline-block;
+      padding: 10px 14px;
+      border: 1px solid rgba(0,0,0,0.10);
+      border-radius: 14px;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      font-size: clamp(22px, 2vw, 40px);
+      white-space: nowrap;
+
+      color: rgba(29,29,31,0.92);
+      background: rgba(255,255,255,0.88);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+      position: relative;
+      overflow: hidden;
+    }
+    .chip::before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      border-radius: 16px;
+      background: conic-gradient(
+        from 210deg,
+        rgba(0,0,0,0) 0deg,
+        rgba(0,0,0,0) 65deg,
+        rgba(0,113,227,0.85) 120deg,
+        rgba(0,163,163,0.75) 170deg,
+        rgba(94,92,230,0.70) 230deg,
+        rgba(255,45,85,0.70) 285deg,
+        rgba(0,0,0,0) 340deg,
+        rgba(0,0,0,0) 360deg
+      );
+      filter: blur(16px);
+      opacity: 0.25;
+      pointer-events:none;
+    }
+
+    /* MAIN */
+    main{
+      flex:1;
+      display:flex;
+      justify-content:center;
+      padding: 14px 16px;
+    }
+    .grid{
+      width: min(1400px, 100%);
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .card{
+      position: relative;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 12px;
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+      opacity: 0.45;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transform: translateY(0);
+      transition: opacity .18s ease, transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+
+    /* active glow */
+    .card::before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      border-radius: 20px;
+      background: conic-gradient(
+        from 180deg,
+        rgba(0,0,0,0) 0deg,
+        rgba(0,0,0,0) 40deg,
+        rgba(255,45,85,0.70) 95deg,
+        rgba(94,92,230,0.70) 155deg,
+        rgba(0,163,163,0.60) 215deg,
+        rgba(0,113,227,0.78) 275deg,
+        rgba(0,0,0,0) 330deg,
+        rgba(0,0,0,0) 360deg
+      );
+      filter: blur(16px);
+      opacity: 0;
+      pointer-events:none;
+      transition: opacity .2s ease;
+    }
+
+    .card.active{
+      opacity: 1;
+      transform: translateY(-6px);
+      border-color: rgba(0,0,0,0.14);
+      box-shadow: var(--shadow2);
+    }
+    .card.active::before{
+      opacity: 0.85;
+      animation: spin 3.6s linear infinite;
+    }
+    @keyframes spin{
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    .title{
+      text-align:center;
+      font-weight: 900;
+      font-size: clamp(18px, 1.6vw, 30px);
+      letter-spacing: -0.01em;
+      position: relative;
+      z-index: 2;
+    }
+    .mins{
+      display:block;
+      margin-top: 4px;
+      font-weight: 800;
+      color: var(--muted);
+      font-size: 0.82em;
+    }
+
+    /* CIRCLE + PROGRESS RING */
+    .circleWrap{
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 999px;
+      display:grid;
+      place-items:center;
+      z-index: 2;
+    }
+    .ringSvg{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      transform: rotate(-90deg);
+      pointer-events:none;
+    }
+    .ringTrack{
+      fill:none;
+      stroke: rgba(0,0,0,0.12);
+      stroke-width: 10;
+    }
+    .ringProg{
+      fill:none;
+      stroke-width: 10;
+      stroke-linecap: round;
+      stroke: var(--blue);
+      opacity: 0.95;
+      stroke-dasharray: 1 9999;
+      stroke-dashoffset: 0;
+      filter: drop-shadow(0 8px 14px rgba(0,0,0,0.18));
+      transition: opacity .15s ease;
+    }
+    .card .ringProg{ opacity: 0; }
+    .card.active .ringProg{ opacity: 1; }
+
+    .imgwrap{
+      width: calc(100% - 22px);
+      height: calc(100% - 22px);
+      border-radius: 999px;
+      overflow:hidden;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.90);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+      position: relative;
+    }
+    .imgwrap img{
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      display:block;
+    }
+
+    /* Typing "coin": PBS / ABC */
+    .coin{
+      width:100%;
+      height:100%;
+      position:relative;
+      transform-style: preserve-3d;
+      animation: coinFlip 3.2s linear infinite;
+    }
+    .coinFace{
+      position:absolute;
+      inset:0;
+      backface-visibility: hidden;
+    }
+    .coinFace img{
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      display:block;
+    }
+    .coinBack{ transform: rotateY(180deg); }
+
+    @keyframes coinFlip{
+      0%   { transform: rotateY(0deg); }
+      50%  { transform: rotateY(180deg); }
+      100% { transform: rotateY(360deg); }
+    }
+
+    /* NitroType badge on Typing card */
+    .nitroBadge{
+      position:absolute;
+      right: 10px;
+      bottom: 10px;
+      width: 62px;
+      height: 62px;
+      border-radius: 14px;
+      overflow:hidden;
+      border: 1px solid rgba(0,0,0,0.12);
+      background: rgba(255,255,255,0.92);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.14);
+    }
+    .nitroBadge img{
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      display:block;
+    }
+
+    .cdLabel{
+      text-align:center;
+      font-size: clamp(12px, 1.1vw, 16px);
+      font-weight: 800;
+      color: rgba(29,29,31,0.58);
+      margin-top: 2px;
+      visibility:hidden;
+      position: relative;
+      z-index: 2;
+    }
+    .card.active .cdLabel{ visibility:visible; }
+
+    .cd{
+      text-align:center;
+      font-weight: 950;
+      font-variant-numeric: tabular-nums;
+      font-size: clamp(28px, 2.8vw, 56px);
+      color: var(--text);
+      visibility:hidden;
+      position: relative;
+      z-index: 2;
+    }
+    .card.active .cd{ visibility:visible; }
+
+    /* FOOTER (compact) */
+    footer{
+      background: rgba(255,255,255,0.78);
+      border-top: 1px solid var(--line);
+      padding: 10px 16px 12px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .footerRow{
+      max-width: 1400px;
+      margin: 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .infoBox{
+      display:flex;
+      flex-direction:column;
+      gap: 4px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.86);
+      border: 1px solid var(--line);
+      box-shadow: 0 10px 22px rgba(0,0,0,0.08);
+      min-width: 360px;
+      flex: 1;
+    }
+
+    .infoTop{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: baseline;
+    }
+
+    .pill{
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      color: rgba(29,29,31,0.92);
+      font-size: clamp(14px, 1.3vw, 18px);
+    }
+
+    .subpill{
+      font-weight: 800;
+      color: rgba(29,29,31,0.62);
+      font-size: clamp(13px, 1.2vw, 16px);
+    }
+
+    .mini{
+      margin-top: 2px;
+      font-weight: 800;
+      color: rgba(29,29,31,0.62);
+      font-size: clamp(12px, 1.1vw, 15px);
+    }
+
+    /* Switch */
+    .switchBox{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.86);
+      border: 1px solid var(--line);
+      box-shadow: 0 10px 22px rgba(0,0,0,0.08);
+      white-space: nowrap;
+    }
+
+    .swText{
+      font-weight: 900;
+      color: rgba(29,29,31,0.90);
+      font-size: clamp(14px, 1.3vw, 18px);
+    }
+
+    .switch{
+      position: relative;
+      width: 56px;
+      height: 32px;
+    }
+    .switch input{
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider{
+      position:absolute;
+      inset:0;
+      cursor:pointer;
+      background: rgba(0,0,0,0.18);
+      border-radius: 999px;
+      transition: background .18s ease;
+      border: 1px solid rgba(0,0,0,0.12);
+    }
+    .slider:before{
+      content:"";
+      position:absolute;
+      height: 26px;
+      width: 26px;
+      left: 3px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #fff;
+      border-radius: 999px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.18);
+      transition: transform .18s ease;
+    }
+    .switch input:checked + .slider{
+      background: rgba(0,113,227,0.80);
+      border-color: rgba(0,113,227,0.45);
+    }
+    .switch input:checked + .slider:before{
+      transform: translate(24px, -50%);
+    }
+
+    @media (max-width: 900px){
+      .grid{ grid-template-columns: repeat(2, 1fr); }
+      h1{ white-space: normal; }
+      .infoBox{ min-width: 260px; }
+    }
+    @media (max-width: 560px){
+      .hdr{ grid-template-columns: 1fr; justify-items:center; }
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .card, .card::before, .coin { transition:none; animation:none; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="hdr">
+      <div class="chipWrap">
+        <div class="chipLabel">Date</div>
+        <span class="chip" id="dateChip">01/08/2026</span>
+      </div>
+
+      <h1>Tech App with Mr. Oz</h1>
+
+      <div class="chipWrap" style="justify-self:end; text-align:right;">
+        <div class="chipLabel">Time</div>
+        <span class="chip" id="timeChip">11:12:22 AM</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="grid">
+      <div class="card" data-stage="0">
+        <div class="title">Login <span class="mins" id="label0">3 min</span></div>
+
+        <div class="circleWrap">
+          <svg class="ringSvg" viewBox="0 0 100 100" aria-hidden="true">
+            <circle class="ringTrack" cx="50" cy="50" r="46"></circle>
+            <circle class="ringProg"  cx="50" cy="50" r="46"></circle>
+          </svg>
+          <div class="imgwrap"><img src="./images/login.png" alt="Login"></div>
+        </div>
+
+        <div class="cdLabel">Remaining time</div>
+        <div class="cd" id="cd0">--:--</div>
+      </div>
+
+      <div class="card" data-stage="1">
+        <div class="title">Learning.com <span class="mins" id="label1">30 min</span></div>
+
+        <div class="circleWrap">
+          <svg class="ringSvg" viewBox="0 0 100 100" aria-hidden="true">
+            <circle class="ringTrack" cx="50" cy="50" r="46"></circle>
+            <circle class="ringProg"  cx="50" cy="50" r="46"></circle>
+          </svg>
+          <div class="imgwrap"><img src="./images/learning.png" alt="Learning.com"></div>
+        </div>
+
+        <div class="cdLabel">Remaining time</div>
+        <div class="cd" id="cd1">--:--</div>
+      </div>
+
+      <div class="card" data-stage="2" id="typingCard">
+        <div class="title">Typing / PBS / ABC <span class="mins" id="label2">10 min</span></div>
+
+        <div class="circleWrap">
+          <svg class="ringSvg" viewBox="0 0 100 100" aria-hidden="true">
+            <circle class="ringTrack" cx="50" cy="50" r="46"></circle>
+            <circle class="ringProg"  cx="50" cy="50" r="46"></circle>
+          </svg>
+
+          <!-- Coin (PBS <-> ABC) inside the circle -->
+          <div class="imgwrap" aria-label="PBS / ABC coin">
+            <div class="coin">
+              <div class="coinFace coinFront"><img src="./pbs.jpg" alt="PBS" /></div>
+              <div class="coinFace coinBack"><img src="./abc.jpg" alt="ABC" /></div>
+            </div>
+
+            <!-- NitroType badge (put nitrotype.jpg in the same folder as this html) -->
+            <div class="nitroBadge" title="NitroType">
+              <img src="./nitrotype.jpg" alt="NitroType" />
+            </div>
+          </div>
+        </div>
+
+        <div class="cdLabel">Remaining time</div>
+        <div class="cd" id="cd2">--:--</div>
+      </div>
+
+      <div class="card" data-stage="3">
+        <div class="title">Logout <span class="mins" id="label3">2 min</span></div>
+
+        <div class="circleWrap">
+          <svg class="ringSvg" viewBox="0 0 100 100" aria-hidden="true">
+            <circle class="ringTrack" cx="50" cy="50" r="46"></circle>
+            <circle class="ringProg"  cx="50" cy="50" r="46"></circle>
+          </svg>
+          <div class="imgwrap"><img src="./images/logout.png" alt="Logout"></div>
+        </div>
+
+        <div class="cdLabel">Remaining time</div>
+        <div class="cd" id="cd3">--:--</div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footerRow">
+      <div class="infoBox">
+        <div class="infoTop">
+          <div class="pill" id="footerClass">Class: —</div>
+          <div class="subpill" id="footerPeriod">Period: —</div>
+        </div>
+        <div class="mini" id="footerRange">Time: —</div>
+        <div class="mini" id="footerExtra">—</div>
+      </div>
+
+      <div class="switchBox">
+        <div class="swText" id="simLabel">Simulation: OFF</div>
+        <label class="switch" title="Simulation mode">
+          <input type="checkbox" id="simSwitch" />
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <audio id="stageSound" src="beep.mp3" preload="auto"></audio>
+  </footer>
+
+  <script>
+    // ===== ROUTINE DURATIONS =====
+    // You said: Login 3 minutes. Others can be adjusted anytime.
+    const assignedMinutes = [3, 30, 10, 2];
+    const SCALE_TO_PERIOD = true;
+
+    // ===== TIMEZONE =====
+    const TZ = 'America/Chicago';
+
+    // ===== YOUR TEXT SCHEDULE (AUTO-PARSE) =====
+    // I embedded exactly what you pasted. The code below parses class codes + time ranges,
+    // then shows matching class(es) in the footer when the current segment time matches.
+    const RAW_TEACHER_SCHEDULE = `
+SA 7:50-8:38am
+2B 8:41-9:29am
+3A 9:32-10:20am
+3A Recess, 10:20am
+26
+1A 12:04-12:52pm
+2A 12:55-1:43pm
+PKB 2:37-3:25pm Dismisssal Duty, 3:25pm
+Robotic Club 4-5pm
+8:41-9:29am
+4A 9:32 10:20am
+4A Recess, 10:23am
+48
+3A 11:13am 12:01pm
+18 12:04-12:52pm
+2A 12:55-1:43pm
+KB
+PKC 1:46-2:34pm
+2:37-3:25pm
+7:50-8:38am
+5A 9:32 10:20am
+SA Recess, 10:20am
+KB 11:13am 12:01pm
+58 12:04 12:52pm
+PKA 1:46-2:34pm
+1A
+KA 2:37-3:25pm
+Morning Duty, 7:30am
+4A 7:50-8:38am
+48 8:41-9:29am
+5B 9:32-10:20am
+58 Recess, 10:20am
+KA 12:04-12:52pm
+12:55-1:43pm
+Morning Duty, 7:30am
+GT Elective Grs K-5, 9:24am
+12:31-1:15pm 18
+Dismisssal Duty, 3:25pm
+    `.trim();
+
+    // ===== SCHOOL BELL SCHEDULE (ENGINE) =====
+    const scheduleMonThu = [
+      { name:'Breakfast', type:'nonclass', start:'07:20', end:'07:47' },
+      { name:'Passing',   type:'nonclass', start:'07:47', end:'07:50' },
+
+      { name:'Period 1',  type:'class', start:'07:50', end:'08:38' },
+      { name:'Passing',   type:'nonclass', start:'08:38', end:'08:41' },
+
+      { name:'Period 2',  type:'class', start:'08:41', end:'09:29' },
+      { name:'Passing',   type:'nonclass', start:'09:29', end:'09:32' },
+
+      { name:'Period 3',  type:'class', start:'09:32', end:'10:20' },
+      { name:'Passing',   type:'nonclass', start:'10:20', end:'10:23' },
+
+      { name:'Period 4',  type:'class', start:'10:23', end:'11:10' },
+      { name:'Passing',   type:'nonclass', start:'11:10', end:'11:13' },
+
+      { name:'Period 5',  type:'class', start:'11:13', end:'12:01' },
+      { name:'Passing',   type:'nonclass', start:'12:01', end:'12:04' },
+
+      { name:'Period 6',  type:'class', start:'12:04', end:'12:52' },
+      { name:'Passing',   type:'nonclass', start:'12:52', end:'12:55' },
+
+      { name:'Period 7',  type:'class', start:'12:55', end:'13:43' },
+      { name:'Passing',   type:'nonclass', start:'13:43', end:'13:46' },
+
+      { name:'Period 8',  type:'class', start:'13:46', end:'14:34' },
+      { name:'Passing',   type:'nonclass', start:'14:34', end:'14:37' },
+
+      { name:'Period 9',  type:'class', start:'14:37', end:'15:25' },
+    ];
+
+    const scheduleFriday = [
+      { name:'Breakfast', type:'nonclass', start:'07:20', end:'07:47' },
+      { name:'Passing',   type:'nonclass', start:'07:47', end:'07:50' },
+
+      { name:'Period 1',  type:'class', start:'07:50', end:'08:34' },
+      { name:'Passing',   type:'nonclass', start:'08:34', end:'08:37' },
+
+      { name:'Period 2',  type:'class', start:'08:37', end:'09:21' },
+      { name:'Passing',   type:'nonclass', start:'09:21', end:'09:24' },
+
+      { name:'Period 3',  type:'class', start:'09:24', end:'10:08' },
+      { name:'Passing',   type:'nonclass', start:'10:08', end:'10:11' },
+
+      { name:'Period 4',  type:'class', start:'10:11', end:'10:54' },
+      { name:'Passing',   type:'nonclass', start:'10:54', end:'10:57' },
+
+      { name:'Period 5',  type:'class', start:'10:57', end:'11:41' },
+      { name:'Passing',   type:'nonclass', start:'11:41', end:'11:44' },
+
+      { name:'Period 6',  type:'class', start:'11:44', end:'12:28' },
+      { name:'Passing',   type:'nonclass', start:'12:28', end:'12:31' },
+
+      { name:'Period 7',  type:'class', start:'12:31', end:'13:15' },
+    ];
+
+    // ===== Simulation =====
+    let simulationOn = false;
+    const SIM_SPEED = 60;
+    let simAnchorRealMs = null;
+    let simAnchorScheduleMin = null;
+
+    // ===== UI =====
+    const dateChip = document.getElementById('dateChip');
+    const timeChip = document.getElementById('timeChip');
+
+    const cards = document.querySelectorAll('.card');
+    const cds = [0,1,2,3].map(i => document.getElementById('cd'+i));
+    const ringProgs = Array.from(document.querySelectorAll('.ringProg'));
+
+    const footerClass = document.getElementById('footerClass');
+    const footerPeriod = document.getElementById('footerPeriod');
+    const footerRange = document.getElementById('footerRange');
+    const footerExtra = document.getElementById('footerExtra');
+
+    const simSwitch = document.getElementById('simSwitch');
+    const simLabel = document.getElementById('simLabel');
+
+    const stageSound = document.getElementById('stageSound');
+
+    // ===== Helpers =====
+    function hmToMin(hm){
+      const [h,m] = hm.split(':').map(Number);
+      return h*60 + m;
+    }
+
+    function nowInTZParts(tz){
+      const parts = new Intl.DateTimeFormat('en-US',{
+        timeZone: tz,
+        year:'numeric', month:'2-digit', day:'2-digit',
+        hour:'2-digit', minute:'2-digit', second:'2-digit',
+        hour12:false
+      }).formatToParts(new Date());
+      const get = (t) => parts.find(p => p.type === t)?.value;
+      return {
+        y:+get('year'), mo:+get('month'), d:+get('day'),
+        h:+get('hour'), mi:+get('minute'), s:+get('second')
+      };
+    }
+
+    function nowInTZDate(tz){
+      const p = nowInTZParts(tz);
+      return new Date(p.y, p.mo-1, p.d, p.h, p.mi, p.s);
+    }
+
+    function getNow(){
+      const realNow = nowInTZDate(TZ);
+      if(!simulationOn) return realNow;
+
+      if(simAnchorRealMs === null){
+        simAnchorRealMs = Date.now();
+        simAnchorScheduleMin = realNow.getHours()*60 + realNow.getMinutes() + realNow.getSeconds()/60;
+      }
+      const elapsedRealSec = (Date.now() - simAnchorRealMs)/1000;
+      const elapsedScheduleSec = elapsedRealSec * SIM_SPEED;
+      const totalMin = simAnchorScheduleMin + elapsedScheduleSec/60;
+
+      const base = new Date(realNow);
+      base.setHours(0,0,0,0);
+
+      const fake = new Date(realNow);
+      fake.setTime(base.getTime() + totalMin*60*1000);
+      return fake;
+    }
+
+    function getDaySchedule(d){
+      const day = d.getDay(); // 0 Sun .. 5 Fri
+      if(day === 5) return { type:'Friday', items:scheduleFriday };
+      if(day >= 1 && day <= 4) return { type:'Mon-Thu', items:scheduleMonThu };
+      return { type:'Weekend', items:[] };
+    }
+
+    function getSegmentForNow(items, nowMin){
+      for(let i=0;i<items.length;i++){
+        const it = items[i];
+        const s = hmToMin(it.start);
+        const e = hmToMin(it.end);
+        if(nowMin >= s && nowMin < e){
+          return { current: it, startMin:s, endMin:e };
+        }
+      }
+      return { current:null, startMin:null, endMin:null };
+    }
+
+    function formatHMS(totalSeconds){
+      totalSeconds = Math.max(0, Math.floor(totalSeconds));
+      const h = Math.floor(totalSeconds/3600);
+      const m = Math.floor((totalSeconds%3600)/60);
+      const s = totalSeconds%60;
+      if(h>0) return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+      return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    }
+
+    function computeStageDurationsSec(periodLenSec){
+      const totalMin = assignedMinutes.reduce((a,b)=>a+b,0);
+      if(!SCALE_TO_PERIOD) return assignedMinutes.map(m => m*60);
+      return assignedMinutes.map(m => (m/totalMin)*periodLenSec);
+    }
+
+    function stageAt(elapsedSec, durs){
+      let acc=0;
+      for(let i=0;i<durs.length;i++){
+        const start=acc, end=acc+durs[i];
+        if(elapsedSec >= start && elapsedSec < end) return { stage:i, stageStart:start, stageEnd:end };
+        acc=end;
+      }
+      const total = durs.reduce((a,b)=>a+b,0);
+      return { stage:3, stageStart: total-durs[3], stageEnd: total };
+    }
+
+    function playBeep(){
+      stageSound.currentTime = 0;
+      stageSound.play().catch(()=>{});
+    }
+
+    function updateHeader(now){
+      const MM = String(now.getMonth()+1).padStart(2,'0');
+      const DD = String(now.getDate()).padStart(2,'0');
+      const YYYY = now.getFullYear();
+      dateChip.textContent = `${MM}/${DD}/${YYYY}`;
+
+      let h = now.getHours();
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12; if(h===0) h=12;
+
+      const HH = String(h).padStart(2,'0');
+      const mm = String(now.getMinutes()).padStart(2,'0');
+      const ss = String(now.getSeconds()).padStart(2,'0');
+
+      timeChip.textContent = `${HH}:${mm}:${ss} ${ampm}`;
+    }
+
+    function initRings(){
+      ringProgs.forEach((c) => {
+        const r = c.r.baseVal.value;
+        const C = 2 * Math.PI * r;
+        c.style.strokeDasharray = `${C} ${C}`;
+        c.style.strokeDashoffset = `${C}`;
+      });
+    }
+
+    function setRingProgress(stageIdx, pct){
+      pct = Math.max(0, Math.min(100, pct));
+      ringProgs.forEach((c, idx) => {
+        const r = c.r.baseVal.value;
+        const C = 2 * Math.PI * r;
+        if(idx === stageIdx){
+          const offset = C * (1 - pct/100);
+          c.style.strokeDashoffset = `${offset}`;
+        } else {
+          c.style.strokeDashoffset = `${C}`;
+        }
+      });
+    }
+
+    // ===== Parse your schedule text into a time-range map =====
+    // Output example: map["07:50-08:38"] = ["SA","4A"] etc
+    function normalizeHM(hm){
+      const [h,m] = hm.split(':').map(Number);
+      return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+    }
+
+    function to24hMinutes(hm, ampm){
+      let [h,m] = hm.split(':').map(Number);
+      if(ampm === 'pm' && h !== 12) h += 12;
+      if(ampm === 'am' && h === 12) h = 0;
+      return h*60 + m;
+    }
+
+    function minToHM(min){
+      const h = Math.floor(min/60);
+      const m = min%60;
+      return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+    }
+
+    function buildTeacherMap(raw){
+      const map = new Map(); // key "HH:MM-HH:MM" => Set(codes)
+      const lines = raw.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+
+      // patterns like:
+      // SA 7:50-8:38am
+      // 4A 9:32 10:20am
+      // 58 12:04 12:52pm
+      const re = /(^|\s)([A-Z]{1,2}[A-Z]?|PK[A-Z]|GT|KB|KA|\d{1,2}[A-Z]?)(?:\s+)(\d{1,2}:\d{2})\s*(?:[-–]\s*|\s+)(\d{1,2}:\d{2})\s*(am|pm)\b/ig;
+
+      for(const line of lines){
+        let m;
+        while((m = re.exec(line)) !== null){
+          const code = (m[2] || '').toUpperCase();
+          const t1 = m[3];
+          const t2 = m[4];
+          const ap = (m[5] || '').toLowerCase();
+
+          const startMin = to24hMinutes(t1, ap); // we assume same am/pm for start
+          const endMin = to24hMinutes(t2, ap);
+
+          // ignore weird ones
+          if(!(startMin >= 0 && endMin > startMin)) continue;
+
+          const key = `${minToHM(startMin)}-${minToHM(endMin)}`;
+          if(!map.has(key)) map.set(key, new Set());
+          map.get(key).add(code);
+        }
+        re.lastIndex = 0;
+      }
+      return map;
+    }
+
+    const teacherMap = buildTeacherMap(RAW_TEACHER_SCHEDULE);
+
+    function lookupTeacherClass(segStartHM, segEndHM){
+      const key = `${normalizeHM(segStartHM)}-${normalizeHM(segEndHM)}`;
+      const set = teacherMap.get(key);
+      if(!set || set.size === 0) return null;
+      // show as "SA / 4A / 5B" if multiple found
+      return Array.from(set).sort().join(' / ');
+    }
+
+    // ===== Simulation switch =====
+    simSwitch.addEventListener('change', () => {
+      simulationOn = !!simSwitch.checked;
+      simLabel.textContent = `Simulation: ${simulationOn ? 'ON' : 'OFF'}`;
+      simAnchorRealMs = null;
+      simAnchorScheduleMin = null;
+      lastStage = -1;
+      tick();
+    });
+
+    // ===== Main Tick =====
+    let lastStage = -1;
+
+    function tick(){
+      const now = getNow();
+      updateHeader(now);
+
+      const dayInfo = getDaySchedule(now);
+
+      if(dayInfo.type === 'Weekend' || dayInfo.items.length === 0){
+        cards.forEach(c => c.classList.remove('active'));
+        cds.forEach(el => el.textContent='--:--');
+        setRingProgress(-1, 0);
+
+        footerClass.textContent = 'Class: —';
+        footerPeriod.textContent = 'Period: Weekend';
+        footerRange.textContent = 'Time: —';
+        footerExtra.textContent = `Mode: ${simulationOn ? 'Sim' : 'Auto'}`;
+
+        lastStage = -1;
+        return;
+      }
+
+      const nowMin = now.getHours()*60 + now.getMinutes() + now.getSeconds()/60;
+      const seg = getSegmentForNow(dayInfo.items, nowMin);
+
+      if(!seg.current){
+        cards.forEach(c => c.classList.remove('active'));
+        cds.forEach(el => el.textContent='--:--');
+        setRingProgress(-1, 0);
+
+        footerClass.textContent = 'Class: —';
+        footerPeriod.textContent = 'Period: Not in schedule';
+        footerRange.textContent = 'Time: —';
+        footerExtra.textContent = `Mode: ${simulationOn ? 'Sim' : 'Auto'} | ${dayInfo.type}`;
+
+        lastStage = -1;
+        return;
+      }
+
+      const rangeText = `${seg.current.start}–${seg.current.end}`;
+      const segLenSec = (seg.endMin - seg.startMin)*60;
+      const segElapsedSec = Math.max(0, Math.min(segLenSec, (nowMin - seg.startMin)*60));
+
+      // Footer: class name based on your pasted schedule (auto-parsed)
+      const teacherClass = lookupTeacherClass(seg.current.start, seg.current.end);
+      footerClass.textContent = `Class: ${teacherClass || '—'}`;
+      footerPeriod.textContent = `Period: ${seg.current.name}`;
+      footerRange.textContent = `Time: ${rangeText}`;
+      footerExtra.textContent = `Mode: ${simulationOn ? 'Sim' : 'Auto'} | ${dayInfo.type}`;
+
+      if(seg.current.type !== 'class'){
+        cards.forEach(c => c.classList.remove('active'));
+        cds.forEach(el => el.textContent='--:--');
+        setRingProgress(-1, 0);
+        lastStage = -1;
+        return;
+      }
+
+      // In-class routine
+      const durs = computeStageDurationsSec(segLenSec);
+      const info = stageAt(segElapsedSec, durs);
+      const stage = info.stage;
+
+      cards.forEach((c, idx) => c.classList.toggle('active', idx === stage));
+
+      // countdown + ring progress for active stage
+      cds.forEach((el, idx) => {
+        if(idx === stage){
+          const left = Math.max(0, info.stageEnd - segElapsedSec);
+          el.textContent = formatHMS(left);
+
+          const stageLen = Math.max(0.001, (info.stageEnd - info.stageStart));
+          const stageElapsed = Math.max(0, Math.min(stageLen, segElapsedSec - info.stageStart));
+          const pct = (stageElapsed / stageLen) * 100;
+          setRingProgress(stage, pct);
+        } else {
+          el.textContent = '--:--';
+        }
+      });
+
+      if(lastStage !== -1 && stage !== lastStage) playBeep();
+      lastStage = stage;
+    }
+
+    // Init
+    initRings();
+    simLabel.textContent = 'Simulation: OFF';
+    setInterval(tick, 250);
+    tick();
+  </script>
+</body>
+</html>
+

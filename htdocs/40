@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tech App with Mr. Oz - Pro Panel</title>
+  <style>
+    :root {
+      --bg: #f5f5f7;
+      --card: rgba(255, 255, 255, 0.82);
+      --text: #1d1d1f;
+      --muted: rgba(29, 29, 31, 0.6);
+      --line: rgba(0, 0, 0, 0.1);
+      --blue: #0071e3;
+      --pink: #ff2d55;
+      --green: #34c759;
+      --orange: #ff9500;
+      --rainbow: linear-gradient(120deg, #ff3b30, #ff9500, #ffcc00, #34c759, #007aff, #5856d6, #ff2d55);
+    }
+
+    * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+    body {
+      margin: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+      background: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+    }
+
+    header {
+      background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+      border-bottom: 1px solid var(--line); padding: 12px 30px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; z-index: 100;
+    }
+
+    .chip { background: white; border: 1px solid var(--line); padding: 8px 16px; border-radius: 12px; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    h1 { margin: 0; font-size: clamp(20px, 3vw, 28px); font-weight: 800; letter-spacing: -0.03em; }
+
+    main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; position: relative; }
+
+    #standby { position: absolute; inset: 0; background: var(--bg); z-index: 50; display: none; flex-direction: column; align-items: center; justify-content: center; }
+    #standby.show { display: flex; }
+    .standby-time { font-size: clamp(4rem, 10vw, 8rem); font-weight: 900; letter-spacing: -4px; }
+
+    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; width: 100%; max-width: 1400px; z-index: 10; }
+
+    .card {
+      background: var(--card); border-radius: 30px; padding: 20px; text-align: center; border: 1px solid rgba(255,255,255,0.4);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08); transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+      opacity: 0.35; position: relative;
+    }
+    .card.active { opacity: 1; transform: scale(1.06) translateY(-10px); background: white; box-shadow: 0 30px 60px rgba(0,0,0,0.12); }
+    .card.active::before { content: ''; position: absolute; inset: -3px; background: var(--rainbow); background-size: 300% 300%; border-radius: 33px; z-index: -1; animation: rainbowMove 4s linear infinite; opacity: 0.5; filter: blur(8px); }
+    @keyframes rainbowMove { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+    .circle-wrap { position: relative; width: 100%; aspect-ratio: 1; margin: 15px 0; display: flex; align-items: center; justify-content: center; }
+    .ring-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+    .ring-bg { fill: none; stroke: rgba(0,0,0,0.05); stroke-width: 8; }
+    .ring-bar { fill: none; stroke: var(--blue); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 283; stroke-dashoffset: 283; transition: stroke-dashoffset 0.3s ease; }
+    .img-box { position: absolute; width: 76%; height: 76%; border-radius: 50%; overflow: hidden; border: 5px solid white; background: white; }
+    .img-box img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; }
+
+    /* Typing Card Coin Effect */
+    .coin { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.6s; }
+    .card.active[data-stage="2"] .coin { animation: flip 4s infinite linear; }
+    @keyframes flip { 0% { transform: rotateY(0); } 100% { transform: rotateY(360deg); } }
+
+    .cd { font-weight: 900; font-size: clamp(2rem, 3.5vw, 3rem); font-variant-numeric: tabular-nums; opacity: 0; }
+    .active .cd { opacity: 1; }
+
+    footer {
+      background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); padding: 10px 30px; border-top: 1px solid var(--line);
+      display: flex; flex-direction: column; gap: 10px;
+    }
+
+    .footer-top { display: flex; justify-content: space-between; align-items: center; }
+    .jump-group { display: flex; gap: 8px; background: rgba(0,0,0,0.03); padding: 5px; border-radius: 12px; }
+    .btn-jump { background: white; border: 1px solid var(--line); padding: 8px 12px; border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 11px; transition: 0.2s; }
+    .btn-jump:hover { background: var(--blue); color: white; transform: translateY(-2px); }
+
+    .controls-row { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--line); pt: 10px; padding-top: 8px; }
+    
+    /* SEGMENT CONTROL (OFF/SIM/FLASH) */
+    .segment { display: flex; background: #e3e3e6; padding: 2px; border-radius: 10px; gap: 2px; }
+    .seg-btn { border: none; background: none; padding: 6px 12px; font-size: 11px; font-weight: 700; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+    .seg-btn.active { background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+    /* GRADE SWITCH */
+    .grade-switch { display: flex; align-items: center; gap: 10px; background: white; padding: 4px 12px; border-radius: 10px; border: 1px solid var(--line); }
+    .grade-label { font-size: 12px; font-weight: 800; }
+
+    #banner { position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-20px); background: var(--blue); color: white; padding: 8px 20px; border-radius: 999px; font-weight: 700; opacity: 0; transition: 0.5s; z-index: 900; }
+    #banner.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="chip" id="dateChip">00/00/0000</div>
+    <h1>Mr. Oz's Learning Hub</h1>
+    <div style="text-align: right;"><div class="chip" id="timeChip">00:00:00</div></div>
+  </header>
+
+  <div id="banner">ANNOUNCEMENT</div>
+
+  <main>
+    <div id="standby">
+      <div class="standby-time" id="bigClock">00:00</div>
+      <div style="font-size: 18px; font-weight: 700; color: var(--muted);">CLASS DISMISSED</div>
+    </div>
+
+    <div class="grid">
+      <div class="card" id="card0"><div class="title">Login</div><div class="circle-wrap"><svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="ring0" cx="50" cy="50" r="45"/></svg><div class="img-box"><img src="./images/login.png"></div></div><div class="cd" id="cd0">00:00</div></div>
+      <div class="card" id="card1"><div class="title">Learning.com</div><div class="circle-wrap"><svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="ring1" cx="50" cy="50" r="45"/></svg><div class="img-box"><img src="./images/learning.png"></div></div><div class="cd" id="cd1">00:00</div></div>
+      
+      <!-- DYNAMIC THIRD CARD -->
+      <div class="card" id="card2" data-stage="2">
+        <div class="title" id="stage3Title">Typing / Nitro</div>
+        <div class="circle-wrap">
+          <svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="ring2" cx="50" cy="50" r="45"/></svg>
+          <div class="img-box"><div class="coin"><img id="stage3Img" src="./images/typing.png"></div></div>
+        </div>
+        <div class="cd" id="cd2">00:00</div>
+      </div>
+
+      <div class="card" id="card3"><div class="title">Logout</div><div class="circle-wrap"><svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="ring3" cx="50" cy="50" r="45"/></svg><div class="img-box"><img src="./images/logout.png"></div></div><div class="cd" id="cd3">00:00</div></div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-top">
+      <div class="jump-group">
+        <button class="btn-jump" onclick="jumpTo(0)">Start Login</button>
+        <button class="btn-jump" onclick="jumpTo(1)">Learning</button>
+        <button class="btn-jump" onclick="jumpTo(2)">Typing Stage</button>
+        <button class="btn-jump" onclick="jumpTo(3)">Dismiss</button>
+      </div>
+
+      <div class="grade-switch">
+        <span class="grade-label">PK-2</span>
+        <label class="switch" style="position:relative; width:44px; height:22px;">
+          <input type="checkbox" id="groupToggle" style="opacity:0; width:0; height:0;">
+          <span class="slider" style="position:absolute; inset:0; background:#ccc; border-radius:20px; cursor:pointer;"></span>
+        </label>
+        <span class="grade-label">3rd-5th</span>
+      </div>
+    </div>
+
+    <div class="controls-row">
+      <div id="footerPeriod" style="font-weight:700; font-size:13px; color:var(--muted);">Waiting...</div>
+      
+      <div class="segment" id="simModeGroup">
+        <button class="seg-btn active" data-val="0">OFF</button>
+        <button class="seg-btn" data-val="1">SIMULATE</button>
+        <button class="seg-btn" data-val="2">FLASH</button>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const assignedMinutes = [3, 30, 10, 2];
+    let simMode = 0; // 0: Off, 1: Normal, 2: Flash
+    let gradeGroup = 0; // 0: PK-2, 1: 3rd-5th
+    let simAnchor = null;
+    let lastStage = -1;
+
+    // UI Elements
+    const groupToggle = document.getElementById('groupToggle');
+    const stage3Title = document.getElementById('stage3Title');
+    const stage3Img = document.getElementById('stage3Img');
+    const simBtns = document.querySelectorAll('.seg-btn');
+    const groupSlider = groupToggle.nextElementSibling;
+    
+    // Grade Switch Logic
+    groupToggle.addEventListener('change', (e) => {
+      gradeGroup = e.target.checked ? 1 : 0;
+      updateStage3Content();
+    });
+
+    function updateStage3Content() {
+      if (gradeGroup === 0) {
+        stage3Title.textContent = "PBS Kids / ABCya";
+        stage3Img.src = "./images/typing.png"; // Varsa pbs.png/abc.png ile değiştir
+      } else {
+        stage3Title.textContent = "Typing / NitroType";
+        stage3Img.src = "./images/typing.png";
+      }
+    }
+
+    // Simulation Mode Logic
+    simBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        simBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        simMode = parseInt(btn.getAttribute('data-val'));
+        simAnchor = null; // Re-sync
+      });
+    });
+
+    function getNow() {
+      const realNow = new Date();
+      if (simMode === 0) return realNow;
+      
+      if (!simAnchor) {
+        // Sim başladığı an ders başlasın (07:50'ye setleyelim)
+        simAnchor = { real: Date.now(), fakeStartTime: realNow.setHours(7, 50, 0, 0) };
+      }
+
+      const elapsedRealMs = Date.now() - simAnchor.real;
+      const speed = (simMode === 2) ? 60 : 1;
+      return new Date(simAnchor.fakeStartTime + (elapsedRealMs * speed));
+    }
+
+    function jumpTo(stageIdx) {
+      simMode = 1; // Otomatik simülasyona al
+      simBtns.forEach(b => b.classList.toggle('active', b.getAttribute('data-val') == "1"));
+      
+      const now = new Date();
+      let offsetMin = 0;
+      for (let i = 0; i < stageIdx; i++) offsetMin += assignedMinutes[i];
+      
+      simAnchor = { real: Date.now(), fakeStartTime: now.setHours(7, 50 - offsetMin, 0, 0) };
+      announce("Jumping to Stage " + (stageIdx + 1));
+    }
+
+    function announce(msg) {
+      const b = document.getElementById('banner');
+      b.textContent = msg; b.classList.add('show');
+      setTimeout(() => b.classList.remove('show'), 3000);
+      window.speechSynthesis.speak(new SpeechSynthesisUtterance(msg));
+    }
+
+    function tick() {
+      const now = getNow();
+      document.getElementById('dateChip').textContent = now.toLocaleDateString();
+      document.getElementById('timeChip').textContent = now.toLocaleTimeString('en-US', {hour12:false});
+      document.getElementById('bigClock').textContent = now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit', hour12:false});
+
+      const currentMin = now.getHours() * 60 + now.getMinutes() + now.getSeconds()/60;
+      const startMin = 7 * 60 + 50; 
+      const periodLenSec = 45 * 60;
+      const elapsedSec = (currentMin - startMin) * 60;
+
+      const isOutside = elapsedSec < 0 || elapsedSec > periodLenSec;
+      document.getElementById('standby').classList.toggle('show', isOutside);
+
+      if (!isOutside) {
+        document.getElementById('footerPeriod').textContent = "PERIOD ACTIVE: Tech Literacy";
+        const total = assignedMinutes.reduce((a,b)=>a+b, 0);
+        const stageDurs = assignedMinutes.map(m => (m/total) * periodLenSec);
+        let acc = 0;
+        let currentIdx = -1;
+
+        for(let i=0; i<4; i++) {
+          const card = document.getElementById(`card${i}`);
+          const ring = document.getElementById(`ring${i}`);
+          const cd = document.getElementById(`cd${i}`);
+          if (elapsedSec >= acc && elapsedSec < (acc + stageDurs[i])) {
+            currentIdx = i;
+            card.classList.add('active');
+            const left = Math.ceil(acc + stageDurs[i] - elapsedSec);
+            cd.textContent = new Date(left * 1000).toISOString().substr(14, 5);
+            ring.style.strokeDashoffset = 283 - ((elapsedSec - acc) / stageDurs[i] * 283);
+          } else {
+            card.classList.remove('active');
+            ring.style.strokeDashoffset = 283;
+          }
+          acc += stageDurs[i];
+        }
+        if (currentIdx !== -1 && currentIdx !== lastStage) {
+          const names = ["Login", "Learning", gradeGroup === 0 ? "PBS Kids" : "Typing", "Logout"];
+          announce(names[currentIdx] + " Started");
+          lastStage = currentIdx;
+        }
+      } else {
+        document.getElementById('footerPeriod').textContent = "NO ACTIVE CLASS";
+        lastStage = -1;
+      }
+    }
+
+    // Grade Toggle Slider Animation Fix
+    groupSlider.addEventListener('click', () => {
+      const knob = groupSlider.querySelector('::before');
+      // CSS handle internal state
+    });
+
+    setInterval(tick, 500);
+    updateStage3Content();
+  </script>
+  
+  <style>
+    /* Slider Dot Style */
+    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 2px; bottom: 2px; background: white; border-radius: 50%; transition: 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+    input:checked + .slider { background: var(--blue); }
+    input:checked + .slider:before { transform: translateX(22px); }
+  </style>
+</body>
+</html>

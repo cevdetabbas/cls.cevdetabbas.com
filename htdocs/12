@@ -51,6 +51,49 @@
       border-bottom: 1px solid var(--line);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
+      position: relative;
+    }
+
+    /* NEW: top row for date/time */
+    .header-top {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      pointer-events: none; /* purely display */
+    }
+
+    .header-pill {
+      pointer-events: none;
+      background: rgba(255,255,255,0.78);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 10px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: -0.005em;
+      color: rgba(29,29,31,0.82);
+      display: inline-flex;
+      align-items: baseline;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .header-pill .label {
+      font-weight: 700;
+      color: rgba(29,29,31,0.55);
+    }
+
+    .header-pill .value {
+      font-weight: 800;
+      color: var(--text);
     }
 
     header h1 {
@@ -60,38 +103,7 @@
       letter-spacing: -0.02em;
       font-weight: 700;
       color: var(--text);
-    }
-
-    header .subtitle {
-      display: block;
-      margin-top: 10px;
-      font-size: 17px;
-      line-height: 1.35;
-      color: rgba(29,29,31,0.75);
-      letter-spacing: -0.005em;
-      font-weight: 500;
-    }
-
-    header .subrow {
-      margin-top: 8px;
-      font-size: 14px;
-      color: rgba(29,29,31,0.68);
-      font-weight: 600;
-      letter-spacing: -0.005em;
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    header .pill {
-      background: rgba(255,255,255,0.75);
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 6px 10px;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.06);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      padding-top: 10px; /* a bit of space under top pills */
     }
 
     main {
@@ -134,7 +146,6 @@
       box-shadow: 0 10px 18px rgba(0,0,0,0.06);
     }
 
-    /* rainbow-ish rotating ring */
     .stage-card::before {
       content: '';
       position: absolute;
@@ -198,7 +209,6 @@
       letter-spacing: -0.005em;
     }
 
-    /* IMAGE BOX */
     .stage-image {
       flex: 1;
       border-radius: 14px;
@@ -217,15 +227,13 @@
     .stage-image img {
       width: 100%;
       height: 100%;
-      object-fit: contain;   /* contain = resim kırpılmaz */
-      padding: 10px;         /* biraz nefes */
+      object-fit: contain;
+      padding: 10px;
       display: block;
       filter: drop-shadow(0 10px 18px rgba(0,0,0,0.12));
       user-select: none;
       -webkit-user-drag: none;
     }
-
-    /* Optional: if you want "cover" instead of contain, change object-fit to cover above. */
 
     footer {
       padding: 18px 20px 24px;
@@ -353,22 +361,33 @@
     }
 
     @media (max-width: 768px) {
+      header { padding-top: 46px; } /* room for top pills on mobile */
+      .header-top { top: 8px; left: 8px; right: 8px; }
+      .header-pill { font-size: 13px; padding: 6px 9px; }
       .card-row { flex-direction: column; gap: 15px; }
       .stage-card { max-width: none; flex: 1; min-width: 250px; }
       .timer-bar { min-width: 300px; }
       .time-label { min-width: 220px; }
     }
+
+    @media (max-width: 420px) {
+      .header-pill .label { display: none; } /* keep it clean */
+    }
   </style>
 </head>
 <body>
   <header>
-    <h1>Tech App with Mr. Oz</h1>
-    <span class="subtitle">Real-time bell schedule + in-period routine</span>
-    <div class="subrow">
-      <div class="pill" id="todayTypePill">Today: ...</div>
-      <div class="pill" id="nowPill">Now: ...</div>
-      <div class="pill" id="nextPill">Next: ...</div>
+    <!-- NEW: date left, time right -->
+    <div class="header-top">
+      <div class="header-pill" id="datePill">
+        <span class="label">Date</span><span class="value" id="dateText">--/--/----</span>
+      </div>
+      <div class="header-pill" id="timePill">
+        <span class="label">Time</span><span class="value" id="timeText">--:--:--</span>
+      </div>
     </div>
+
+    <h1>Tech App with Mr. Oz</h1>
   </header>
 
   <main>
@@ -426,6 +445,34 @@
 
   <script>
     /*
+      Header date/time:
+      - Date format: M/D/YYYY (ex: 1/8/2026)
+      - Time format: H:MM:SS (ex: 8:34:12)
+    */
+    const dateText = document.getElementById('dateText');
+    const timeText = document.getElementById('timeText');
+
+    function formatMDY(d) {
+      const m = d.getMonth() + 1;
+      const day = d.getDate();
+      const y = d.getFullYear();
+      return `${m}/${day}/${y}`;
+    }
+
+    function formatHMS12or24(d) {
+      // You asked for "8:34 and also seconds" -> use H:MM:SS (no leading zero on hour)
+      const h = d.getHours();
+      const m = String(d.getMinutes()).padStart(2,'0');
+      const s = String(d.getSeconds()).padStart(2,'0');
+      return `${h}:${m}:${s}`;
+    }
+
+    function updateHeaderClock(now) {
+      dateText.textContent = formatMDY(now);
+      timeText.textContent = formatHMS12or24(now);
+    }
+
+    /*
       Real bell schedule: Mon-Thu vs Friday.
       When inside a Period segment, run 4-step routine scaled to that period length.
       Images are loaded from:
@@ -435,7 +482,6 @@
         ./images/logout.png
     */
 
-    // Helper: HH:MM -> minutes since midnight
     function hmToMin(hm) {
       const [h, m] = hm.split(':').map(Number);
       return h * 60 + m;
@@ -498,22 +544,19 @@
     ];
 
     function getDaySchedule(dateObj) {
-      const day = dateObj.getDay(); // 0 Sun ... 5 Fri ... 6 Sat
+      const day = dateObj.getDay();
       if (day === 5) return { type: 'Friday', items: scheduleFriday };
       if (day >= 1 && day <= 4) return { type: 'Mon-Thu', items: scheduleMonThu };
       return { type: 'Weekend', items: [] };
     }
 
-    // Routine (scaled into current period length)
     const routineUnits = [5, 30, 5, 5];
     const TOTAL_UNITS = routineUnits.reduce((a,b)=>a+b,0);
     const SCALE_TO_PERIOD = true;
 
-    // Simulation
     let simulationOn = false;
     const SIM_SPEED = 60;
 
-    // UI hooks
     const stageCards  = document.querySelectorAll('.stage-card');
     const stageSound  = document.getElementById('stageSound');
 
@@ -521,10 +564,6 @@
     const timeLeftLabel = document.getElementById('timeLeftLabel');
     const segmentLabel = document.getElementById('segmentLabel');
     const statusText = document.getElementById('statusText');
-
-    const todayTypePill = document.getElementById('todayTypePill');
-    const nowPill = document.getElementById('nowPill');
-    const nextPill = document.getElementById('nextPill');
 
     const timerBar = document.getElementById('timerBar');
 
@@ -536,7 +575,6 @@
     const toggleSimBtn = document.getElementById('toggleSimBtn');
     const resetSimBtn = document.getElementById('resetSimBtn');
 
-    // smooth fill + 45 units
     let smoothFillEl = null;
 
     function buildGradient() {
@@ -654,22 +692,16 @@
       return fake;
     }
 
-    function setPill(el, text) { el.textContent = text; }
-
     function tick() {
       const now = getNowForEngine();
+
+      // NEW: header date/time always follows engine time (auto OR sim)
+      updateHeaderClock(now);
+
       const dayInfo = getDaySchedule(now);
       const items = dayInfo.items;
 
-      setPill(todayTypePill, 'Today: ' + dayInfo.type);
-
-      const hh = String(now.getHours()).padStart(2,'0');
-      const mm = String(now.getMinutes()).padStart(2,'0');
-      const ss = String(now.getSeconds()).padStart(2,'0');
-      setPill(nowPill, 'Time: ' + hh + ':' + mm + ':' + ss);
-
       if (dayInfo.type === 'Weekend' || items.length === 0) {
-        setPill(nextPill, 'Next: —');
         modeLabel.textContent = simulationOn ? 'Sim' : 'Auto';
         segmentLabel.textContent = 'Weekend';
         timeLeftLabel.textContent = '--:--';
@@ -681,9 +713,6 @@
 
       const nowMin = toMinSinceMidnight(now);
       const seg = getSegmentForNow(items, nowMin);
-
-      const nextText = seg.next ? (seg.next.name + ' @ ' + seg.next.start) : '—';
-      setPill(nextPill, 'Next: ' + nextText);
 
       modeLabel.textContent = simulationOn ? 'Sim' : 'Auto';
 
@@ -731,7 +760,6 @@
         return;
       }
 
-      // class segment
       stageCards.forEach(c => c.classList.remove('dimmed'));
 
       const info = routineStageAt(segElapsedSec, segLenSec);
@@ -782,7 +810,6 @@
       tick();
     });
 
-    // Init
     createUnits();
     toggleSimBtn.textContent = 'Simulation: OFF';
     setInterval(tick, 250);
@@ -790,3 +817,4 @@
   </script>
 </body>
 </html>
+

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tech Zone Elite v4</title>
+  <style>
+    :root {
+      --bg: #f8f9fa;
+      --card: rgba(255, 255, 255, 0.95);
+      --text: #1d1d1f;
+      --muted: #86868b;
+      --blue: #0071e3;
+      --rainbow: linear-gradient(120deg, #ff3b30, #ff9500, #ffcc00, #34c759, #007aff, #5856d6, #ff2d55);
+    }
+
+    * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+    body {
+      margin: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+      background: var(--bg); color: var(--text);
+      display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+      transition: background 1.5s ease;
+    }
+
+    /* HEADER */
+    header {
+      background: #fff; padding: 15px 40px; 
+      display: grid; grid-template-columns: 220px 1fr 220px; align-items: center;
+      border-bottom: 1px solid rgba(0,0,0,0.08); z-index: 100;
+    }
+    .head-label { font-size: 13px; font-weight: 800; color: var(--muted); text-transform: uppercase; margin-right: 5px; }
+    .head-val { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--text); }
+    h1 { text-align: center; margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -1px; }
+
+    /* LAYOUT */
+    main { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; padding: 20px; }
+    
+    #standby-overlay {
+      position: absolute; inset: 0; z-index: 20;
+      background: rgba(255,255,255,0.2); 
+      backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+    }
+    #standby-overlay.show { display: flex; }
+
+    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; width: 100%; max-width: 1300px; }
+
+    /* CARDS & ANIMATION */
+    .card {
+      background: var(--card); border-radius: 40px; padding: 30px;
+      text-align: center; position: relative; border: 1px solid #fff;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+      transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .card.active { transform: scale(1.05) translateY(-5px); z-index: 5; }
+    .card.active::before {
+      content: ''; position: absolute; inset: -3px; 
+      background: var(--rainbow); background-size: 300% 300%;
+      border-radius: 43px; z-index: -1;
+      animation: rainbowMove 4s ease infinite;
+      filter: blur(12px); opacity: 0.6;
+    }
+
+    .circle-wrap { position: relative; width: 160px; height: 160px; margin: 20px auto; }
+    .ring-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+    .ring-bg { fill: none; stroke: rgba(0,0,0,0.04); stroke-width: 8; }
+    .ring-bar { fill: none; stroke: var(--blue); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 283; stroke-dashoffset: 283; transition: 1s linear; }
+    
+    .img-box { 
+      position: absolute; top: 15%; left: 15%; width: 70%; height: 70%; 
+      border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center;
+    }
+    .img-box img { width: 80%; height: 80%; object-fit: contain; }
+
+    .timer-text { font-size: 2.4rem; font-weight: 900; letter-spacing: -2px; color: var(--muted); }
+    .card.active .timer-text { color: var(--text); }
+    .session-info { font-size: 11px; font-weight: 800; color: var(--muted); letter-spacing: 1px; }
+
+    /* FOOTER */
+    footer { background: #fff; border-top: 1px solid #eee; display: flex; flex-direction: column; }
+    .footer-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 40px; border-bottom: 1px solid #f2f2f2; }
+    
+    .btn {
+      background: #f2f2f7; border: none; padding: 10px 18px; border-radius: 12px;
+      font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 13px;
+    }
+    .btn:hover { background: #000; color: #fff; }
+    .btn-bell { font-size: 20px; background: none; }
+
+    .mode-group { display: flex; background: #f2f2f7; padding: 4px; border-radius: 14px; }
+    .mode-btn { border: none; padding: 8px 16px; border-radius: 10px; font-weight: 750; font-size: 11px; cursor: pointer; background: transparent; color: var(--muted); }
+    .mode-btn.active { background: #fff; color: #000; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+    #banner { 
+      position: fixed; top: 100px; left: 50%; transform: translateX(-50%);
+      background: #000; color: #fff; padding: 12px 35px; border-radius: 50px;
+      font-weight: 800; opacity: 0; transition: 0.5s; z-index: 1000;
+    }
+    #banner.show { opacity: 1; top: 120px; }
+
+    @keyframes rainbowMove { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div><span class="head-label">date:</span><span class="head-val" id="dateVal">--/--/----</span></div>
+    <h1>MR. OZ TECH ZONE</h1>
+    <div style="text-align: right;"><span class="head-label">time:</span><span class="head-val" id="timeVal">00:00:00</span></div>
+  </header>
+
+  <div id="banner">ANNOUNCEMENT</div>
+
+  <main>
+    <div id="standby-overlay">
+      <div style="font-weight: 900; color: var(--blue); letter-spacing: 3px; font-size: 14px;">COUNTING DOWN FOR THE NEXT SESSION</div>
+      <div id="bigCountdown" style="font-size: 9rem; font-weight: 900; letter-spacing: -6px; margin: 10px 0;">00:00:00</div>
+      <div id="nextNote" style="font-weight: 700; color: var(--muted);">RESUMES MONDAY @ 07:50 AM</div>
+    </div>
+
+    <div class="grid">
+      <div class="card" id="c0">
+        <div class="session-info">LOGIN — 3 MIN</div>
+        <div class="circle-wrap">
+          <svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="r0" cx="50" cy="50" r="45"/></svg>
+          <div class="img-box"><img src="https://cdn-icons-png.flaticon.com/512/295/295128.png"></div>
+        </div>
+        <div class="timer-text" id="t0">03:00</div>
+      </div>
+      <div class="card" id="c1">
+        <div class="session-info">LEARNING — 30 MIN</div>
+        <div class="circle-wrap">
+          <svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="r1" cx="50" cy="50" r="45"/></svg>
+          <div class="img-box"><img src="https://cdn-icons-png.flaticon.com/512/1902/1902231.png"></div>
+        </div>
+        <div class="timer-text" id="t1">30:00</div>
+      </div>
+      <div class="card" id="c2">
+        <div class="session-info">TYPING — 10 MIN</div>
+        <div class="circle-wrap">
+          <svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="r2" cx="50" cy="50" r="45"/></svg>
+          <div class="img-box"><img src="https://cdn-icons-png.flaticon.com/512/704/704845.png"></div>
+        </div>
+        <div class="timer-text" id="t2">10:00</div>
+      </div>
+      <div class="card" id="c3">
+        <div class="session-info">LOGOUT — 2 MIN</div>
+        <div class="circle-wrap">
+          <svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="r3" cx="50" cy="50" r="45"/></svg>
+          <div class="img-box"><img src="https://cdn-icons-png.flaticon.com/512/3580/3580139.png"></div>
+        </div>
+        <div class="timer-text" id="t3">02:00</div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-row">
+      <div style="display: flex; gap: 10px;">
+        <button class="btn" onclick="jumpTo(-1)" style="color: var(--blue);">▶ START CLASS</button>
+        <button class="btn" onclick="jumpTo(0)">LOGIN</button>
+        <button class="btn" onclick="jumpTo(1)">LEARNING</button>
+        <button class="btn" onclick="jumpTo(2)">TYPING</button>
+        <button class="btn" onclick="jumpTo(3)">LOGOUT</button>
+      </div>
+      <div style="display: flex; gap: 15px; align-items: center;">
+        <button class="btn-bell" onclick="playChime()">🔔</button>
+        <div class="mode-group">
+          <button class="mode-btn active" id="m-real" onclick="setMode('real')">REALTIME</button>
+          <button class="mode-btn" id="m-sim" onclick="setMode('sim')">SIMULATE</button>
+          <button class="mode-btn" id="m-flash" onclick="setMode('flash')">FLASH</button>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const sessionMins = [3, 30, 10, 2];
+    const names = ["Login", "Learning", "Typing", "Logout"];
+    let currentMode = 'real', timeAnchor = null, lastStage = -1;
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playChime() {
+      const now = ctx.currentTime;
+      const notes = [554.37, 440.00, 329.63, 277.18]; // C#5, A4, E4, C#4 (Airport Arpeggio)
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.frequency.setValueAtTime(freq, now + i * 0.4);
+        gain.gain.setValueAtTime(0, now + i * 0.4);
+        gain.gain.linearRampToValueAtTime(0.2, now + i * 0.4 + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.4 + 0.8);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(now + i * 0.4); osc.stop(now + i * 0.4 + 0.8);
+      });
+    }
+
+    function announce(msg) {
+      playChime();
+      const b = document.getElementById('banner');
+      b.textContent = msg.toUpperCase(); b.classList.add('show');
+      setTimeout(() => b.classList.remove('show'), 5000);
+      const ut = new SpeechSynthesisUtterance(msg);
+      window.speechSynthesis.speak(ut);
+    }
+
+    function setMode(m) {
+      currentMode = m; timeAnchor = null;
+      document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById('m-' + m).classList.add('active');
+    }
+
+    function jumpTo(idx) {
+      if (currentMode === 'real') setMode('sim');
+      const base = new Date();
+      let m = 0; if (idx >= 0) { for(let i=0; i<idx; i++) m += sessionMins[i]; }
+      timeAnchor = { real: Date.now(), fake: base.setHours(7, 50 + m, 0, 0) };
+    }
+
+    function getNow() {
+      if (currentMode === 'real') return new Date();
+      if (!timeAnchor) timeAnchor = { real: Date.now(), fake: Date.now() };
+      const speed = (currentMode === 'flash') ? 60 : 1;
+      return new Date(timeAnchor.fake + (Date.now() - timeAnchor.real) * speed);
+    }
+
+    function tick() {
+      const now = getNow();
+      document.getElementById('dateVal').textContent = `${now.getMonth()+1}/${now.getDate()}/${now.getFullYear()}`;
+      document.getElementById('timeVal').textContent = now.toLocaleTimeString('en-US', {hour12:false});
+
+      const start = 7 * 3600 + 50 * 60;
+      const end = start + (sessionMins.reduce((a,b)=>a+b, 0) * 60);
+      const curr = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+      const isClass = curr >= start && curr < end;
+
+      document.getElementById('standby-overlay').classList.toggle('show', !isClass);
+
+      if (isClass) {
+        let acc = start;
+        for(let i=0; i<4; i++) {
+          const card = document.getElementById(`c${i}`), ring = document.getElementById(`r${i}`), tm = document.getElementById(`t${i}`);
+          const dur = sessionMins[i] * 60;
+          if (curr >= acc && curr < acc + dur) {
+            if (i !== lastStage) { announce(`${names[i]} session starting`); lastStage = i; }
+            card.classList.add('active');
+            const rem = Math.ceil(acc + dur - curr);
+            tm.textContent = new Date(rem * 1000).toISOString().substr(14, 5);
+            ring.style.strokeDashoffset = 283 - ((curr - acc) / dur * 283);
+            document.body.style.background = ['#f0f7ff','#f4fff0','#fff9f0','#fff0f5'][i];
+          } else {
+            card.classList.remove('active');
+            ring.style.strokeDashoffset = (curr >= acc + dur) ? 0 : 283;
+            tm.textContent = (curr >= acc + dur) ? "DONE" : `${sessionMins[i].toString().padStart(2,'0')}:00`;
+          }
+          acc += dur;
+        }
+      } else {
+        lastStage = -1;
+        document.body.style.background = 'var(--bg)';
+        let target = new Date(now); target.setHours(7, 50, 0, 0);
+        if (curr >= end) target.setDate(target.getDate() + 1);
+        while(target.getDay() === 0 || target.getDay() === 6) target.setDate(target.getDate() + 1);
+        const diff = Math.floor((target - now) / 1000);
+        const h = Math.floor(diff/3600), m = Math.floor((diff%3600)/60), s = diff%60;
+        document.getElementById('bigCountdown').textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        document.getElementById('nextNote').textContent = `NEXT CLASS: ${target.toLocaleDateString('en-US', {weekday:'long'}).toUpperCase()} @ 07:50 AM`;
+      }
+    }
+
+    setInterval(tick, 1000);
+    tick();
+  </script>
+</body>
+</html>

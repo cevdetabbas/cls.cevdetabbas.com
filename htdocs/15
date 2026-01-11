@@ -46,11 +46,51 @@
 
     header {
       text-align: center;
-      padding: 22px 10px;
+      padding: 22px 10px 10px;
       background: linear-gradient(180deg, rgba(255,255,255,0.86), rgba(245,245,247,0.70));
       border-bottom: 1px solid var(--line);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
+      position: relative;
+    }
+
+    /* top row for date/time */
+    .header-top {
+      display: flex;
+      justify-content: center;
+      align-items: baseline;
+      gap: 20px;
+      margin-bottom: 8px;
+    }
+
+    .header-pill {
+      background: rgba(255,255,255,0.78);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 14px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      font-size: clamp(26px, 3.3vw, 44px); /* make big like title */
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: rgba(29,29,31,0.82);
+      display: inline-flex;
+      align-items: baseline;
+      gap: 10px;
+      white-space: nowrap;
+    }
+
+    .header-pill .label {
+      font-weight: 600;
+      color: rgba(29,29,31,0.55);
+      font-size: 0.6em;
+      text-transform: uppercase;
+    }
+
+    .header-pill .value {
+      font-weight: 800;
+      color: var(--text);
     }
 
     header h1 {
@@ -60,38 +100,7 @@
       letter-spacing: -0.02em;
       font-weight: 700;
       color: var(--text);
-    }
-
-    header .subtitle {
-      display: block;
-      margin-top: 10px;
-      font-size: 17px;
-      line-height: 1.35;
-      color: rgba(29,29,31,0.75);
-      letter-spacing: -0.005em;
-      font-weight: 500;
-    }
-
-    header .subrow {
-      margin-top: 8px;
-      font-size: 14px;
-      color: rgba(29,29,31,0.68);
-      font-weight: 600;
-      letter-spacing: -0.005em;
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    header .pill {
-      background: rgba(255,255,255,0.75);
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 6px 10px;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.06);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      padding-top: 4px;
     }
 
     main {
@@ -118,7 +127,7 @@
       border: 1px solid var(--line);
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
       transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, opacity 0.2s ease;
       min-width: 210px;
       flex: 1;
@@ -134,7 +143,6 @@
       box-shadow: 0 10px 18px rgba(0,0,0,0.06);
     }
 
-    /* rainbow-ish rotating ring */
     .stage-card::before {
       content: '';
       position: absolute;
@@ -198,9 +206,7 @@
       letter-spacing: -0.005em;
     }
 
-    /* IMAGE BOX */
     .stage-image {
-      flex: 1;
       border-radius: 14px;
       min-height: 120px;
       position: relative;
@@ -217,15 +223,30 @@
     .stage-image img {
       width: 100%;
       height: 100%;
-      object-fit: contain;   /* contain = resim kırpılmaz */
-      padding: 10px;         /* biraz nefes */
+      object-fit: contain;
+      padding: 10px;
       display: block;
       filter: drop-shadow(0 10px 18px rgba(0,0,0,0.12));
       user-select: none;
       -webkit-user-drag: none;
     }
 
-    /* Optional: if you want "cover" instead of contain, change object-fit to cover above. */
+    .stage-meta {
+      text-align: center;
+      font-size: 13px;
+      color: rgba(29,29,31,0.70);
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .stage-countdown {
+      text-align: center;
+      font-size: 16px;
+      color: var(--blue);
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-top: 2px;
+    }
 
     footer {
       padding: 18px 20px 24px;
@@ -353,22 +374,36 @@
     }
 
     @media (max-width: 768px) {
+      .header-top {
+        flex-direction: column;
+        gap: 8px;
+      }
+      .header-pill {
+        font-size: clamp(22px, 6vw, 32px);
+      }
       .card-row { flex-direction: column; gap: 15px; }
       .stage-card { max-width: none; flex: 1; min-width: 250px; }
       .timer-bar { min-width: 300px; }
       .time-label { min-width: 220px; }
     }
+
+    @media (max-width: 420px) {
+      .header-pill .label { display: none; }
+    }
   </style>
 </head>
 <body>
   <header>
-    <h1>Tech App with Mr. Oz</h1>
-    <span class="subtitle">Real-time bell schedule + in-period routine</span>
-    <div class="subrow">
-      <div class="pill" id="todayTypePill">Today: ...</div>
-      <div class="pill" id="nowPill">Now: ...</div>
-      <div class="pill" id="nextPill">Next: ...</div>
+    <div class="header-top">
+      <div class="header-pill" id="datePill">
+        <span class="label">Date</span><span class="value" id="dateText">--/--/----</span>
+      </div>
+      <div class="header-pill" id="timePill">
+        <span class="label">Time</span><span class="value" id="timeText">--:-- --</span>
+      </div>
     </div>
+
+    <h1>Tech App with Mr. Oz</h1>
   </header>
 
   <main>
@@ -379,6 +414,8 @@
         <div class="stage-image">
           <img src="./images/login.png" alt="Login" />
         </div>
+        <div class="stage-meta" id="dLogin">Duration: 3:00</div>
+        <div class="stage-countdown" id="cLogin">Countdown: --:--</div>
       </div>
 
       <div class="stage-card" data-stage="1">
@@ -387,6 +424,8 @@
         <div class="stage-image">
           <img src="./images/learning.png" alt="Learning.com" />
         </div>
+        <div class="stage-meta" id="dLearn">Duration: 30:00</div>
+        <div class="stage-countdown" id="cLearn">Countdown: --:--</div>
       </div>
 
       <div class="stage-card" data-stage="2">
@@ -395,6 +434,8 @@
         <div class="stage-image">
           <img src="./images/typing.png" alt="Typing.com" />
         </div>
+        <div class="stage-meta" id="dTyping">Duration: 10:00</div>
+        <div class="stage-countdown" id="cTyping">Countdown: --:--</div>
       </div>
 
       <div class="stage-card" data-stage="3">
@@ -403,6 +444,8 @@
         <div class="stage-image">
           <img src="./images/logout.png" alt="Logout" />
         </div>
+        <div class="stage-meta" id="dLogout">Duration: 2:00</div>
+        <div class="stage-countdown" id="cLogout">Countdown: --:--</div>
       </div>
     </div>
   </main>
@@ -425,17 +468,32 @@
   </footer>
 
   <script>
-    /*
-      Real bell schedule: Mon-Thu vs Friday.
-      When inside a Period segment, run 4-step routine scaled to that period length.
-      Images are loaded from:
-        ./images/login.png
-        ./images/learning.png
-        ./images/typing.png
-        ./images/logout.png
-    */
+    const dateText = document.getElementById('dateText');
+    const timeText = document.getElementById('timeText');
 
-    // Helper: HH:MM -> minutes since midnight
+    function formatMDY(d) {
+      const m = d.getMonth() + 1;
+      const day = d.getDate();
+      const y = d.getFullYear();
+      return `${m}/${day}/${y}`;
+    }
+
+    // 12-hour with AM/PM
+    function formatHMS12(d) {
+      let h = d.getHours();
+      const m = String(d.getMinutes()).padStart(2,'0');
+      const s = String(d.getSeconds()).padStart(2,'0');
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12;
+      h = h || 12;
+      return `${h}:${m}:${s} ${ampm}`;
+    }
+
+    function updateHeaderClock(now) {
+      dateText.textContent = formatMDY(now);
+      timeText.textContent = formatHMS12(now);
+    }
+
     function hmToMin(hm) {
       const [h, m] = hm.split(':').map(Number);
       return h * 60 + m;
@@ -498,22 +556,21 @@
     ];
 
     function getDaySchedule(dateObj) {
-      const day = dateObj.getDay(); // 0 Sun ... 5 Fri ... 6 Sat
+      const day = dateObj.getDay();
       if (day === 5) return { type: 'Friday', items: scheduleFriday };
       if (day >= 1 && day <= 4) return { type: 'Mon-Thu', items: scheduleMonThu };
       return { type: 'Weekend', items: [] };
     }
 
-    // Routine (scaled into current period length)
-    const routineUnits = [5, 30, 5, 5];
+    // NEW fixed routine durations (minutes)
+    const routineDurMinutes = [3, 30, 10, 2];
+    const routineUnits = routineDurMinutes; // keep array shape
     const TOTAL_UNITS = routineUnits.reduce((a,b)=>a+b,0);
-    const SCALE_TO_PERIOD = true;
+    const SCALE_TO_PERIOD = false; // use fixed durations now
 
-    // Simulation
     let simulationOn = false;
     const SIM_SPEED = 60;
 
-    // UI hooks
     const stageCards  = document.querySelectorAll('.stage-card');
     const stageSound  = document.getElementById('stageSound');
 
@@ -522,10 +579,6 @@
     const segmentLabel = document.getElementById('segmentLabel');
     const statusText = document.getElementById('statusText');
 
-    const todayTypePill = document.getElementById('todayTypePill');
-    const nowPill = document.getElementById('nowPill');
-    const nextPill = document.getElementById('nextPill');
-
     const timerBar = document.getElementById('timerBar');
 
     const tLogin = document.getElementById('tLogin');
@@ -533,10 +586,14 @@
     const tTyping = document.getElementById('tTyping');
     const tLogout = document.getElementById('tLogout');
 
+    const cLogin = document.getElementById('cLogin');
+    const cLearn = document.getElementById('cLearn');
+    const cTyping = document.getElementById('cTyping');
+    const cLogout = document.getElementById('cLogout');
+
     const toggleSimBtn = document.getElementById('toggleSimBtn');
     const resetSimBtn = document.getElementById('resetSimBtn');
 
-    // smooth fill + 45 units
     let smoothFillEl = null;
 
     function buildGradient() {
@@ -588,10 +645,8 @@
 
     function formatHMS(totalSeconds) {
       totalSeconds = Math.max(0, Math.floor(totalSeconds));
-      const h = Math.floor(totalSeconds / 3600);
-      const m = Math.floor((totalSeconds % 3600) / 60);
+      const m = Math.floor(totalSeconds / 60);
       const s = totalSeconds % 60;
-      if (h > 0) return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
       return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
     }
 
@@ -613,21 +668,20 @@
       return { current: null, startMin: null, endMin: null, next: upcoming };
     }
 
-    function routineStageAt(progressSec, periodLenSec) {
-      const total = periodLenSec;
-      const unitSec = SCALE_TO_PERIOD ? (total / TOTAL_UNITS) : 60;
-      const scaled = routineUnits.map(u => u * unitSec);
+    function routineStageAt(progressSec) {
+      const scaled = routineUnits.map(u => u * 60); // minutes to seconds
+      const total = scaled.reduce((a,b)=>a+b,0);
 
       let acc = 0;
       for (let i = 0; i < scaled.length; i++) {
         const start = acc;
         const end = acc + scaled[i];
         if (progressSec >= start && progressSec < end) {
-          return { stage: i, stageStart: start, stageEnd: end, unitSec };
+          return { stage: i, stageStart: start, stageEnd: end, scaled };
         }
         acc = end;
       }
-      return { stage: 3, stageStart: total - scaled[3], stageEnd: total, unitSec };
+      return { stage: 3, stageStart: total - scaled[3], stageEnd: total, scaled };
     }
 
     let lastStage = -1;
@@ -654,36 +708,33 @@
       return fake;
     }
 
-    function setPill(el, text) { el.textContent = text; }
+    function clearCountdowns() {
+      cLogin.textContent  = 'Countdown: --:--';
+      cLearn.textContent  = 'Countdown: --:--';
+      cTyping.textContent = 'Countdown: --:--';
+      cLogout.textContent = 'Countdown: --:--';
+    }
 
     function tick() {
       const now = getNowForEngine();
+      updateHeaderClock(now);
+
       const dayInfo = getDaySchedule(now);
       const items = dayInfo.items;
 
-      setPill(todayTypePill, 'Today: ' + dayInfo.type);
-
-      const hh = String(now.getHours()).padStart(2,'0');
-      const mm = String(now.getMinutes()).padStart(2,'0');
-      const ss = String(now.getSeconds()).padStart(2,'0');
-      setPill(nowPill, 'Time: ' + hh + ':' + mm + ':' + ss);
-
       if (dayInfo.type === 'Weekend' || items.length === 0) {
-        setPill(nextPill, 'Next: —');
         modeLabel.textContent = simulationOn ? 'Sim' : 'Auto';
         segmentLabel.textContent = 'Weekend';
         timeLeftLabel.textContent = '--:--';
         statusText.textContent = 'Weekend mode. (No bell schedule configured.)';
         stageCards.forEach(c => { c.classList.remove('active'); c.classList.add('dimmed'); });
         if (smoothFillEl) smoothFillEl.style.width = '0%';
+        clearCountdowns();
         return;
       }
 
       const nowMin = toMinSinceMidnight(now);
       const seg = getSegmentForNow(items, nowMin);
-
-      const nextText = seg.next ? (seg.next.name + ' @ ' + seg.next.start) : '—';
-      setPill(nextPill, 'Next: ' + nextText);
 
       modeLabel.textContent = simulationOn ? 'Sim' : 'Auto';
 
@@ -699,13 +750,14 @@
         tLearn.textContent  = '—';
         tTyping.textContent = '—';
         tLogout.textContent = '—';
+        clearCountdowns();
         return;
       }
 
-      const segStart = seg.startMin;
-      const segEnd = seg.endMin;
-      const segLenSec = (segEnd - segStart) * 60;
-      const segElapsedSec = clamp((nowMin - segStart) * 60, 0, segLenSec);
+      const totalRoutineSec = routineUnits.reduce((a,b)=>a+b,0) * 60;
+      const segLenSec = totalRoutineSec; // ignore actual bell length, use fixed routine
+      const dayStartMin = seg.startMin;
+      const segElapsedSec = clamp((nowMin - dayStartMin) * 60, 0, segLenSec);
       const segRemainingSec = Math.max(0, segLenSec - segElapsedSec);
 
       segmentLabel.textContent = seg.current.name + ' (' + seg.current.start + '–' + seg.current.end + ')';
@@ -728,13 +780,13 @@
         tLearn.textContent  = '—';
         tTyping.textContent = '—';
         tLogout.textContent = '—';
+        clearCountdowns();
         return;
       }
 
-      // class segment
       stageCards.forEach(c => c.classList.remove('dimmed'));
 
-      const info = routineStageAt(segElapsedSec, segLenSec);
+      const info = routineStageAt(segElapsedSec);
       const stage = info.stage;
 
       stageCards.forEach((card, idx) => card.classList.toggle('active', idx === stage));
@@ -749,20 +801,31 @@
       const allUnits = timerBar.querySelectorAll('.progress-unit');
       allUnits.forEach((u, idx) => u.classList.toggle('active', idx < unitNow));
 
-      const unitSec = SCALE_TO_PERIOD ? (segLenSec / TOTAL_UNITS) : 60;
-      const d0 = routineUnits[0] * unitSec;
-      const d1 = routineUnits[1] * unitSec;
-      const d2 = routineUnits[2] * unitSec;
-      const d3 = routineUnits[3] * unitSec;
+      const d0 = routineUnits[0] * 60;
+      const d1 = routineUnits[1] * 60;
+      const d2 = routineUnits[2] * 60;
+      const d3 = routineUnits[3] * 60;
 
-      tLogin.textContent  = 'Duration: ' + formatHMS(d0);
-      tLearn.textContent  = 'Duration: ' + formatHMS(d1);
-      tTyping.textContent = 'Duration: ' + formatHMS(d2);
-      tLogout.textContent = 'Duration: ' + formatHMS(d3);
+      tLogin.textContent  = 'Login stage inside: ' + formatHMS(d0);
+      tLearn.textContent  = 'Learning stage inside: ' + formatHMS(d1);
+      tTyping.textContent = 'Typing stage inside: ' + formatHMS(d2);
+      tLogout.textContent = 'Logout stage inside: ' + formatHMS(d3);
 
       const stageRemaining = Math.max(0, info.stageEnd - segElapsedSec);
       statusText.textContent =
         seg.current.name + ' | Stage ' + (stage+1) + '/4 | Stage left: ' + formatHMS(stageRemaining);
+
+      clearCountdowns();
+
+      if (stage === 0) {
+        cLogin.textContent = 'Countdown: ' + formatHMS(stageRemaining);
+      } else if (stage === 1) {
+        cLearn.textContent = 'Countdown: ' + formatHMS(stageRemaining);
+      } else if (stage === 2) {
+        cTyping.textContent = 'Countdown: ' + formatHMS(stageRemaining);
+      } else if (stage === 3) {
+        cLogout.textContent = 'Countdown: ' + formatHMS(stageRemaining);
+      }
     }
 
     toggleSimBtn.addEventListener('click', () => {
@@ -782,7 +845,6 @@
       tick();
     });
 
-    // Init
     createUnits();
     toggleSimBtn.textContent = 'Simulation: OFF';
     setInterval(tick, 250);
@@ -790,3 +852,4 @@
   </script>
 </body>
 </html>
+

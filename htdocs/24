@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tech App with Mr. Oz</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Elegant Header */
+    .header {
+      position: sticky;
+      top: 0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(30px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      z-index: 100;
+      padding: 20px 40px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    }
+
+    .header-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    /* Site Title */
+    .site-title {
+      font-size: clamp(1.8rem, 4vw, 2.5rem);
+      font-weight: 700;
+      background: linear-gradient(135deg, #1a1a1a 0%, #4a4a4a 50%, #0071e3 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.02em;
+    }
+
+    /* Date & Time Container */
+    .datetime-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      min-width: 180px;
+    }
+
+    .current-time {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #1a1a1a;
+      letter-spacing: 0.5px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .current-date {
+      font-size: 0.85rem;
+      color: #666;
+      font-weight: 400;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+
+    /* Navigation */
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      padding: 20px 0;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: #333;
+      font-size: 15px;
+      font-weight: 500;
+      padding: 10px 18px;
+      border-radius: 24px;
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      backdrop-filter: blur(10px);
+    }
+
+    nav a:hover {
+      background: rgba(0, 0, 0, 0.08);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+      color: #000;
+    }
+
+    /* Sections */
+    .section {
+      max-width: 1000px;
+      margin: 100px auto;
+      padding: 0 20px;
+      opacity: 0;
+      transform: translateY(50px);
+      animation: fadeInUp 1s ease forwards;
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Rest of your existing styles */
+    .login-card, .clock-preview {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 40px;
+      max-width: 400px;
+      margin: 0 auto 60px;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      text-align: center;
+    }
+
+    .login-card input {
+      width: 100%;
+      padding: 16px;
+      border: 2px solid rgba(0, 0, 0, 0.08);
+      border-radius: 14px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .login-card input:focus {
+      outline: none;
+      border-color: #0071e3;
+      box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #0071e3 0%, #005bb5 100%);
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 35px rgba(0, 113, 227, 0.4);
+    }
+
+    iframe {
+      border: none;
+      border-radius: 20px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+      display: block;
+      margin: 0 auto 20px;
+    }
+
+    .countdown {
+      text-align: center;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.03);
+      border-radius: 16px;
+      margin: 20px 0;
+      font-family: 'SF Mono', monospace;
+      font-size: 18px;
+      font-weight: 500;
+      color: #0071e3;
+    }
+
+    footer {
+      text-align: center;
+      padding: 80px 20px 40px;
+      color: #666;
+      font-size: 14px;
+      border-top: 1px solid rgba(0, 0, 0, 0.05);
+      margin-top: 100px;
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        padding: 15px 20px;
+      }
+      
+      .header-container {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+      }
+      
+      .datetime-container {
+        align-items: center;
+      }
+      
+      nav {
+        gap: 8px;
+      }
+      
+      nav a {
+        font-size: 14px;
+        padding: 8px 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Elegant Header with Date & Time -->
+  <header class="header">
+    <div class="header-container">
+      <h1 class="site-title">Tech App with Mr. Oz</h1>
+      <div class="datetime-container">
+        <div class="current-time" id="currentTime">14:00:00</div>
+        <div class="current-date" id="currentDate">Thursday, January 8</div>
+      </div>
+    </div>
+  </header>
+
+  <nav>
+    <a href="#login">Login</a>
+    <a href="#clocks">Clocks</a>
+    <a href="#newest">Newest</a>
+    <a href="#digital">Digital</a>
+    <a href="#analog">Analog</a>
+    <a href="#world">World Clock</a>
+    <a href="#countdown">Countdowns</a>
+    <a href="#logout">Logout</a>
+  </nav>
+
+  <!-- Login Section -->
+  <section id="login" class="section">
+    <div class="login-card">
+      <h2>Secure Login</h2>
+      <input type="text" placeholder="Username" id="username">
+      <input type="password" placeholder="Password" id="password">
+      <button class="btn" onclick="login()">Sign In</button>
+      <div class="countdown" id="loginCountdown">Login session: 10:00</div>
+    </div>
+  </section>
+
+  <!-- Clocks Section -->
+  <section id="clocks" class="section">
+    <div class="clock-preview">
+      <h2>Live Clock Preview</h2>
+      <p>Beautiful HTML5 clocks for your website</p>
+      <iframe 
+        src="https://www.clocklink.com/html5embed.php?clock=043&timezone=CST&color=blue&size=300x100" 
+        width="300" 
+        height="100" 
+        title="Live Clock">
+      </iframe>
+      <div class="countdown" id="clockCountdown">Preview active: 05:23</div>
+    </div>
+  </section>
+
+  <!-- Logout Section -->
+  <section id="logout" class="section">
+    <div class="login-card">
+      <h2>Logout</h2>
+      <p>Session ended successfully</p>
+      <button class="btn" onclick="logout()" style="background: linear-gradient(135deg, #ff3b30, #d32f2f);">Sign Out</button>
+      <div class="countdown" id="logoutCountdown">Auto-logout: 02:15</div>
+    </div>
+  </section>
+
+  <footer>
+    <p>© 2026 Tech App with Mr. Oz · Crafted with precision</p>
+  </footer>
+
+  <script>
+    // Live Date & Time Updates
+    function updateDateTime() {
+      const now = new Date();
+      
+      // Time format: HH:MM:SS
+      const timeString = now.toLocaleTimeString('en-US', { 
+        hour12: false, 
+        hour: '2-digit', 
+        minute: '2-digit',
+        second: '2-digit'
+      });
+      
+      // Date format: Day, Month Day
+      const dateString = now.toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        month: 'long', 
+        day: 'numeric'
+      });
+      
+      document.getElementById('currentTime').textContent = timeString;
+      document.getElementById('currentDate').textContent = dateString;
+    }
+    
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
+
+    // Login/Logout functions
+    function login() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      if (username && password) {
+        alert('Welcome to Tech App, ' + username + '!');
+        document.getElementById('loginCountdown').textContent = 'Session Active';
+      }
+    }
+
+    function logout() {
+      alert('Logged out successfully. Goodbye!');
+      document.getElementById('logoutCountdown').textContent = 'Logged Out';
+    }
+
+    // Countdown timers
+    function startCountdowns() {
+      const countdowns = ['loginCountdown', 'clockCountdown', 'logoutCountdown'];
+      countdowns.forEach((id, index) => {
+        let time = 600 - (index * 100); // Different times for each
+        const element = document.getElementById(id);
+        const interval = setInterval(() => {
+          const minutes = Math.floor(time / 60);
+          const seconds = time % 60;
+          if (time > 0) {
+            element.textContent = `${id.replace('Countdown', '').replace(/^\w/, c => c.toUpperCase())}: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            time--;
+          } else {
+            clearInterval(interval);
+          }
+        }, 1000);
+      });
+    }
+    startCountdowns();
+
+    // Smooth scrolling
+    document.querySelectorAll('nav a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+          behavior: 'smooth'
+        });
+      });
+    });
+  </script>
+</body>
+</html>
+

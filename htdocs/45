@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tech Zone Elite v6</title>
+  <style>
+    :root {
+      --bg: #f5f5f7;
+      --card: rgba(255, 255, 255, 0.9);
+      --text: #1d1d1f;
+      --muted: #86868b;
+      --blue: #0071e3;
+      --rainbow: linear-gradient(120deg, #ff3b30, #ff9500, #ffcc00, #34c759, #007aff, #5856d6, #ff2d55);
+    }
+
+    * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+    body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: -apple-system, system-ui, sans-serif; background: #fff; }
+
+    /* BACKGROUND ANIMATION CANVAS */
+    #atmosphere { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 1; transition: opacity 1s; }
+    #atmosphere .stage { position: absolute; inset: 0; opacity: 0; transition: opacity 1.5s ease; }
+    #atmosphere .active { opacity: 1; }
+
+    /* OVERLAY ELEMENTS */
+    header { background: rgba(255,255,255,0.9); border-bottom: 1px solid #e5e5e5; display: grid; grid-template-columns: 200px 1fr 200px; padding: 12px 40px; align-items: center; position: relative; z-index: 100; }
+    .h-lbl { font-size: 10px; font-weight: 900; color: var(--muted); text-transform: uppercase; margin-right: 4px; }
+    .h-val { font-variant-numeric: tabular-nums; font-weight: 700; }
+    h1 { text-align: center; margin: 0; font-size: 20px; font-weight: 950; letter-spacing: -0.5px; }
+
+    #flight-deck { background: #000; color: #fff; height: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; transition: 0.6s cubic-bezier(0.19, 1, 0.22, 1); z-index: 90; }
+    #flight-deck.active { height: 70px; }
+    .slot-timer { font-family: monospace; font-size: 38px; font-weight: 900; color: #34c759; margin: 0 40px; }
+
+    main { position: relative; z-index: 10; flex: 1; display: flex; align-items: center; justify-content: center; height: calc(100vh - 180px); padding: 0 40px; }
+    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; width: 100%; max-width: 1400px; }
+
+    /* CARDS */
+    .card { background: var(--card); border-radius: 35px; padding: 30px; text-align: center; border: 1px solid rgba(0,0,0,0.05); transition: 0.5s cubic-bezier(0.165, 0.84, 0.44, 1); position: relative; }
+    .card.highlight { box-shadow: 0 0 30px rgba(0, 113, 227, 0.2); transform: translateY(-5px); border-color: var(--blue); }
+    .card.active { transform: scale(1.04); background: #fff; z-index: 5; border-color: transparent; }
+    .card.active::before { content: ''; position: absolute; inset: -4px; background: var(--rainbow); background-size: 200%; border-radius: 39px; z-index: -1; animation: flow 3s linear infinite; filter: blur(8px); }
+
+    .circle-wrap { position: relative; width: 160px; height: 160px; margin: 15px auto; }
+    .ring-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+    .ring-bg { fill: none; stroke: rgba(0,0,0,0.05); stroke-width: 8; }
+    .ring-bar { fill: none; stroke: var(--blue); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 283; stroke-dashoffset: 283; transition: stroke-dashoffset 0.5s linear; }
+    
+    .img-box { position: absolute; inset: 15%; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fff; }
+    .img-box img { width: 65%; height: 65%; object-fit: contain; }
+
+    .timer-text { font-size: 2.5rem; font-weight: 900; color: #ccc; }
+    .active .timer-text { color: #000; }
+
+    /* FOOTER */
+    footer { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid #eee; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; z-index: 100; }
+    .btn { background: #f2f2f7; border: none; padding: 10px 18px; border-radius: 12px; font-weight: 750; cursor: pointer; transition: 0.2s; font-size: 12px; }
+    .btn:hover { background: #000; color: #fff; transform: translateY(-2px); }
+    .mode-group { display: flex; background: #f2f2f7; padding: 4px; border-radius: 14px; gap: 4px; }
+    .mode-btn { border: none; padding: 8px 14px; border-radius: 10px; font-weight: 800; font-size: 10px; cursor: pointer; background: transparent; color: var(--muted); }
+    .mode-btn.active { background: #fff; color: #000; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+
+    #banner { position: fixed; top: 120px; left: 50%; transform: translateX(-50%); background: #000; color: #fff; padding: 12px 30px; border-radius: 50px; font-weight: 800; opacity: 0; transition: 0.5s; z-index: 1000; }
+    #banner.show { opacity: 1; top: 140px; }
+
+    /* ATMOSPHERE STYLES */
+    .bubbles span { position: absolute; bottom: -50px; background: rgba(52, 199, 89, 0.2); border-radius: 50%; animation: rise 10s infinite ease-in; }
+    .rain { background: linear-gradient(transparent, rgba(0, 113, 227, 0.1)); width: 2px; height: 100px; position: absolute; animation: fall 2s infinite linear; }
+    .snow { background: white; border-radius: 50%; position: absolute; animation: drift 5s infinite linear; }
+    .firework { position: absolute; width: 4px; height: 4px; border-radius: 50%; animation: explode 2s infinite; }
+
+    @keyframes flow { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+    @keyframes rise { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-120vh); opacity: 0; } }
+    @keyframes fall { from { transform: translateY(-100px); } to { transform: translateY(110vh); } }
+    @keyframes drift { from { transform: translate(0, -10px); } to { transform: translate(50px, 110vh); } }
+    @keyframes explode { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(30); opacity: 0; } }
+  </style>
+</head>
+<body>
+
+  <canvas id="canvas" style="display:none"></canvas>
+  <div id="atmosphere">
+    <div id="stage-0" class="stage bubbles active"></div>
+    <div id="stage-1" class="stage"></div>
+    <div id="stage-2" class="stage"></div>
+    <div id="stage-3" class="stage"></div>
+  </div>
+
+  <header>
+    <div><span class="h-lbl">date:</span><span class="h-val" id="dVal">1/1/2024</span></div>
+    <h1>MR. OZ TECH ZONE PRO</h1>
+    <div style="text-align: right;"><span class="h-lbl">time:</span><span class="h-val" id="tVal">00:00:00</span></div>
+  </header>
+
+  <div id="flight-deck">
+    <span style="font-weight: 900; letter-spacing: 2px; font-size: 11px;">NEXT MISSION DEPLOYS IN</span>
+    <div class="slot-timer" id="slotTime">00:00:00</div>
+    <span id="targetNote" style="font-weight: 700; color: #86868b; font-size: 11px;">MONDAY 07:50</span>
+  </div>
+
+  <main>
+    <div id="banner">ANNOUNCEMENT</div>
+    <div class="grid">
+      <div class="card" id="card0">
+        <div style="font-size:10px; font-weight:800; color:var(--muted)">LOGIN — 3 MIN</div>
+        <div class="circle-wrap">
+          <svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="ring0" cx="50" cy="50" r="45"/></svg>
+          <div class="img-box"><img src="https://cdn-icons-png.flaticon.com/512/295/295128.png"></div>
+        </div>
+        <div class="timer-text" id="tm0">03:00</div>
+      </div>
+      <div class="card" id="card1">
+        <div style="font-size:10px; font-weight:800; color:var(--muted)">LEARNING — 30 MIN</div>
+        <div class="circle-wrap">
+          <svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="ring1" cx="50" cy="50" r="45"/></svg>
+          <div class="img-box"><img src="https://cdn-icons-png.flaticon.com/512/1902/1902231.png"></div>
+        </div>
+        <div class="timer-text" id="tm1">30:00</div>
+      </div>
+      <div class="card" id="card2">
+        <div style="font-size:10px; font-weight:800; color:var(--muted)">TYPING — 10 MIN</div>
+        <div class="circle-wrap">
+          <svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="ring2" cx="50" cy="50" r="45"/></svg>
+          <div class="img-box"><img src="https://cdn-icons-png.flaticon.com/512/704/704845.png"></div>
+        </div>
+        <div class="timer-text" id="tm2">10:00</div>
+      </div>
+      <div class="card" id="card3">
+        <div style="font-size:10px; font-weight:800; color:var(--muted)">LOGOUT — 2 MIN</div>
+        <div class="circle-wrap">
+          <svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="ring3" cx="50" cy="50" r="45"/></svg>
+          <div class="img-box"><img src="https://cdn-icons-png.flaticon.com/512/3580/3580139.png"></div>
+        </div>
+        <div class="timer-text" id="tm3">02:00</div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div style="display: flex; gap: 8px;">
+      <button class="btn" onclick="startFullClass()" style="background:#000; color:#fff">▶ START CLASS</button>
+      <button class="btn" onclick="jumpTo(0)">LOGIN</button>
+      <button class="btn" onclick="jumpTo(1)">LEARNING</button>
+      <button class="btn" onclick="jumpTo(2)">TYPING</button>
+      <button class="btn" onclick="jumpTo(3)">LOGOUT</button>
+    </div>
+    <div style="display: flex; gap: 15px; align-items: center;">
+      <button class="btn" onclick="playChime()" style="background:none; border: 1px solid #ddd;">🔔</button>
+      <div class="mode-group">
+        <button class="mode-btn active" id="m-real" onclick="setMode('real')">REALTIME</button>
+        <button class="mode-btn" id="m-sim" onclick="setMode('sim')">SIMULATE</button>
+        <button class="mode-btn" id="m-flash" onclick="setMode('flash')">FLASH</button>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const sessionMins = [3, 30, 10, 2], names = ["Login", "Learning", "Typing", "Logout"];
+    let currentMode = 'real', timeAnchor = null, lastStage = -1;
+    const audio = new (window.AudioContext || window.webkitAudioContext)();
+
+    // ATMOSPHERE LOGIC
+    let currentStageSnippet = 0;
+    function cycleAtmosphere() {
+      document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
+      currentStageSnippet = (currentStageSnippet + 1) % 4;
+      const stage = document.getElementById(`stage-${currentStageSnippet}`);
+      stage.classList.add('active');
+      stage.innerHTML = ''; // Clear old particles
+      for(let i=0; i<30; i++) {
+        const p = document.createElement('div');
+        p.style.left = Math.random()*100 + 'vw';
+        p.style.animationDelay = Math.random()*5 + 's';
+        if(currentStageSnippet===0) { p.className = 'bubbles'; p.style.width = p.style.height = Math.random()*30+'px'; stage.appendChild(p); }
+        if(currentStageSnippet===1) { p.className = 'rain'; stage.appendChild(p); }
+        if(currentStageSnippet===2) { p.className = 'snow'; p.style.width = p.style.height = Math.random()*5+'px'; stage.appendChild(p); }
+        if(currentStageSnippet===3) { p.className = 'firework'; p.style.background = `hsl(${Math.random()*360}, 100%, 50%)`; stage.appendChild(p); }
+      }
+    }
+    setInterval(cycleAtmosphere, 5000);
+    cycleAtmosphere();
+
+    // UI UPDATES
+    setInterval(() => {
+      const cards = [0,1,2,3];
+      document.querySelectorAll('.card').forEach(c => c.classList.remove('highlight'));
+      document.getElementById('card' + cards[Math.floor(Math.random()*4)]).classList.add('highlight');
+    }, 1000);
+
+    async function announce(msg) {
+      playChime();
+      await new Promise(r => setTimeout(r, 1800));
+      window.speechSynthesis.speak(new SpeechSynthesisUtterance(msg));
+    }
+
+    function playChime() {
+      const now = audio.currentTime;
+      [554, 440, 329, 277].forEach((f, i) => {
+        const o = audio.createOscillator(); const g = audio.createGain();
+        o.frequency.setValueAtTime(f, now + i * 0.4);
+        g.gain.setValueAtTime(0, now + i * 0.4);
+        g.gain.linearRampToValueAtTime(0.2, now + i * 0.4 + 0.05);
+        g.gain.exponentialRampToValueAtTime(0.01, now + (i+1)*0.7);
+        o.connect(g); g.connect(audio.destination);
+        o.start(now + i * 0.4); o.stop(now + (i+1)*0.7);
+      });
+    }
+
+    function setMode(m) {
+      currentMode = m; timeAnchor = null;
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('m-' + m).classList.add('active');
+    }
+
+    function startFullClass() {
+      if(currentMode === 'real') setMode('sim');
+      const d = new Date(); d.setHours(7, 50, 0, 0);
+      timeAnchor = { real: Date.now(), fake: d.getTime() };
+      announce("The full class session is now beginning");
+    }
+
+    function jumpTo(idx) {
+      if(currentMode === 'real') setMode('sim');
+      const d = new Date();
+      let m = 0; for(let i=0; i<idx; i++) m += sessionMins[i];
+      d.setHours(7, 50+m, 0, 0);
+      timeAnchor = { real: Date.now(), fake: d.getTime() };
+      announce(`${names[idx]} session activated`);
+    }
+
+    function tick() {
+      const now = (currentMode === 'real') ? new Date() : (timeAnchor ? new Date(timeAnchor.fake + (Date.now() - timeAnchor.real) * (currentMode === 'flash' ? 60 : 1)) : null);
+      
+      const realNow = new Date();
+      document.getElementById('dVal').textContent = `${realNow.getMonth()+1}/${realNow.getDate()}/${realNow.getFullYear()}`;
+      document.getElementById('tVal').textContent = realNow.toLocaleTimeString('en-US', {hour12:false});
+
+      const start = 7*3600 + 50*60;
+      const end = start + (sessionMins.reduce((a,b)=>a+b,0)*60);
+      const curr = now ? (now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds()) : -1;
+
+      // Show standby/flight deck only in Real-time if no class
+      const isClassTimeReal = (realNow.getHours()*3600 + realNow.getMinutes()*60) >= start && (realNow.getHours()*3600 + realNow.getMinutes()*60) < end;
+      document.getElementById('flight-deck').classList.toggle('active', currentMode === 'real' && !isClassTimeReal);
+      document.getElementById('atmosphere').style.opacity = (now && curr >= start && curr < end) ? 0.1 : 1;
+
+      if (now && curr >= start && curr < end) {
+        let acc = start;
+        for(let i=0; i<4; i++) {
+          const c = document.getElementById(`card${i}`), r = document.getElementById(`ring${i}`), t = document.getElementById(`tm${i}`);
+          const dur = sessionMins[i]*60;
+          if (curr >= acc && curr < acc + dur) {
+            if (i !== lastStage) { announce(`${names[i]} session starting`); lastStage = i; }
+            c.classList.add('active');
+            const rem = Math.ceil(acc + dur - curr);
+            t.textContent = new Date(rem * 1000).toISOString().substr(14, 5);
+            r.style.strokeDashoffset = 283 - ((curr - acc) / dur * 283);
+          } else {
+            c.classList.remove('active');
+            r.style.strokeDashoffset = (curr >= acc + dur) ? 0 : 283;
+            t.textContent = (curr >= acc + dur) ? "DONE" : `${sessionMins[i].toString().padStart(2,'0')}:00`;
+          }
+          acc += dur;
+        }
+      } else if (currentMode === 'real') {
+        lastStage = -1;
+        let target = new Date(realNow); target.setHours(7,50,0,0);
+        if ((realNow.getHours()*3600 + realNow.getMinutes()*60) >= end) target.setDate(target.getDate()+1);
+        while(target.getDay() === 0 || target.getDay() === 6) target.setDate(target.getDate()+1);
+        const diff = Math.floor((target - realNow) / 1000);
+        const h = Math.floor(diff/3600), m = Math.floor((diff%3600)/60), s = diff%60;
+        document.getElementById('slotTime').textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        document.getElementById('targetNote').textContent = target.toLocaleDateString('en',{weekday:'long'}).toUpperCase() + " 07:50";
+      }
+    }
+
+    setInterval(tick, 1000); tick();
+  </script>
+</body>
+</html>

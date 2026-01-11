@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tech App with Mr. Oz</title>
+
+  <style>
+    :root{
+      --bg:#f5f5f7;
+      --card: rgba(255,255,255,0.86);
+      --text:#1d1d1f;
+      --muted: rgba(29,29,31,0.62);
+      --line: rgba(0,0,0,0.10);
+
+      /* Clean Apple-ish accents */
+      --blue:#0071e3;
+      --teal:#00a3a3;
+      --indigo:#5e5ce6;
+      --pink:#ff2d55;
+
+      --shadow: 0 10px 28px rgba(0,0,0,0.10);
+      --shadow2: 0 18px 54px rgba(0,0,0,0.14);
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+
+    body{
+      margin:0;
+      font-family:
+        -apple-system, BlinkMacSystemFont,
+        "SF Pro Display","SF Pro Text",
+        "Helvetica Neue", Helvetica, Arial,
+        "Segoe UI", Roboto, sans-serif;
+      background: radial-gradient(1200px 700px at 50% 0%, #ffffff 0%, var(--bg) 55%, #efeff2 100%);
+      color: var(--text);
+      display:flex;
+      flex-direction:column;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      letter-spacing: -0.01em;
+    }
+
+    /* HEADER */
+    header{
+      background: rgba(255,255,255,0.78);
+      border-bottom: 1px solid var(--line);
+      padding: 14px 16px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .hdr{
+      display:grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items:center;
+      max-width: 1400px;
+      margin: 0 auto;
+      gap: 12px;
+    }
+
+    h1{
+      margin:0;
+      text-align:center;
+      font-size: clamp(30px, 2.8vw, 54px);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+
+    /* same style for date + time */
+    .chip{
+      display:inline-block;
+      padding: 10px 14px;
+      border: 1px solid rgba(0,0,0,0.10);
+      border-radius: 14px;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      font-size: clamp(22px, 2vw, 40px);
+      white-space: nowrap;
+
+      color: rgba(29,29,31,0.92);
+      background: rgba(255,255,255,0.88);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+      position: relative;
+      overflow: hidden;
+    }
+    .chip::before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      border-radius: 16px;
+      background: conic-gradient(
+        from 210deg,
+        rgba(0,0,0,0) 0deg,
+        rgba(0,0,0,0) 65deg,
+        rgba(0,113,227,0.85) 120deg,
+        rgba(0,163,163,0.75) 170deg,
+        rgba(94,92,230,0.70) 230deg,
+        rgba(255,45,85,0.70) 285deg,
+        rgba(0,0,0,0) 340deg,
+        rgba(0,0,0,0) 360deg
+      );
+      filter: blur(16px);
+      opacity: 0.25;
+      pointer-events:none;
+    }
+
+    /* MAIN */
+    main{
+      flex:1;
+      display:flex;
+      justify-content:center;
+      padding: 16px;
+    }
+    .grid{
+      width: min(1400px, 100%);
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .card{
+      position: relative;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 12px;
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+      opacity: 0.45;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transform: translateY(0);
+      transition: opacity .18s ease, transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+
+    /* active glow */
+    .card::before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      border-radius: 20px;
+      background: conic-gradient(
+        from 180deg,
+        rgba(0,0,0,0) 0deg,
+        rgba(0,0,0,0) 40deg,
+        rgba(255,45,85,0.70) 95deg,
+        rgba(94,92,230,0.70) 155deg,
+        rgba(0,163,163,0.60) 215deg,
+        rgba(0,113,227,0.78) 275deg,
+        rgba(0,0,0,0) 330deg,
+        rgba(0,0,0,0) 360deg
+      );
+      filter: blur(16px);
+      opacity: 0;
+      pointer-events:none;
+      transition: opacity .2s ease;
+    }
+
+    .card.active{
+      opacity: 1;
+      transform: translateY(-6px);
+      border-color: rgba(0,0,0,0.14);
+      box-shadow: var(--shadow2);
+    }
+    .card.active::before{
+      opacity: 0.85;
+      animation: spin 3.6s linear infinite;
+    }
+    @keyframes spin{
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    .title{
+      text-align:center;
+      font-weight: 900;
+      font-size: clamp(18px, 1.6vw, 30px);
+      letter-spacing: -0.01em;
+      position: relative;
+      z-index: 2;
+    }
+    .mins{
+      display:block;
+      margin-top: 4px;
+      font-weight: 800;
+      color: var(--muted);
+      font-size: 0.82em;
+    }
+
+    /* CIRCLE IMAGE + PROGRESS RING */
+    .circleWrap{
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 999px;
+      display:grid;
+      place-items:center;
+      z-index: 2;
+    }
+
+    .ringSvg{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      transform: rotate(-90deg); /* start at top */
+      pointer-events:none;
+    }
+
+    .ringTrack{
+      fill:none;
+      stroke: rgba(0,0,0,0.12);
+      stroke-width: 10;
+    }
+
+    .ringProg{
+      fill:none;
+      stroke-width: 10;
+      stroke-linecap: round;
+      stroke: var(--blue);
+      opacity: 0.95;
+      stroke-dasharray: 1 9999; /* will be set by JS */
+      stroke-dashoffset: 0;     /* will be set by JS */
+      filter: drop-shadow(0 8px 14px rgba(0,0,0,0.18));
+    }
+
+    /* Only show progress ring for active card */
+    .card .ringProg{ opacity: 0; }
+    .card.active .ringProg{ opacity: 1; }
+
+    .imgwrap{
+      width: calc(100% - 22px);
+      height: calc(100% - 22px);
+      border-radius: 999px;
+      overflow:hidden;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.90);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+    }
+    .imgwrap img{
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      display:block;
+    }
+
+    .cd{
+      text-align:center;
+      font-weight: 950;
+      font-variant-numeric: tabular-nums;
+      font-size: clamp(28px, 2.8vw, 56px);
+      color: var(--text);
+      visibility:hidden;
+      position: relative;
+      z-index: 2;
+    }
+    .card.active .cd{
+      visibility:visible;
+    }
+
+    /* FOOTER */
+    footer{
+      background: rgba(255,255,255,0.78);
+      border-top: 1px solid var(--line);
+      padding: 14px 16px 18px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .big{
+      max-width: 1400px;
+      margin: 0 auto;
+      border-radius: 18px;
+      padding: 14px;
+      background: rgba(29,29,31,0.92);
+      color:#fff;
+      border: 1px solid rgba(255,255,255,0.10);
+      box-shadow: 0 18px 50px rgba(0,0,0,0.18);
+      position: relative;
+      overflow:hidden;
+    }
+
+    .big::before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      border-radius: 20px;
+      background: conic-gradient(
+        from 200deg,
+        rgba(0,0,0,0) 0deg,
+        rgba(0,0,0,0) 70deg,
+        rgba(0,113,227,0.30) 135deg,
+        rgba(0,163,163,0.26) 185deg,
+        rgba(94,92,230,0.24) 235deg,
+        rgba(255,45,85,0.22) 290deg,
+        rgba(0,0,0,0) 345deg,
+        rgba(0,0,0,0) 360deg
+      );
+      filter: blur(18px);
+      opacity: 0.55;
+      pointer-events:none;
+      animation: spin 4.6s linear infinite;
+    }
+
+    .bigTop{
+      display:flex;
+      justify-content:space-between;
+      gap: 12px;
+      flex-wrap:wrap;
+      align-items:baseline;
+      position: relative;
+      z-index: 1;
+    }
+    .bigSeg{
+      font-weight: 900;
+      font-size: clamp(18px, 1.8vw, 30px);
+      letter-spacing:-0.01em;
+    }
+    .bigStage{
+      font-weight: 800;
+      opacity: 0.85;
+      font-size: clamp(14px, 1.4vw, 22px);
+    }
+    .bigTime{
+      margin-top: 10px;
+      text-align:right;
+      font-weight: 950;
+      font-variant-numeric: tabular-nums;
+      font-size: clamp(52px, 7vw, 120px);
+      line-height: 1;
+      position: relative;
+      z-index: 1;
+    }
+
+    .status{
+      max-width: 1400px;
+      margin: 8px auto 0;
+      text-align:center;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    @media (max-width: 900px){
+      .grid{ grid-template-columns: repeat(2, 1fr); }
+      h1{ white-space: normal; }
+    }
+    @media (max-width: 560px){
+      .hdr{ grid-template-columns: 1fr; justify-items:center; }
+      .grid{ grid-template-columns: 1fr; }
+      .bigTime{ text-align:left; }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .card, .card::before, .big::before { transition:none; animation:none; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="hdr">
+      <div><span class="chip" id="dateChip">01/08/2026</span></div>
+      <h1>Tech App with Mr. Oz</h1>
+      <div style="text-align:right;"><span class="chip" id="timeChip">11:12:22 AM</span></div>
+    </div>
+  </header>
+
+  <main>
+    <div class="grid">
+      <div class="card" data-stage="0">
+        <div class="title">Login <span class="mins" id="label0">3 min</span></div>
+
+        <div class="circleWrap">
+          <svg class="ringSvg" viewBox="0 0 100 100" aria-hidden="true">
+            <circle class="ringTrack" cx="50" cy="50" r="46"></circle>
+            <circle class="ringProg"  cx="50" cy="50" r="46"></circle>
+          </svg>
+          <div class="imgwrap"><img src="./images/login.png" alt="Login"></div>
+        </div>
+
+        <div class="cd" id="cd0">--:--</div>
+      </div>
+
+      <div class="card" data-stage="1">
+        <div class="title">Learning.com <span class="mins" id="label1">30 min</span></div>
+
+        <div class="circleWrap">
+          <svg class="ringSvg" viewBox="0 0 100 100" aria-hidden="true">
+            <circle class="ringTrack" cx="50" cy="50" r="46"></circle>
+            <circle class="ringProg"  cx="50" cy="50" r="46"></circle>
+          </svg>
+          <div class="imgwrap"><img src="./images/learning.png" alt="Learning.com"></div>
+        </div>
+
+        <div class="cd" id="cd1">--:--</div>
+      </div>
+
+      <div class="card" data-stage="2">
+        <div class="title">Typing.com <span class="mins" id="label2">10 min</span></div>
+
+        <div class="circleWrap">
+          <svg class="ringSvg" viewBox="0 0 100 100" aria-hidden="true">
+            <circle class="ringTrack" cx="50" cy="50" r="46"></circle>
+            <circle class="ringProg"  cx="50" cy="50" r="46"></circle>
+          </svg>
+          <div class="imgwrap"><img src="./images/typing.png" alt="Typing.com"></div>
+        </div>
+
+        <div class="cd" id="cd2">--:--</div>
+      </div>
+
+      <div class="card" data-stage="3">
+        <div class="title">Logout <span class="mins" id="label3">2 min</span></div>
+
+        <div class="circleWrap">
+          <svg class="ringSvg" viewBox="0 0 100 100" aria-hidden="true">
+            <circle class="ringTrack" cx="50" cy="50" r="46"></circle>
+            <circle class="ringProg"  cx="50" cy="50" r="46"></circle>
+          </svg>
+          <div class="imgwrap"><img src="./images/logout.png" alt="Logout"></div>
+        </div>
+
+        <div class="cd" id="cd3">--:--</div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="big">
+      <div class="bigTop">
+        <div class="bigSeg" id="bigSeg">...</div>
+        <div class="bigStage" id="bigStage">...</div>
+      </div>
+      <div class="bigTime" id="bigTime">--:--</div>
+    </div>
+
+    <div class="status" id="status">Uses local computer time. Simulation is optional.</div>
+
+    <audio id="stageSound" src="beep.mp3" preload="auto"></audio>
+  </footer>
+
+  <script>
+    const assignedMinutes = [3, 30, 10, 2];
+    const SCALE_TO_PERIOD = true;
+
+    // San Antonio time zone
+    const TZ = 'America/Chicago';
+
+    const scheduleMonThu = [
+      { name:'Breakfast', type:'nonclass', start:'07:20', end:'07:47' },
+      { name:'Passing',   type:'nonclass', start:'07:47', end:'07:50' },
+
+      { name:'Period 1',  type:'class', start:'07:50', end:'08:38' },
+      { name:'Passing',   type:'nonclass', start:'08:38', end:'08:41' },
+
+      { name:'Period 2',  type:'class', start:'08:41', end:'09:29' },
+      { name:'Passing',   type:'nonclass', start:'09:29', end:'09:32' },
+
+      { name:'Period 3',  type:'class', start:'09:32', end:'10:20' },
+      { name:'Passing',   type:'nonclass', start:'10:20', end:'10:23' },
+
+      { name:'Period 4',  type:'class', start:'10:23', end:'11:10' },
+      { name:'Passing',   type:'nonclass', start:'11:10', end:'11:13' },
+
+      { name:'Period 5',  type:'class', start:'11:13', end:'12:01' },
+      { name:'Passing',   type:'nonclass', start:'12:01', end:'12:04' },
+
+      { name:'Period 6',  type:'class', start:'12:04', end:'12:52' },
+      { name:'Passing',   type:'nonclass', start:'12:52', end:'12:55' },
+
+      { name:'Period 7',  type:'class', start:'12:55', end:'13:43' },
+      { name:'Passing',   type:'nonclass', start:'13:43', end:'13:46' },
+
+      { name:'Period 8',  type:'class', start:'13:46', end:'14:34' },
+      { name:'Passing',   type:'nonclass', start:'14:34', end:'14:37' },
+
+      { name:'Period 9',  type:'class', start:'14:37', end:'15:25' },
+    ];
+
+    const scheduleFriday = [
+      { name:'Breakfast', type:'nonclass', start:'07:20', end:'07:47' },
+      { name:'Passing',   type:'nonclass', start:'07:47', end:'07:50' },
+
+      { name:'Period 1',  type:'class', start:'07:50', end:'08:34' },
+      { name:'Passing',   type:'nonclass', start:'08:34', end:'08:37' },
+
+      { name:'Period 2',  type:'class', start:'08:37', end:'09:21' },
+      { name:'Passing',   type:'nonclass', start:'09:21', end:'09:24' },
+
+      { name:'Period 3',  type:'class', start:'09:24', end:'10:08' },
+      { name:'Passing',   type:'nonclass', start:'10:08', end:'10:11' },
+
+      { name:'Period 4',  type:'class', start:'10:11', end:'10:54' },
+      { name:'Passing',   type:'nonclass', start:'10:54', end:'10:57' },
+
+      { name:'Period 5',  type:'class', start:'10:57', end:'11:41' },
+      { name:'Passing',   type:'nonclass', start:'11:41', end:'11:44' },
+
+      { name:'Period 6',  type:'class', start:'11:44', end:'12:28' },
+      { name:'Passing',   type:'nonclass', start:'12:28', end:'12:31' },
+
+      { name:'Period 7',  type:'class', start:'12:31', end:'13:15' },
+    ];
+
+    // Simulation (istersen true yap)
+    let simulationOn = false;
+    const SIM_SPEED = 60;
+    let simAnchorRealMs = null;
+    let simAnchorScheduleMin = null;
+
+    const dateChip = document.getElementById('dateChip');
+    const timeChip = document.getElementById('timeChip');
+
+    const cards = document.querySelectorAll('.card');
+    const cds = [0,1,2,3].map(i => document.getElementById('cd'+i));
+
+    const ringProgs = Array.from(document.querySelectorAll('.ringProg')); // 4 circles
+
+    const bigSeg = document.getElementById('bigSeg');
+    const bigStage = document.getElementById('bigStage');
+    const bigTime = document.getElementById('bigTime');
+    const status = document.getElementById('status');
+    const stageSound = document.getElementById('stageSound');
+
+    function hmToMin(hm){
+      const [h,m] = hm.split(':').map(Number);
+      return h*60 + m;
+    }
+
+    function nowInTZParts(tz){
+      const parts = new Intl.DateTimeFormat('en-US',{
+        timeZone: tz,
+        year:'numeric', month:'2-digit', day:'2-digit',
+        hour:'2-digit', minute:'2-digit', second:'2-digit',
+        hour12:false
+      }).formatToParts(new Date());
+      const get = (t) => parts.find(p => p.type === t)?.value;
+      return {
+        y:+get('year'), mo:+get('month'), d:+get('day'),
+        h:+get('hour'), mi:+get('minute'), s:+get('second')
+      };
+    }
+
+    function nowInTZDate(tz){
+      const p = nowInTZParts(tz);
+      return new Date(p.y, p.mo-1, p.d, p.h, p.mi, p.s);
+    }
+
+    function getNow(){
+      const realNow = nowInTZDate(TZ);
+      if(!simulationOn) return realNow;
+
+      if(simAnchorRealMs === null){
+        simAnchorRealMs = Date.now();
+        simAnchorScheduleMin = realNow.getHours()*60 + realNow.getMinutes() + realNow.getSeconds()/60;
+      }
+      const elapsedRealSec = (Date.now() - simAnchorRealMs)/1000;
+      const elapsedScheduleSec = elapsedRealSec * SIM_SPEED;
+      const totalMin = simAnchorScheduleMin + elapsedScheduleSec/60;
+
+      const base = new Date(realNow);
+      base.setHours(0,0,0,0);
+
+      const fake = new Date(realNow);
+      fake.setTime(base.getTime() + totalMin*60*1000);
+      return fake;
+    }
+
+    function getDaySchedule(d){
+      const day = d.getDay();
+      if(day === 5) return { type:'Friday', items:scheduleFriday };
+      if(day >= 1 && day <= 4) return { type:'Mon-Thu', items:scheduleMonThu };
+      return { type:'Weekend', items:[] };
+    }
+
+    function getSegmentForNow(items, nowMin){
+      for(let i=0;i<items.length;i++){
+        const it = items[i];
+        const s = hmToMin(it.start);
+        const e = hmToMin(it.end);
+        if(nowMin >= s && nowMin < e){
+          return { current: it, startMin:s, endMin:e };
+        }
+      }
+      return { current:null, startMin:null, endMin:null };
+    }
+
+    function formatHMS(totalSeconds){
+      totalSeconds = Math.max(0, Math.floor(totalSeconds));
+      const h = Math.floor(totalSeconds/3600);
+      const m = Math.floor((totalSeconds%3600)/60);
+      const s = totalSeconds%60;
+      if(h>0) return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+      return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    }
+
+    function stageName(i){
+      return ['Login','Learning.com','Typing.com','Logout'][i] || '';
+    }
+
+    function computeStageDurationsSec(periodLenSec){
+      const totalMin = assignedMinutes.reduce((a,b)=>a+b,0);
+      if(!SCALE_TO_PERIOD) return assignedMinutes.map(m => m*60);
+      return assignedMinutes.map(m => (m/totalMin)*periodLenSec);
+    }
+
+    function stageAt(elapsedSec, durs){
+      let acc=0;
+      for(let i=0;i<durs.length;i++){
+        const start=acc, end=acc+durs[i];
+        if(elapsedSec >= start && elapsedSec < end) return { stage:i, stageStart:start, stageEnd:end };
+        acc=end;
+      }
+      const total = durs.reduce((a,b)=>a+b,0);
+      return { stage:3, stageStart: total-durs[3], stageEnd: total };
+    }
+
+    function playBeep(){
+      stageSound.currentTime = 0;
+      stageSound.play().catch(()=>{});
+    }
+
+    let lastStage = -1;
+
+    function updateHeader(now){
+      const MM = String(now.getMonth()+1).padStart(2,'0');
+      const DD = String(now.getDate()).padStart(2,'0');
+      const YYYY = now.getFullYear();
+      dateChip.textContent = `${MM}/${DD}/${YYYY}`;
+
+      let h = now.getHours();
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12; if(h===0) h=12;
+
+      const HH = String(h).padStart(2,'0');
+      const mm = String(now.getMinutes()).padStart(2,'0');
+      const ss = String(now.getSeconds()).padStart(2,'0');
+
+      timeChip.textContent = `${HH}:${mm}:${ss} ${ampm}`;
+    }
+
+    function initRings(){
+      ringProgs.forEach((c) => {
+        const r = c.r.baseVal.value;
+        const C = 2 * Math.PI * r;
+        c.style.strokeDasharray = `${C} ${C}`;
+        c.style.strokeDashoffset = `${C}`;
+      });
+    }
+
+    function setRingProgress(stageIdx, pct){
+      pct = Math.max(0, Math.min(100, pct));
+      ringProgs.forEach((c, idx) => {
+        const r = c.r.baseVal.value;
+        const C = 2 * Math.PI * r;
+        if(idx === stageIdx){
+          const offset = C * (1 - pct/100);
+          c.style.strokeDashoffset = `${offset}`;
+        } else {
+          c.style.strokeDashoffset = `${C}`;
+        }
+      });
+    }
+
+    function tick(){
+      const now = getNow();
+      updateHeader(now);
+
+      const dayInfo = getDaySchedule(now);
+      if(dayInfo.type === 'Weekend' || dayInfo.items.length === 0){
+        bigSeg.textContent = 'Weekend';
+        bigStage.textContent = '';
+        bigTime.textContent = '--:--';
+        status.textContent = 'Weekend mode.';
+        cards.forEach(c => c.classList.remove('active'));
+        cds.forEach(el => el.textContent='--:--');
+        setRingProgress(-1, 0);
+        lastStage = -1;
+        return;
+      }
+
+      const nowMin = now.getHours()*60 + now.getMinutes() + now.getSeconds()/60;
+      const seg = getSegmentForNow(dayInfo.items, nowMin);
+
+      if(!seg.current){
+        bigSeg.textContent = 'Not in schedule';
+        bigStage.textContent = dayInfo.type;
+        bigTime.textContent = '--:--';
+        status.textContent = 'Waiting for next segment.';
+        cards.forEach(c => c.classList.remove('active'));
+        cds.forEach(el => el.textContent='--:--');
+        setRingProgress(-1, 0);
+        lastStage = -1;
+        return;
+      }
+
+      const segLenSec = (seg.endMin - seg.startMin)*60;
+      const segElapsedSec = Math.max(0, Math.min(segLenSec, (nowMin - seg.startMin)*60));
+      const segRemainingSec = Math.max(0, segLenSec - segElapsedSec);
+
+      if(seg.current.type !== 'class'){
+        bigSeg.textContent = seg.current.name + ` (${seg.current.start}–${seg.current.end})`;
+        bigStage.textContent = 'Non-class';
+        bigTime.textContent = formatHMS(segRemainingSec);
+        status.textContent = dayInfo.type;
+        cards.forEach(c => c.classList.remove('active'));
+        cds.forEach(el => el.textContent='--:--');
+        setRingProgress(-1, 0);
+        lastStage = -1;
+        return;
+      }
+
+      const durs = computeStageDurationsSec(segLenSec);
+      const info = stageAt(segElapsedSec, durs);
+      const stage = info.stage;
+
+      cards.forEach((c, idx) => c.classList.toggle('active', idx === stage));
+
+      // countdown + ring progress for active stage
+      cds.forEach((el, idx) => {
+        if(idx === stage){
+          const left = Math.max(0, info.stageEnd - segElapsedSec);
+          el.textContent = formatHMS(left);
+
+          const stageLen = Math.max(0.001, (info.stageEnd - info.stageStart));
+          const stageElapsed = Math.max(0, Math.min(stageLen, segElapsedSec - info.stageStart));
+          const pct = (stageElapsed / stageLen) * 100;
+          setRingProgress(stage, pct);
+        } else {
+          el.textContent = '--:--';
+        }
+      });
+
+      if(lastStage !== -1 && stage !== lastStage) playBeep();
+      lastStage = stage;
+
+      bigSeg.textContent = seg.current.name + ` (${seg.current.start}–${seg.current.end})`;
+      bigStage.textContent = 'Now: ' + stageName(stage);
+      bigTime.textContent = formatHMS(segRemainingSec);
+      status.textContent = (simulationOn ? 'Simulation ON' : 'Auto') + ' | ' + dayInfo.type;
+    }
+
+    initRings();
+    setInterval(tick, 250);
+    tick();
+  </script>
+</body>
+</html>
+

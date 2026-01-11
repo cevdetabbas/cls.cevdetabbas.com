@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tech App with Mr. Oz - Classroom Timer</title>
+
+  <style>
+    :root{
+      --bg: #f5f5f7;
+      --card: rgba(255,255,255,0.86);
+      --text: #1d1d1f;
+      --muted: rgba(29,29,31,0.68);
+      --line: rgba(0,0,0,0.10);
+      --shadow: 0 18px 45px rgba(0,0,0,0.10);
+      --shadow2: 0 10px 24px rgba(0,0,0,0.10);
+
+      --blue:  #0071e3;
+      --green: #34c759;
+      --amber: #ff9f0a;
+      --pink:  #ff2d55;
+    }
+
+    html, body { height: 100%; }
+
+    body {
+      margin: 0;
+      font-family:
+        -apple-system, BlinkMacSystemFont,
+        "SF Pro Display", "SF Pro Text",
+        "Helvetica Neue", Helvetica, Arial,
+        "Segoe UI", Roboto, "Noto Sans",
+        "Liberation Sans", sans-serif;
+      background: radial-gradient(1200px 700px at 50% 0%, #ffffff 0%, var(--bg) 55%, #efeff2 100%);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      letter-spacing: -0.01em;
+    }
+
+    header {
+      text-align: center;
+      padding: 18px 10px 16px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.90), rgba(245,245,247,0.74));
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::after{
+      content:"";
+      position:absolute;
+      inset:-60px -80px -80px -80px;
+      background:
+        radial-gradient(520px 190px at 15% 40%, rgba(0,113,227,0.18), transparent 60%),
+        radial-gradient(520px 190px at 85% 40%, rgba(255,45,85,0.14), transparent 60%),
+        radial-gradient(520px 210px at 50% 120%, rgba(52,199,89,0.12), transparent 60%);
+      filter: blur(10px);
+      pointer-events:none;
+      z-index:0;
+    }
+
+    header h1 {
+      position: relative;
+      z-index: 2;
+      margin: 0;
+      font-size: clamp(36px, 3.6vw, 56px);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      font-weight: 900;
+      color: var(--text);
+    }
+
+    /* Dayspedia clock pinned top-right */
+    .clock-embed{
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 3;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 18px 50px rgba(0,0,0,0.16);
+      border: 1px solid rgba(0,0,0,0.12);
+      background: rgba(255,255,255,0.75);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      max-width: 520px;
+    }
+
+    /* Apple-ish touchups for the widget */
+    .clock-embed .DPDC{
+      border-radius: 16px !important;
+      border: 1px solid rgba(0,0,0,0.12) !important;
+      background: rgba(255,255,255,0.86) !important;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.10) !important;
+      font-family:
+        -apple-system, BlinkMacSystemFont,
+        "SF Pro Display", "SF Pro Text",
+        "Helvetica Neue", Helvetica, Arial,
+        "Segoe UI", Roboto, "Noto Sans",
+        "Liberation Sans", sans-serif !important;
+      padding: 18px !important;
+    }
+
+    .clock-embed .DPDCh{
+      color: rgba(29,29,31,0.78) !important;
+      font-weight: 800 !important;
+      letter-spacing: -0.01em !important;
+      margin-bottom: 10px !important;
+    }
+
+    .clock-embed .DPDCt, .clock-embed .DPDCd{
+      color: rgba(29,29,31,0.92) !important;
+      font-weight: 900 !important;
+      letter-spacing: -0.02em !important;
+    }
+
+    .clock-embed .DPDCt{
+      font-size: 72px !important; /* bigger clock */
+      line-height: 1 !important;
+    }
+
+    .clock-embed .DPDCd{
+      font-size: 22px !important;
+      margin-top: 6px !important;
+      opacity: 0.92 !important;
+    }
+
+    .clock-embed .DPDCt12{
+      font-size: 36% !important;
+      font-weight: 900 !important;
+      text-transform: uppercase !important;
+      opacity: 0.85 !important;
+    }
+
+    /* hide the “powered by” overlay link area if you want it clickable keep as-is; leaving it visible per widget */
+    /* .clock-embed .DPl { display:none !important; } */
+
+    @media (max-width: 1100px){
+      .clock-embed{
+        transform: scale(0.82);
+        transform-origin: top right;
+      }
+    }
+
+    @media (max-width: 760px){
+      .clock-embed{
+        position: static;
+        margin: 0 auto 10px;
+        transform: none;
+        width: 100%;
+        max-width: 520px;
+      }
+      header{
+        padding-top: 14px;
+      }
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      padding: 22px 20px 16px;
+    }
+
+    .card-row {
+      width: min(1320px, 100%);
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .stage-card {
+      background: var(--card);
+      border-radius: 24px;
+      padding: 18px;
+      position: relative;
+      box-shadow: var(--shadow2);
+      border: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow: hidden;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      transform: translateY(0);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+    }
+
+    .stage-card.dimmed {
+      opacity: 0.40;
+      transform: none !important;
+    }
+
+    .stage-card.active {
+      transform: translateY(-8px);
+      box-shadow: var(--shadow);
+      border-color: rgba(0,0,0,0.16);
+    }
+
+    .stage-title {
+      font-size: clamp(22px, 2.0vw, 32px);
+      line-height: 1.15;
+      font-weight: 900;
+      text-align: center;
+      letter-spacing: -0.02em;
+    }
+
+    .stage-title .mins{
+      display:block;
+      margin-top: 6px;
+      font-size: 0.72em;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      color: rgba(29,29,31,0.70);
+    }
+
+    /* Circle progress area */
+    .stage-circle{
+      position: relative;
+      flex: 1;
+      min-height: 250px;
+      display: grid;
+      place-items: center;
+    }
+
+    .ring{
+      width: min(270px, 92%);
+      aspect-ratio: 1 / 1;
+      position: relative;
+      display:grid;
+      place-items:center;
+    }
+
+    .ring svg{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      transform: rotate(-90deg);
+      filter: drop-shadow(0 14px 24px rgba(0,0,0,0.12));
+      pointer-events:none;
+    }
+
+    .ring .bg{
+      stroke: rgba(0,0,0,0.12);
+      stroke-width: 16;
+      fill: rgba(255,255,255,0.55);
+    }
+
+    .ring .fg{
+      stroke-width: 16;
+      fill: none;
+      stroke-linecap: round;
+      stroke-dasharray: 999;
+      stroke-dashoffset: 999;
+      transition: stroke-dashoffset 0.12s linear;
+      opacity: 0.96;
+    }
+
+    .fg.stage-0{ stroke: var(--blue); }
+    .fg.stage-1{ stroke: var(--green); }
+    .fg.stage-2{ stroke: var(--amber); }
+    .fg.stage-3{ stroke: var(--pink); }
+
+    /* Crop image into inner circle (you can change images too) */
+    .inner-circle{
+      width: 74%;
+      height: 74%;
+      border-radius: 50%;
+      overflow: hidden;
+      background: rgba(255,255,255,0.82);
+      border: 1px solid rgba(0,0,0,0.10);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.85);
+      display: grid;
+      place-items: center;
+    }
+
+    .inner-circle img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;        /* crop */
+      object-position: center;  /* center crop */
+      user-select:none;
+      -webkit-user-drag:none;
+      filter: saturate(1.02);
+    }
+
+    /* Countdown under each section (only visible when active) */
+    .stage-countdown{
+      text-align:center;
+      font-variant-numeric: tabular-nums;
+      font-size: clamp(34px, 3.0vw, 58px); /* bigger */
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.18s ease, transform 0.18s ease;
+      color: rgba(29,29,31,0.82);
+    }
+
+    .stage-card.active .stage-countdown{
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .stage-card.active .stage-countdown.neonish{
+      color: #ffffff;
+      background: rgba(0,0,0,0.76);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 18px;
+      padding: 12px 14px;
+      box-shadow:
+        0 16px 46px rgba(0,0,0,0.22),
+        0 0 22px rgba(0,113,227,0.12),
+        0 0 22px rgba(255,45,85,0.08);
+    }
+
+    footer {
+      padding: 16px 20px 22px;
+      background: linear-gradient(180deg, rgba(245,245,247,0.80), rgba(255,255,255,0.82));
+      border-top: 1px solid var(--line);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .big-timer-wrap{
+      width: min(1320px, 100%);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .big-countdown{
+      background: rgba(0,0,0,0.78);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 24px;
+      padding: 16px 18px;
+      box-shadow:
+        0 18px 52px rgba(0,0,0,0.20),
+        0 0 26px rgba(0,113,227,0.14),
+        0 0 22px rgba(255,45,85,0.10);
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 14px;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .big-left{
+      display: grid;
+      gap: 8px;
+      align-content: center;
+    }
+
+    .big-segment{
+      font-size: clamp(22px, 2.2vw, 34px);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      opacity: 0.95;
+    }
+
+    .big-stage{
+      font-size: clamp(18px, 1.8vw, 28px);
+      font-weight: 800;
+      opacity: 0.88;
+    }
+
+    .big-time{
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      font-size: clamp(60px, 7.4vw, 120px); /* slightly bigger */
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      text-shadow:
+        0 0 10px rgba(0,113,227,0.22),
+        0 0 18px rgba(52,199,89,0.14),
+        0 10px 40px rgba(0,0,0,0.28);
+    }
+
+    .giant-bar{
+      height: 44px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.14);
+      background: rgba(255,255,255,0.88);
+      overflow: hidden;
+      position: relative;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+    }
+
+    .giant-fill{
+      position:absolute;
+      left:0;
+      top:0;
+      height:100%;
+      width:0%;
+      border-radius: 999px;
+      transition: width 0.12s linear;
+      opacity: 0.95;
+    }
+
+    .giant-fill.stage-0{ background: linear-gradient(90deg, rgba(0,113,227,0.95), rgba(0,113,227,0.55)); }
+    .giant-fill.stage-1{ background: linear-gradient(90deg, rgba(52,199,89,0.95), rgba(52,199,89,0.55)); }
+    .giant-fill.stage-2{ background: linear-gradient(90deg, rgba(255,159,10,0.95), rgba(255,159,10,0.55)); }
+    .giant-fill.stage-3{ background: linear-gradient(90deg, rgba(255,45,85,0.95), rgba(255,45,85,0.55)); }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .btn {
+      border: 1px solid rgba(0,0,0,0.12);
+      border-radius: 999px;
+      padding: 14px 22px;
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+      background: linear-gradient(180deg, rgba(0,113,227,0.95), rgba(0,113,227,0.80));
+      color: #fff;
+      font-weight: 900;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 10px 22px rgba(0,113,227,0.18);
+      letter-spacing: -0.01em;
+    }
+
+    .btn:hover { transform: translateY(-2px); }
+
+    .btn.secondary {
+      background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(245,245,247,0.92));
+      color: var(--text);
+      box-shadow: 0 10px 22px rgba(0,0,0,0.10);
+    }
+
+    .status-text {
+      text-align: center;
+      font-size: 16px;
+      color: rgba(29,29,31,0.70);
+      margin-top: 6px;
+      font-weight: 700;
+      letter-spacing: -0.005em;
+    }
+
+    @media (max-width: 1100px) {
+      .card-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 700px) {
+      .card-row { grid-template-columns: 1fr; }
+      .big-countdown{ grid-template-columns: 1fr; }
+      .big-time{ text-align: left; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .fg, .giant-fill { transition: none; }
+      .stage-card { transition: none; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="clock-embed">
+      <!-- Dayspedia.com widget (San Antonio, ampm=true) -->
+      <div class="DPDC" cityid="3609" lang="en" id="dayspedia_widget_3f9387a2db148d75" host="https://dayspedia.com" ampm="true" nightsign="true" sun="false" style="background-image: none; width: auto; padding: 48px; background-color: initial;" auto="false">
+
+        <style media="screen" id="dayspedia_widget_3f9387a2db148d75_style">
+          /*COMMON*/
+          .DPDC{display:table;position:relative;box-sizing:border-box;font-size:100.01%;font-style:normal;font-family:Arial;background-position:50% 50%;background-repeat:no-repeat;background-size:cover;overflow:hidden;user-select:none}
+          .DPDCh,.DPDCd{width:fit-content;line-height:1.4}
+          .DPDCh{margin-bottom:1em}
+          .DPDCd{margin-top:.24em}
+          .DPDCt{line-height:1}
+          .DPDCth,.DPDCtm,.DPDCts{display:inline-block;vertical-align:text-top;white-space:nowrap}
+          .DPDCth{min-width:0.6em;text-align:right}
+          .DPDCtm,.DPDCts{min-width:1.44em}
+          .DPDCtm::before,.DPDCts::before{display:inline-block;content:':';vertical-align:middle;margin:-.34em 0 0 -.07em;width:.32em;text-align:center;opacity:.72;filter:alpha(opacity=72)}
+          .DPDCt12{display:inline-block;vertical-align:baseline;top:-0.12em;position:relative;font-size:40%}
+          .DPDCdm::after{content:' '}
+          .DPDCda::after{content:', '}
+          .DPDCdt{margin-right:.48em}
+          .DPDCtn{display:inline-block;position:relative;width:13px;height:13px;border:2px solid;border-radius:50%;overflow:hidden}
+          .DPDCtn>i{display:block;content:'';position:absolute;right:33%;top:-5%;width:85%;height:85%;border-radius:50%}
+          .DPDCs{margin:.96em 0 0 -3px;font-size:90%;line-height:1;white-space:nowrap}
+          .DPDCs sup{padding-left:.24em;font-size:65%}
+          .DPDCsl::before,.DPDCsl::after{display:inline-block;opacity:.4}
+          .DPDCsl::before{content:'~';margin:0 .12em}
+          .DPDCsl::after{content:'~';margin:0 .24em}
+          .DPDCs svg{display:inline-block;vertical-align:bottom;width:1.2em;height:1.2em;opacity:.48}
+          /*CUSTOM*/
+          .DPDC{width:auto;padding:24px;background-color:#ffffff;border:1px solid #343434;border-radius:8px}
+          .DPDCh{color:#007DBF;font-weight:normal}
+          .DPDCt,.DPDCd{color:#343434;font-weight:bold}
+          .DPDCtn{border-color:#343434}
+          .DPDCtn>i{background-color:#343434}
+          .DPDCt{font-size:48px}
+          .DPDCh,.DPDCd{font-size:16px}
+        </style>
+
+        <a class="DPl" href="https://dayspedia.com/time/us/San_Antonio/" target="_blank" style="display:block!important;text-decoration:none!important;border:none!important;cursor:pointer!important;background:transparent!important;line-height:0!important;text-shadow:none!important;position:absolute;z-index:1;top:0;right:0;bottom:0;left:0">
+          <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 16 16" style="position:absolute;right:8px;bottom:0;width:16px;height:16px">
+            <path style="fill:#007DBF" d="M0,0v16h1.7c-0.1-0.2-0.1-0.3-0.1-0.5c0-0.9,0.8-1.6,1.6-1.6c0.9,0,1.6,0.8,1.6,1.6c0,0.2,0,0.3-0.1,0.5h1.8 c-0.1-0.2-0.1-0.3-0.1-0.5c0-0.9,0.8-1.6,1.6-1.6s1.6,0.8,1.6,1.6c0,0.2,0,0.3-0.1,0.5h1.8c-0.1-0.2-0.1-0.3-0.1-0.5 c0-0.9,0.8-1.6,1.6-1.6c0.9,0,1.6,0.8,1.6,1.6c0,0.2,0,0.3-0.1,0.5H16V0H0z M4.2,8H2V2h2.2c2.1,0,3.3,1.3,3.3,3S6.3,8,4.2,8z M11.4,6.3h-0.8V8H9V2h2.5c1.4,0,2.4,0.8,2.4,2.1C13.9,5.6,12.9,6.3,11.4,6.3z M4.4,3.5H3.7v3h0.7C5.4,6.5,6,6,6,5 C6,4.1,5.4,3.5,4.4,3.5z M11.3,3.4h-0.8V5h0.8c0.6,0,0.9-0.3,0.9-0.8C12.2,3.7,11.9,3.4,11.3,3.4z"></path>
+          </svg>
+          <span title="DaysPedia.com" style="position:absolute;right:28px;bottom:6px;height:10px;width:60px;overflow:hidden;text-align:right;font:normal 10px/10px Arial,sans-serif!important;color:#007DBF">Powered&nbsp;by DaysPedia.com</span>
+        </a>
+
+        <div class="DPDCh" style="text-align: center; margin-left: auto; margin-right: auto; font-size: 24px;">Current Time in San Antonio</div>
+        <div class="DPDCt" style="text-align: center; margin-left: auto; margin-right: auto; font-size: 64px;">
+          <span class="DPDCth">11</span><span class="DPDCtm">21</span><span class="DPDCts">04</span><span class="DPDCt12" style="display: inline-block;">am</span>
+        </div>
+        <div class="DPDCd" style="text-align: center; margin-left: auto; margin-right: auto; font-size: 24px;">
+          <span class="DPDCdt">Thu, January 8</span><span class="DPDCtn" style="width: 20px; height: 20px; display: none;"><i></i></span>
+        </div>
+
+        <div class="DPDCs" style="text-align: center; margin-left: auto; margin-right: auto; font-size: 24px; display: none;"></div>
+
+        <script>
+          var s, t; s = document.createElement("script"); s.type = "text/javascript";
+          s.src = "//cdn.dayspedia.com/js/dwidget.min.vc84b5f7d.js";
+          t = document.getElementsByTagName('script')[0]; t.parentNode.insertBefore(s, t);
+          s.onload = function() {
+            window.dwidget = new window.DigitClock();
+            window.dwidget.init("dayspedia_widget_3f9387a2db148d75");
+          };
+        </script>
+      </div>
+      <!-- /Dayspedia.com widget -->
+    </div>
+
+    <h1>Tech App with Mr. Oz</h1>
+  </header>
+
+  <main>
+    <div class="card-row">
+      <div class="stage-card" data-stage="0">
+        <div class="stage-title">
+          Login
+          <span class="mins" id="label0">...</span>
+        </div>
+
+        <div class="stage-circle">
+          <div class="ring">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="bg" cx="60" cy="60" r="48"></circle>
+              <circle class="fg stage-0" id="ring0" cx="60" cy="60" r="48"></circle>
+            </svg>
+
+            <div class="inner-circle">
+              <img src="./images/login.png" alt="Login" />
+            </div>
+          </div>
+        </div>
+
+        <div class="stage-countdown neonish" id="cd0">--:--</div>
+      </div>
+
+      <div class="stage-card" data-stage="1">
+        <div class="stage-title">
+          Learning.com
+          <span class="mins" id="label1">...</span>
+        </div>
+
+        <div class="stage-circle">
+          <div class="ring">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="bg" cx="60" cy="60" r="48"></circle>
+              <circle class="fg stage-1" id="ring1" cx="60" cy="60" r="48"></circle>
+            </svg>
+
+            <div class="inner-circle">
+              <img src="./images/learning.png" alt="Learning.com" />
+            </div>
+          </div>
+        </div>
+
+        <div class="stage-countdown neonish" id="cd1">--:--</div>
+      </div>
+
+      <div class="stage-card" data-stage="2">
+        <div class="stage-title">
+          Typing.com
+          <span class="mins" id="label2">...</span>
+        </div>
+
+        <div class="stage-circle">
+          <div class="ring">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="bg" cx="60" cy="60" r="48"></circle>
+              <circle class="fg stage-2" id="ring2" cx="60" cy="60" r="48"></circle>
+            </svg>
+
+            <div class="inner-circle">
+              <img src="./images/typing.png" alt="Typing.com" />
+            </div>
+          </div>
+        </div>
+
+        <div class="stage-countdown neonish" id="cd2">--:--</div>
+      </div>
+
+      <div class="stage-card" data-stage="3">
+        <div class="stage-title">
+          Logout
+          <span class="mins" id="label3">...</span>
+        </div>
+
+        <div class="stage-circle">
+          <div class="ring">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="bg" cx="60" cy="60" r="48"></circle>
+              <circle class="fg stage-3" id="ring3" cx="60" cy="60" r="48"></circle>
+            </svg>
+
+            <div class="inner-circle">
+              <img src="./images/logout.png" alt="Logout" />
+            </div>
+          </div>
+        </div>
+
+        <div class="stage-countdown neonish" id="cd3">--:--</div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="big-timer-wrap">
+      <div class="big-countdown">
+        <div class="big-left">
+          <div class="big-segment" id="bigSegment">...</div>
+          <div class="big-stage" id="bigStage">...</div>
+        </div>
+        <div class="big-time" id="bigTime">--:--</div>
+      </div>
+
+      <div class="giant-bar" aria-hidden="true">
+        <div class="giant-fill stage-0" id="giantFill"></div>
+      </div>
+
+      <div class="controls">
+        <button class="btn secondary" id="toggleSimBtn">Simulation: OFF</button>
+        <button class="btn" id="resetSimBtn">Reset Sim</button>
+      </div>
+
+      <div class="status-text" id="statusText">Uses local computer time. Simulation lets you test fast.</div>
+
+      <audio id="stageSound" src="beep.mp3" preload="auto"></audio>
+    </div>
+  </footer>
+
+  <script>
+    /*
+      Touch-ups:
+      - Images are cropped into a circular "inner-circle" (object-fit: cover)
+      - Clocklink iframe replaced with Dayspedia widget (bigger height + big font)
+      - Per-stage countdown bigger and more Apple-like
+    */
+
+    // Assigned minutes (edit anytime)
+    const assignedMinutes = [2, 30, 10, 2];
+    const SCALE_TO_PERIOD = true;
+
+    function hmToMin(hm) {
+      const [h, m] = hm.split(':').map(Number);
+      return h * 60 + m;
+    }
+
+    const scheduleMonThu = [
+      { name: 'Breakfast', type: 'nonclass', start: '07:20', end: '07:47' },
+      { name: 'Passing',   type: 'nonclass', start: '07:47', end: '07:50' },
+
+      { name: 'Period 1',  type: 'class',    start: '07:50', end: '08:38' },
+      { name: 'Passing',   type: 'nonclass', start: '08:38', end: '08:41' },
+
+      { name: 'Period 2',  type: 'class',    start: '08:41', end: '09:29' },
+      { name: 'Passing',   type: 'nonclass', start: '09:29', end: '09:32' },
+
+      { name: 'Period 3',  type: 'class',    start: '09:32', end: '10:20' },
+      { name: 'Passing',   type: 'nonclass', start: '10:20', end: '10:23' },
+
+      { name: 'Period 4',  type: 'class',    start: '10:23', end: '11:10' },
+      { name: 'Passing',   type: 'nonclass', start: '11:10', end: '11:13' },
+
+      { name: 'Period 5',  type: 'class',    start: '11:13', end: '12:01' },
+      { name: 'Passing',   type: 'nonclass', start: '12:01', end: '12:04' },
+
+      { name: 'Period 6',  type: 'class',    start: '12:04', end: '12:52' },
+      { name: 'Passing',   type: 'nonclass', start: '12:52', end: '12:55' },
+
+      { name: 'Period 7',  type: 'class',    start: '12:55', end: '13:43' },
+      { name: 'Passing',   type: 'nonclass', start: '13:43', end: '13:46' },
+
+      { name: 'Period 8',  type: 'class',    start: '13:46', end: '14:34' },
+      { name: 'Passing',   type: 'nonclass', start: '14:34', end: '14:37' },
+
+      { name: 'Period 9',  type: 'class',    start: '14:37', end: '15:25' }
+    ];
+
+    const scheduleFriday = [
+      { name: 'Breakfast', type: 'nonclass', start: '07:20', end: '07:47' },
+      { name: 'Passing',   type: 'nonclass', start: '07:47', end: '07:50' },
+
+      { name: 'Period 1',  type: 'class',    start: '07:50', end: '08:34' },
+      { name: 'Passing',   type: 'nonclass', start: '08:34', end: '08:37' },
+
+      { name: 'Period 2',  type: 'class',    start: '08:37', end: '09:21' },
+      { name: 'Passing',   type: 'nonclass', start: '09:21', end: '09:24' },
+
+      { name: 'Period 3',  type: 'class',    start: '09:24', end: '10:08' },
+      { name: 'Passing',   type: 'nonclass', start: '10:08', end: '10:11' },
+
+      { name: 'Period 4',  type: 'class',    start: '10:11', end: '10:54' },
+      { name: 'Passing',   type: 'nonclass', start: '10:54', end: '10:57' },
+
+      { name: 'Period 5',  type: 'class',    start: '10:57', end: '11:41' },
+      { name: 'Passing',   type: 'nonclass', start: '11:41', end: '11:44' },
+
+      { name: 'Period 6',  type: 'class',    start: '11:44', end: '12:28' },
+      { name: 'Passing',   type: 'nonclass', start: '12:28', end: '12:31' },
+
+      { name: 'Period 7',  type: 'class',    start: '12:31', end: '13:15' }
+    ];
+
+    function getDaySchedule(dateObj) {
+      const day = dateObj.getDay();
+      if (day === 5) return { type: 'Friday', items: scheduleFriday };
+      if (day >= 1 && day <= 4) return { type: 'Mon-Thu', items: scheduleMonThu };
+      return { type: 'Weekend', items: [] };
+    }
+
+    // Simulation
+    let simulationOn = false;
+    const SIM_SPEED = 60;
+
+    // UI hooks
+    const stageCards = document.querySelectorAll('.stage-card');
+    const stageSound = document.getElementById('stageSound');
+
+    const bigSegment = document.getElementById('bigSegment');
+    const bigStage = document.getElementById('bigStage');
+    const bigTime = document.getElementById('bigTime');
+
+    const statusText = document.getElementById('statusText');
+    const toggleSimBtn = document.getElementById('toggleSimBtn');
+    const resetSimBtn = document.getElementById('resetSimBtn');
+
+    const ringEls = [
+      document.getElementById('ring0'),
+      document.getElementById('ring1'),
+      document.getElementById('ring2'),
+      document.getElementById('ring3'),
+    ];
+
+    const cdEls = [
+      document.getElementById('cd0'),
+      document.getElementById('cd1'),
+      document.getElementById('cd2'),
+      document.getElementById('cd3'),
+    ];
+
+    const labelEls = [
+      document.getElementById('label0'),
+      document.getElementById('label1'),
+      document.getElementById('label2'),
+      document.getElementById('label3'),
+    ];
+
+    const giantFill = document.getElementById('giantFill');
+
+    function playStageSound() {
+      stageSound.currentTime = 0;
+      stageSound.play().catch(() => {});
+    }
+
+    function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+    function formatHMS(totalSeconds) {
+      totalSeconds = Math.max(0, Math.floor(totalSeconds));
+      const h = Math.floor(totalSeconds / 3600);
+      const m = Math.floor((totalSeconds % 3600) / 60);
+      const s = totalSeconds % 60;
+      if (h > 0) return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+      return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    }
+
+    function toMinSinceMidnight(dateObj) {
+      return dateObj.getHours() * 60 + dateObj.getMinutes() + dateObj.getSeconds()/60;
+    }
+
+    function getSegmentForNow(scheduleItems, nowMin) {
+      for (let i = 0; i < scheduleItems.length; i++) {
+        const it = scheduleItems[i];
+        const s = hmToMin(it.start);
+        const e = hmToMin(it.end);
+        if (nowMin >= s && nowMin < e) {
+          const next = scheduleItems[i+1] || null;
+          return { current: it, startMin: s, endMin: e, next };
+        }
+      }
+      const upcoming = scheduleItems.find(it => nowMin < hmToMin(it.start)) || null;
+      return { current: null, startMin: null, endMin: null, next: upcoming };
+    }
+
+    function setRingProgress(ringEl, pct) {
+      const r = 48;
+      const C = 2 * Math.PI * r;
+      ringEl.style.strokeDasharray = C.toFixed(3);
+      ringEl.style.strokeDashoffset = (C * (1 - clamp(pct, 0, 100)/100)).toFixed(3);
+    }
+
+    function setAllRings(stageIdx, stagePct){
+      for (let i = 0; i < ringEls.length; i++) {
+        setRingProgress(ringEls[i], (i === stageIdx) ? stagePct : 0);
+      }
+    }
+
+    function setGiantFill(stageIdx, pct) {
+      giantFill.className = 'giant-fill stage-' + stageIdx;
+      giantFill.style.width = clamp(pct, 0, 100) + '%';
+    }
+
+    function stageName(i){
+      return ['Login', 'Learning.com', 'Typing.com', 'Logout'][i] || '';
+    }
+
+    function computeStageDurationsSec(periodLenSec){
+      const baseTotalMin = assignedMinutes.reduce((a,b)=>a+b,0);
+      if (!SCALE_TO_PERIOD) return assignedMinutes.map(m => m * 60);
+      return assignedMinutes.map(m => (m / baseTotalMin) * periodLenSec);
+    }
+
+    function stageAt(segElapsedSec, durationsSec){
+      let acc = 0;
+      for (let i = 0; i < durationsSec.length; i++) {
+        const start = acc;
+        const end = acc + durationsSec[i];
+        if (segElapsedSec >= start && segElapsedSec < end) {
+          return { stage: i, stageStart: start, stageEnd: end };
+        }
+        acc = end;
+      }
+      const total = durationsSec.reduce((a,b)=>a+b,0);
+      return { stage: 3, stageStart: total - durationsSec[3], stageEnd: total };
+    }
+
+    // Simulation engine
+    let lastStage = -1;
+    let simAnchorRealMs = null;
+    let simAnchorScheduleMin = null;
+
+    function getNowForEngine() {
+      const realNow = new Date();
+      if (!simulationOn) return realNow;
+
+      if (simAnchorRealMs === null) {
+        simAnchorRealMs = Date.now();
+        simAnchorScheduleMin = toMinSinceMidnight(realNow);
+      }
+      const elapsedRealSec = (Date.now() - simAnchorRealMs) / 1000;
+      const elapsedScheduleSec = elapsedRealSec * SIM_SPEED;
+
+      const totalMin = simAnchorScheduleMin + (elapsedScheduleSec / 60);
+      const baseMidnight = new Date(realNow);
+      baseMidnight.setHours(0,0,0,0);
+
+      const fake = new Date(realNow);
+      fake.setTime(baseMidnight.getTime() + totalMin * 60 * 1000);
+      return fake;
+    }
+
+    function initTitleLabels(){
+      for (let i = 0; i < assignedMinutes.length; i++) {
+        labelEls[i].textContent = assignedMinutes[i] + ' min';
+      }
+    }
+
+    function tick() {
+      const now = getNowForEngine();
+      const dayInfo = getDaySchedule(now);
+      const items = dayInfo.items;
+
+      if (dayInfo.type === 'Weekend' || items.length === 0) {
+        bigSegment.textContent = 'Weekend';
+        bigStage.textContent = 'No schedule';
+        bigTime.textContent = '--:--';
+        statusText.textContent = 'Weekend mode. (No bell schedule configured.)';
+
+        stageCards.forEach(c => { c.classList.remove('active'); c.classList.add('dimmed'); });
+        setAllRings(-1, 0);
+        setGiantFill(0, 0);
+        cdEls.forEach(el => el.textContent = '--:--');
+        lastStage = -1;
+        return;
+      }
+
+      const nowMin = toMinSinceMidnight(now);
+      const seg = getSegmentForNow(items, nowMin);
+
+      if (!seg.current) {
+        const label = seg.next ? ('Waiting for ' + seg.next.name + ' @ ' + seg.next.start) : 'After school';
+        bigSegment.textContent = label;
+        bigStage.textContent = '';
+        bigTime.textContent = '--:--';
+        statusText.textContent = seg.next ? ('Next: ' + seg.next.name) : 'Schedule complete.';
+
+        stageCards.forEach(c => { c.classList.remove('active'); c.classList.add('dimmed'); });
+        setAllRings(-1, 0);
+        setGiantFill(0, 0);
+        cdEls.forEach(el => el.textContent = '--:--');
+        lastStage = -1;
+        return;
+      }
+
+      const segStart = seg.startMin;
+      const segEnd = seg.endMin;
+
+      const segLenSec = (segEnd - segStart) * 60;
+      const segElapsedSec = clamp((nowMin - segStart) * 60, 0, segLenSec);
+      const segRemainingSec = Math.max(0, segLenSec - segElapsedSec);
+
+      const overallPct = (segElapsedSec / segLenSec) * 100;
+
+      if (seg.current.type !== 'class') {
+        bigSegment.textContent = seg.current.name + ' (' + seg.current.start + '–' + seg.current.end + ')';
+        bigStage.textContent = 'Non-class segment';
+        bigTime.textContent = formatHMS(segRemainingSec);
+
+        statusText.textContent = 'Non-class segment: ' + seg.current.name;
+
+        stageCards.forEach(c => { c.classList.remove('active'); c.classList.add('dimmed'); });
+        setAllRings(-1, 0);
+        setGiantFill(0, overallPct);
+        cdEls.forEach(el => el.textContent = '--:--');
+
+        lastStage = -1;
+        return;
+      }
+
+      // Class segment
+      const durationsSec = computeStageDurationsSec(segLenSec);
+      const info = stageAt(segElapsedSec, durationsSec);
+      const stage = info.stage;
+
+      stageCards.forEach(c => c.classList.remove('dimmed'));
+      stageCards.forEach((card, idx) => card.classList.toggle('active', idx === stage));
+
+      const stagePct = ((segElapsedSec - info.stageStart) / Math.max(0.001, (info.stageEnd - info.stageStart))) * 100;
+      setAllRings(stage, clamp(stagePct, 0, 100));
+      setGiantFill(stage, overallPct);
+
+      for (let i = 0; i < cdEls.length; i++) {
+        if (i === stage) {
+          const stageRemaining = Math.max(0, info.stageEnd - segElapsedSec);
+          cdEls[i].textContent = formatHMS(stageRemaining);
+        } else {
+          cdEls[i].textContent = '--:--';
+        }
+      }
+
+      if (lastStage !== -1 && stage !== lastStage) playStageSound();
+      lastStage = stage;
+
+      const stageRemaining = Math.max(0, info.stageEnd - segElapsedSec);
+
+      bigSegment.textContent = seg.current.name + ' (' + seg.current.start + '–' + seg.current.end + ')';
+      bigStage.textContent = 'Now: ' + stageName(stage) + ' | Stage left: ' + formatHMS(stageRemaining);
+      bigTime.textContent = formatHMS(segRemainingSec);
+
+      statusText.textContent = (simulationOn ? 'Simulation ON' : 'Auto') + ' | ' + dayInfo.type;
+    }
+
+    toggleSimBtn.addEventListener('click', () => {
+      simulationOn = !simulationOn;
+      toggleSimBtn.textContent = 'Simulation: ' + (simulationOn ? 'ON' : 'OFF');
+
+      simAnchorRealMs = null;
+      simAnchorScheduleMin = null;
+      lastStage = -1;
+      tick();
+    });
+
+    resetSimBtn.addEventListener('click', () => {
+      simAnchorRealMs = null;
+      simAnchorScheduleMin = null;
+      lastStage = -1;
+      tick();
+    });
+
+    initTitleLabels();
+    toggleSimBtn.textContent = 'Simulation: OFF';
+    setInterval(tick, 250);
+    tick();
+  </script>
+</body>
+</html>
+

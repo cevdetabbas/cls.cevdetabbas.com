@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tech Zone Pro v3</title>
+  <style>
+    :root {
+      --bg: #f2f2f7;
+      --card: rgba(255, 255, 255, 0.9);
+      --text: #1c1c1e;
+      --muted: #8e8e93;
+      --blue: #007aff;
+      --pink: #ff2d55;
+      --green: #34c759;
+      --gold: #ffcc00;
+      --rainbow: linear-gradient(120deg, #ff3b30, #ff9500, #ffcc00, #34c759, #007aff, #5856d6, #ff2d55);
+    }
+
+    * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+    body {
+      margin: 0; font-family: -apple-system, system-ui, sans-serif;
+      background: var(--bg); color: var(--text);
+      display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+      transition: background 1s ease;
+    }
+
+    header {
+      background: rgba(255, 255, 255, 0.8); backdrop-filter: saturate(180%) blur(20px);
+      padding: 15px 40px; border-bottom: 1px solid rgba(0,0,0,0.1);
+      display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; z-index: 100;
+    }
+
+    .chip { 
+      background: #fff; border: 1px solid rgba(0,0,0,0.1); 
+      padding: 6px 14px; border-radius: 10px; font-weight: 700; font-variant-numeric: tabular-nums; 
+    }
+
+    main { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; padding: 20px; }
+
+    #standby-overlay {
+      position: absolute; inset: 0; z-index: 10;
+      background: rgba(255,255,255,0.4); backdrop-filter: blur(4px);
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+    }
+    #standby-overlay.show { display: flex; }
+
+    .grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px;
+      width: 100%; max-width: 1200px; z-index: 5;
+    }
+
+    .card {
+      background: var(--card); border-radius: 30px; padding: 25px;
+      text-align: center; border: 1px solid rgba(255,255,255,0.6);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05); transition: 0.5s cubic-bezier(0.2, 1, 0.3, 1);
+      position: relative;
+    }
+    .card.active {
+      transform: scale(1.05); background: #fff; box-shadow: 0 30px 60px rgba(0,0,0,0.1);
+    }
+    .card.active::after {
+      content: ''; position: absolute; inset: -2px; border-radius: 32px;
+      background: var(--rainbow); background-size: 200%; z-index: -1;
+      animation: shift 3s linear infinite; opacity: 0.3; filter: blur(8px);
+    }
+
+    .ring-svg { transform: rotate(-90deg); width: 140px; height: 140px; margin: 15px auto; display: block; }
+    .ring-bg { fill: none; stroke: #eee; stroke-width: 8; }
+    .ring-bar { fill: none; stroke: var(--blue); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 283; stroke-dashoffset: 283; transition: 0.5s; }
+    
+    .timer-text { font-size: 2.2rem; font-weight: 900; letter-spacing: -1px; margin-top: 5px; color: var(--muted); }
+    .active .timer-text { color: var(--text); }
+
+    footer {
+      background: #fff; border-top: 1px solid rgba(0,0,0,0.1);
+      display: flex; flex-direction: column;
+    }
+
+    .footer-toolbar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 40px; border-bottom: 1px solid #eee; background: #fafafa;
+    }
+
+    .btn {
+      background: #fff; border: 1px solid #ddd; padding: 8px 16px; 
+      border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.2s;
+    }
+    .btn:hover { background: #000; color: #fff; }
+    .btn-primary { background: var(--blue); color: #fff; border: none; }
+
+    .mode-selector { display: flex; background: #eee; padding: 4px; border-radius: 12px; gap: 4px; }
+    .mode-btn { 
+      padding: 6px 12px; border-radius: 8px; border: none; font-weight: 700; font-size: 11px;
+      cursor: pointer; background: transparent; color: var(--muted); text-transform: uppercase;
+    }
+    .mode-btn.active { background: #fff; color: var(--text); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+    #banner { 
+      position: fixed; top: 120px; left: 50%; transform: translateX(-50%);
+      background: #000; color: #fff; padding: 10px 40px; border-radius: 50px;
+      font-weight: 800; font-size: 18px; opacity: 0; transition: 0.5s; z-index: 1000;
+    }
+    #banner.show { opacity: 1; top: 140px; }
+
+    @keyframes shift { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="chip" id="dateDisplay">...</div>
+    <h2 style="margin:0; font-weight: 900; letter-spacing: -1px;">TECH ZONE</h2>
+    <div style="text-align: right;"><div class="chip" id="timeDisplay">00:00:00</div></div>
+  </header>
+
+  <div id="banner">ANNOUNCEMENT</div>
+
+  <main>
+    <div id="standby-overlay">
+      <div style="font-size: 14px; font-weight: 800; color: var(--blue); letter-spacing: 2px;">COUNTING DOWN FOR THE NEXT SESSION</div>
+      <div id="countdownDisplay" style="font-size: 8rem; font-weight: 900; letter-spacing: -5px;">00:00:00</div>
+      <div id="nextSessionNote" style="font-weight: 600; color: var(--muted);">Next Class: Monday @ 07:50 AM</div>
+    </div>
+
+    <div class="grid">
+      <div class="card" id="card0">
+        <strong style="display:block; font-size: 18px;">LOGIN</strong>
+        <svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="ring0" cx="50" cy="50" r="45"/></svg>
+        <div class="timer-text" id="tm0">03:00</div>
+      </div>
+      <div class="card" id="card1">
+        <strong style="display:block; font-size: 18px;">LEARNING</strong>
+        <svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="ring1" cx="50" cy="50" r="45"/></svg>
+        <div class="timer-text" id="tm1">30:00</div>
+      </div>
+      <div class="card" id="card2">
+        <strong style="display:block; font-size: 18px;">TYPING</strong>
+        <svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="ring2" cx="50" cy="50" r="45"/></svg>
+        <div class="timer-text" id="tm2">10:00</div>
+      </div>
+      <div class="card" id="card3">
+        <strong style="display:block; font-size: 18px;">LOGOUT</strong>
+        <svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="ring3" cx="50" cy="50" r="45"/></svg>
+        <div class="timer-text" id="tm3">02:00</div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-toolbar">
+      <div style="display: flex; gap: 10px;">
+        <button class="btn btn-primary" onclick="jumpTo(-1)">Start Session</button>
+        <button class="btn" onclick="jumpTo(0)">Login</button>
+        <button class="btn" onclick="jumpTo(1)">Learning</button>
+        <button class="btn" onclick="jumpTo(2)">Typing</button>
+        <button class="btn" onclick="jumpTo(3)">Logout</button>
+      </div>
+      <div style="display: flex; gap: 20px; align-items: center;">
+        <button class="btn" onclick="playDoorbell()" style="border-radius: 50%; width: 45px; height: 45px; padding: 0;">🔔</button>
+        <div class="mode-selector">
+          <button class="mode-btn active" id="mode-real" onclick="setMode('real')">Real-time</button>
+          <button class="mode-btn" id="mode-sim" onclick="setMode('sim')">Simulate</button>
+          <button class="mode-btn" id="mode-flash" onclick="setMode('flash')">Flash</button>
+        </div>
+      </div>
+    </div>
+    <div style="padding: 10px 40px; display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; font-weight: 700;">
+      <span id="systemStatus">SYSTEM READY</span>
+      <span>MR. OZ TECH ZONE PRO EDITION v3</span>
+    </div>
+  </footer>
+
+  <script>
+    const sessionMins = [3, 30, 10, 2];
+    let currentMode = 'real';
+    let timeAnchor = null;
+    let lastStage = -1;
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playDoorbell() {
+      const now = audioCtx.currentTime;
+      // Ding (Higher)
+      const osc1 = audioCtx.createOscillator();
+      const gain1 = audioCtx.createGain();
+      osc1.frequency.setValueAtTime(660, now); // E5
+      gain1.gain.setValueAtTime(0, now);
+      gain1.gain.linearRampToValueAtTime(0.3, now + 0.05);
+      gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+      osc1.connect(gain1); gain1.connect(audioCtx.destination);
+      osc1.start(now); osc1.stop(now + 0.5);
+      // Dong (Lower)
+      const osc2 = audioCtx.createOscillator();
+      const gain2 = audioCtx.createGain();
+      osc2.frequency.setValueAtTime(523.25, now + 0.4); // C5
+      gain2.gain.setValueAtTime(0, now + 0.4);
+      gain2.gain.linearRampToValueAtTime(0.3, now + 0.45);
+      gain2.gain.exponentialRampToValueAtTime(0.01, now + 1.2);
+      osc2.connect(gain2); gain2.connect(audioCtx.destination);
+      osc2.start(now + 0.4); osc2.stop(now + 1.2);
+    }
+
+    function announce(msg) {
+      playDoorbell();
+      const b = document.getElementById('banner');
+      b.textContent = msg; b.classList.add('show');
+      setTimeout(() => b.classList.remove('show'), 4000);
+      const utterance = new SpeechSynthesisUtterance(msg);
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('mode-' + mode).classList.add('active');
+      timeAnchor = null; 
+      document.getElementById('systemStatus').textContent = mode.toUpperCase() + " MODE ACTIVE";
+    }
+
+    function jumpTo(idx) {
+      if (currentMode === 'real') setMode('sim');
+      const now = new Date();
+      let mins = 0;
+      if (idx >= 0) { for(let i=0; i<idx; i++) mins += sessionMins[i]; }
+      timeAnchor = { real: Date.now(), fake: now.setHours(7, 50 + mins, 0, 0) };
+      if (idx === -1) announce("Starting Full Class Session");
+    }
+
+    function getNow() {
+      if (currentMode === 'real') return new Date();
+      if (!timeAnchor) timeAnchor = { real: Date.now(), fake: Date.now() };
+      const speed = currentMode === 'flash' ? 60 : 1;
+      const elapsed = (Date.now() - timeAnchor.real) * speed;
+      return new Date(timeAnchor.fake + elapsed);
+    }
+
+    function update() {
+      const now = getNow();
+      document.getElementById('dateDisplay').textContent = now.toLocaleDateString('en-US', {weekday:'long', month:'short', day:'numeric'});
+      document.getElementById('timeDisplay').textContent = now.toLocaleTimeString('en-US', {hour12:false});
+
+      const start = 7 * 3600 + 50 * 60;
+      const end = start + (sessionMins.reduce((a,b)=>a+b, 0) * 60);
+      const curr = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+
+      const names = ["Login", "Learning", "Typing", "Logout"];
+      const isClass = curr >= start && curr < end;
+      document.getElementById('standby-overlay').classList.toggle('show', !isClass);
+
+      if (isClass) {
+        let acc = start;
+        for(let i=0; i<4; i++) {
+          const card = document.getElementById(`card${i}`);
+          const ring = document.getElementById(`ring${i}`);
+          const tm = document.getElementById(`tm${i}`);
+          const dur = sessionMins[i] * 60;
+
+          if (curr >= acc && curr < acc + dur) {
+            if (i !== lastStage) { announce(`${names[i]} session is starting`); lastStage = i; }
+            card.classList.add('active');
+            const rem = Math.ceil(acc + dur - curr);
+            tm.textContent = new Date(rem * 1000).toISOString().substr(14, 5);
+            ring.style.strokeDashoffset = 283 - ((curr - acc) / dur * 283);
+          } else {
+            card.classList.remove('active');
+            ring.style.strokeDashoffset = (curr >= (acc+dur)) ? 0 : 283;
+            tm.textContent = (curr >= (acc+dur)) ? "Done" : `${sessionMins[i].toString().padStart(2,'0')}:00`;
+          }
+          acc += dur;
+        }
+      } else {
+        lastStage = -1;
+        // Logic for next class countdown
+        let target = new Date(now);
+        target.setHours(7, 50, 0, 0);
+        if (curr >= end) target.setDate(target.getDate() + 1);
+        while(target.getDay() === 0 || target.getDay() === 6) target.setDate(target.getDate() + 1);
+
+        const diff = Math.floor((target - now) / 1000);
+        const h = Math.floor(diff/3600);
+        const m = Math.floor((diff%3600)/60);
+        const s = diff%60;
+        document.getElementById('countdownDisplay').textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        document.getElementById('nextSessionNote').textContent = `Next Class: ${target.toLocaleDateString('en-US', {weekday:'long'})} @ 07:50 AM`;
+      }
+    }
+
+    setInterval(update, 1000);
+    update();
+  </script>
+</body>
+</html>

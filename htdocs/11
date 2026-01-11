@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tech App with Mr. Oz</title>
+
+  <style>
+    :root{
+      /* Apple-style system font stack (SF Pro on macOS/iOS via -apple-system) */
+      --apple-stack: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+                     "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+      --bg: #0b0b0c;
+      --fg: #f5f5f7;
+      --muted: rgba(245,245,247,0.85);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--apple-stack);
+      background: #111;
+      color: var(--fg);
+    }
+
+    header{
+      background: var(--bg);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .wrap{
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .title{
+      font-family: var(--apple-stack);
+      font-size: 44px;
+      line-height: 1.05;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+    }
+
+    .dt{
+      font-family: var(--apple-stack);
+      text-align: right;
+      white-space: nowrap;
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    .dt .date,
+    .dt .time{
+      font-size: 22px;  /* ~half of 44px */
+      line-height: 1.1;
+    }
+
+    .dt .time{
+      margin-top: 4px;
+      color: var(--fg);
+    }
+
+    @media (max-width: 700px){
+      .wrap{ flex-direction: column; align-items: flex-start; }
+      .dt{ text-align: left; }
+      .title{ font-size: 36px; }
+      .dt .date, .dt .time{ font-size: 18px; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="wrap">
+      <div class="title">Tech App with Mr. Oz</div>
+
+      <div class="dt" aria-label="Current date and time">
+        <div class="date" id="dateLine">—</div>
+        <div class="time" id="timeLine">—</div>
+      </div>
+    </div>
+  </header>
+
+  <script>
+    function updateDateTime() {
+      const now = new Date();
+
+      document.getElementById("dateLine").textContent =
+        now.toLocaleDateString(undefined, {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric"
+        });
+
+      document.getElementById("timeLine").textContent =
+        now.toLocaleTimeString(undefined, {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit"
+        });
+    }
+
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
+  </script>
+</body>
+</html>
+

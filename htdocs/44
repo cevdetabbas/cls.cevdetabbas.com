@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tech Zone Elite v5</title>
+  <style>
+    :root {
+      --bg: #f5f5f7;
+      --card: rgba(255, 255, 255, 0.95);
+      --text: #1d1d1f;
+      --muted: #86868b;
+      --blue: #0071e3;
+      --rainbow: linear-gradient(120deg, #ff3b30, #ff9500, #ffcc00, #34c759, #007aff, #5856d6, #ff2d55);
+    }
+
+    * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+    body {
+      margin: 0; font-family: -apple-system, system-ui, sans-serif;
+      background: var(--bg); color: var(--text);
+      display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+    }
+
+    /* HEADER */
+    header {
+      background: #fff; padding: 12px 40px; 
+      display: grid; grid-template-columns: 220px 1fr 220px; align-items: center;
+      border-bottom: 1px solid #e5e5e5; z-index: 100;
+    }
+    .head-label { font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; margin-right: 5px; }
+    .head-val { font-variant-numeric: tabular-nums; font-weight: 700; }
+    h1 { text-align: center; margin: 0; font-size: 22px; font-weight: 950; letter-spacing: -1px; }
+
+    /* FLIGHT DECK (STANDBY BAR) */
+    #flight-deck {
+      background: #000; color: #fff; height: 0; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #flight-deck.active { height: 80px; }
+    .slot-timer { font-family: 'Courier New', Courier, monospace; font-size: 40px; font-weight: 900; color: #34c759; text-shadow: 0 0 10px #34c75944; margin: 0 30px; }
+
+    /* LAYOUT */
+    main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 30px; background: white; }
+    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; width: 100%; max-width: 1400px; }
+
+    /* CARDS */
+    .card {
+      background: #fbfbfd; border-radius: 35px; padding: 30px;
+      text-align: center; position: relative; border: 1px solid #efeff4;
+      transition: all 0.5s;
+    }
+    .card.active { transform: scale(1.05); background: #fff; border-color: transparent; }
+    .card.active::before {
+      content: ''; position: absolute; inset: -4px; 
+      background: var(--rainbow); background-size: 200% 200%;
+      border-radius: 39px; z-index: -1;
+      animation: rainbowMove 2s linear infinite; filter: blur(10px); opacity: 0.6;
+    }
+
+    .circle-wrap { position: relative; width: 180px; height: 180px; margin: 20px auto; }
+    .ring-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+    .ring-bg { fill: none; stroke: #eee; stroke-width: 8; }
+    .ring-bar { fill: none; stroke: var(--blue); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 283; stroke-dashoffset: 283; transition: 1s linear; }
+    
+    /* FAST RAINBOW RING EFFECT */
+    .active .ring-bar { stroke: url(#rainbowGrad); animation: rotateRing 2s linear infinite; }
+
+    .img-box { position: absolute; inset: 15%; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: white; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+    .img-box img { width: 70%; height: 70%; object-fit: contain; }
+
+    .timer-text { font-size: 2.8rem; font-weight: 900; color: #d1d1d6; font-variant-numeric: tabular-nums; }
+    .active .timer-text { color: #000; }
+    .session-info { font-size: 12px; font-weight: 800; color: #86868b; }
+
+    /* FOOTER */
+    footer { background: #fff; border-top: 1px solid #eee; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; }
+    .btn { background: #f2f2f7; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+    .btn:hover { background: #000; color: #fff; transform: translateY(-2px); }
+    .mode-group { display: flex; background: #f2f2f7; padding: 4px; border-radius: 14px; gap: 5px; }
+    .mode-btn { border: none; padding: 8px 16px; border-radius: 10px; font-weight: 750; font-size: 11px; cursor: pointer; background: transparent; color: var(--muted); }
+    .mode-btn.active { background: #fff; color: #000; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+
+    @keyframes rainbowMove { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+    @keyframes rotateRing { from { stroke-dashoffset: 283; } to { stroke-dashoffset: 0; } }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div><span class="head-label">date:</span><span class="head-val" id="dateVal">--/--/----</span></div>
+    <h1>MR. OZ TECH ZONE</h1>
+    <div style="text-align: right;"><span class="head-label">time:</span><span class="head-val" id="timeVal">00:00:00</span></div>
+  </header>
+
+  <div id="flight-deck">
+    <span style="font-weight: 900; letter-spacing: 2px; font-size: 11px;">NEXT MISSION DEPLOYS IN</span>
+    <div class="slot-timer" id="slotTime">00:00:00</div>
+    <span id="nextDayTarget" style="font-weight: 700; color: #86868b; font-size: 11px;">MONDAY 07:50</span>
+  </div>
+
+  <main>
+    <div class="grid">
+      <!-- Session Cards -->
+      <div class="card" id="c0">
+        <div class="session-info">LOGIN — 3 MIN</div>
+        <div class="circle-wrap">
+          <svg class="ring-svg" viewBox="0 0 100 100">
+            <defs>
+              <linearGradient id="rainbowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#ff3b30"/><stop offset="50%" stop-color="#007aff"/><stop offset="100%" stop-color="#ff3b30"/>
+              </linearGradient>
+            </defs>
+            <circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="r0" cx="50" cy="50" r="45"/></svg>
+          <div class="img-box"><img src="https://cdn-icons-png.flaticon.com/512/295/295128.png"></div>
+        </div>
+        <div class="timer-text" id="t0">03:00</div>
+      </div>
+      <div class="card" id="c1">
+        <div class="session-info">LEARNING — 30 MIN</div>
+        <div class="circle-wrap">
+          <svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="r1" cx="50" cy="50" r="45"/></svg>
+          <div class="img-box"><img src="https://cdn-icons-png.flaticon.com/512/1902/1902231.png"></div>
+        </div>
+        <div class="timer-text" id="t1">30:00</div>
+      </div>
+      <div class="card" id="c2">
+        <div class="session-info">TYPING — 10 MIN</div>
+        <div class="circle-wrap">
+          <svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="r2" cx="50" cy="50" r="45"/></svg>
+          <div class="img-box"><img src="https://cdn-icons-png.flaticon.com/512/704/704845.png"></div>
+        </div>
+        <div class="timer-text" id="t2">10:00</div>
+      </div>
+      <div class="card" id="c3">
+        <div class="session-info">LOGOUT — 2 MIN</div>
+        <div class="circle-wrap">
+          <svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="r3" cx="50" cy="50" r="45"/></svg>
+          <div class="img-box"><img src="https://cdn-icons-png.flaticon.com/512/3580/3580139.png"></div>
+        </div>
+        <div class="timer-text" id="t3">02:00</div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div style="display: flex; gap: 10px;">
+      <button class="btn" onclick="jumpTo(0)" style="background: #000; color: #fff;">START CLASS</button>
+      <button class="btn" onclick="jumpTo(1)">LEARNING</button>
+      <button class="btn" onclick="jumpTo(2)">TYPING</button>
+      <button class="btn" onclick="jumpTo(3)">LOGOUT</button>
+      <button class="btn" onclick="playChime()" style="background: none;">🔔</button>
+    </div>
+    <div class="mode-group">
+      <button class="mode-btn active" id="m-real" onclick="setMode('real')">REALTIME</button>
+      <button class="mode-btn" id="m-sim" onclick="setMode('sim')">SIMULATE</button>
+      <button class="mode-btn" id="m-flash" onclick="setMode('flash')">FLASH</button>
+    </div>
+  </footer>
+
+  <script>
+    const sessionMins = [3, 30, 10, 2], names = ["Login", "Learning", "Typing", "Logout"];
+    let currentMode = 'real', timeAnchor = null, lastStage = -1;
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+    async function announce(msg) {
+      playChime();
+      await new Promise(r => setTimeout(r, 2000)); // Wait for chime to finish
+      const ut = new SpeechSynthesisUtterance(msg);
+      window.speechSynthesis.speak(ut);
+    }
+
+    function playChime() {
+      const now = ctx.currentTime;
+      [554, 440, 329, 277].forEach((f, i) => {
+        const osc = ctx.createOscillator(); const g = ctx.createGain();
+        osc.frequency.setValueAtTime(f, now + i * 0.4);
+        g.gain.setValueAtTime(0, now + i * 0.4);
+        g.gain.linearRampToValueAtTime(0.2, now + i * 0.4 + 0.05);
+        g.gain.exponentialRampToValueAtTime(0.01, now + i * 0.4 + 0.8);
+        osc.connect(g); g.connect(ctx.destination);
+        osc.start(now + i * 0.4); osc.stop(now + i * 0.4 + 0.8);
+      });
+    }
+
+    function setMode(m) {
+      currentMode = m; timeAnchor = null;
+      document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById('m-' + m).classList.add('active');
+    }
+
+    function jumpTo(idx) {
+      if (currentMode === 'real') setMode('sim');
+      const d = new Date();
+      let m = 0; for(let i=0; i<idx; i++) m += sessionMins[i];
+      timeAnchor = { real: Date.now(), fake: d.setHours(7, 50+m, 0,0) };
+    }
+
+    function tick() {
+      const now = (currentMode === 'real') ? new Date() : (timeAnchor ? new Date(timeAnchor.fake + (Date.now() - timeAnchor.real) * (currentMode === 'flash' ? 60 : 1)) : new Date());
+      
+      document.getElementById('dateVal').textContent = `${now.getMonth()+1}/${now.getDate()}/${now.getFullYear()}`;
+      document.getElementById('timeVal').textContent = now.toLocaleTimeString('en', {hour12:false});
+
+      const start = 7 * 3600 + 50 * 60;
+      const end = start + (sessionMins.reduce((a,b)=>a+b,0) * 60);
+      const curr = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+      
+      const isClass = curr >= start && curr < end;
+      const isAutoModeOverflow = (currentMode !== 'real' && timeAnchor);
+      
+      // If we are simulating, we don't show the flight deck (standby bar)
+      const showFlightDeck = !isClass && !isAutoModeOverflow;
+      document.getElementById('flight-deck').classList.toggle('active', showFlightDeck);
+
+      if (isClass || isAutoModeOverflow) {
+        let acc = isAutoModeOverflow ? (new Date(timeAnchor.fake).getHours()*3600 + new Date(timeAnchor.fake).getMinutes()*60) : start;
+        for(let i=0; i<4; i++) {
+          const card = document.getElementById(`c${i}`), r = document.getElementById(`r${i}`), t = document.getElementById(`t${i}`);
+          const dur = sessionMins[i] * 60;
+          if (curr >= acc && curr < acc + dur) {
+            if (i !== lastStage) { announce(`${names[i]} session starting`); lastStage = i; }
+            card.classList.add('active');
+            const rem = Math.ceil(acc + dur - curr);
+            t.textContent = new Date(rem * 1000).toISOString().substr(14, 5);
+            r.style.strokeDashoffset = 283 - ((curr - acc) / dur * 283);
+          } else {
+            card.classList.remove('active');
+            r.style.strokeDashoffset = (curr >= acc + dur) ? 0 : 283;
+            t.textContent = (curr >= acc+dur) ? "DONE" : `${sessionMins[i].toString().padStart(2,'0')}:00`;
+          }
+          acc += dur;
+        }
+      } else {
+        lastStage = -1;
+        let target = new Date(now); target.setHours(7,50,0,0);
+        if (curr >= end) target.setDate(target.getDate()+1);
+        while(target.getDay() === 0 || target.getDay() === 6) target.setDate(target.getDate()+1);
+        const diff = Math.floor((target - now) / 1000);
+        const h = Math.floor(diff/3600), m = Math.floor((diff%3600)/60), s = diff%60;
+        document.getElementById('slotTime').textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        document.getElementById('nextDayTarget').textContent = target.toLocaleDateString('en',{weekday:'long'}).toUpperCase() + " 07:50";
+      }
+    }
+
+    setInterval(tick, 1000); tick();
+  </script>
+</body>
+</html>
