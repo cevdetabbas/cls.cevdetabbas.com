@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mr. Oz Tech Zone Pro | Apple Edition</title>
+    <style>
+        :root {
+            --apple-bg: #f5f5f7;
+            --apple-text: #1d1d1f;
+            --apple-sub: #86868b;
+            --apple-blue: #0071e3;
+            --card-glass: rgba(255, 255, 255, 0.8);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
+            background: var(--apple-bg);
+            color: var(--apple-text);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HEADER - CLEAN APPLE STYLE */
+        header {
+            padding: 30px 60px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            align-items: center;
+            z-index: 1000;
+        }
+        .h-info { display: flex; flex-direction: column; }
+        .h-val { font-size: 55px; font-weight: 800; letter-spacing: -2px; line-height: 1; }
+        .h-lbl { font-size: 14px; font-weight: 700; color: var(--apple-sub); text-transform: uppercase; letter-spacing: 1px; }
+        h1 { text-align: center; font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+
+        /* MIDDLE SECTION (ANIMATION ZONE) */
+        main {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            z-index: 10;
+        }
+
+        #animation-container {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* STANDBY COUNTDOWN (SMALLER) */
+        #flight-deck {
+            position: absolute;
+            top: 20px;
+            text-align: center;
+            opacity: 0;
+            transition: 0.5s;
+        }
+        #flight-deck.active { opacity: 1; }
+        #slotTime { font-size: 80px; font-weight: 800; letter-spacing: -4px; color: var(--apple-text); }
+        .deck-lbl { font-size: 18px; font-weight: 600; color: var(--apple-sub); text-transform: uppercase; }
+
+        /* CARDS GRID */
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; width: 100%; max-width: 1700px; }
+        
+        .card {
+            background: var(--card-glass);
+            border-radius: 40px;
+            padding: 40px 20px;
+            text-align: center;
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.6s cubic-bezier(0.15, 1, 0.3, 1);
+            position: relative;
+        }
+
+        /* RAINBOW ANIMATION ON ACTIVE */
+        .card.active {
+            transform: scale(1.08) translateY(-10px);
+            background: #fff;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.1);
+        }
+
+        .card.active::before {
+            content: ''; position: absolute; inset: -4px; border-radius: 44px;
+            background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
+            background-size: 400%; z-index: -1;
+            animation: rainbow 12s linear infinite;
+            filter: blur(10px); opacity: 0.4;
+        }
+
+        @keyframes rainbow { 0% { background-position: 0% 50%; } 100% { background-position: 400% 50%; } }
+
+        .s-title { font-size: 36px; font-weight: 800; letter-spacing: -1.5px; margin-bottom: 5px; }
+        .s-dur { font-size: 14px; font-weight: 600; color: var(--apple-sub); text-transform: uppercase; margin-bottom: 25px; }
+
+        /* REVOLVING COIN */
+        .circle-wrap { width: 200px; height: 200px; margin: 0 auto; position: relative; perspective: 1000px; }
+        .ring-svg { transform: rotate(-90deg); position: absolute; inset: 0; z-index: 10; }
+        .ring-bg { fill: none; stroke: #e5e5ea; stroke-width: 8; }
+        .ring-bar { fill: none; stroke: var(--apple-blue); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 283; stroke-dashoffset: 283; transition: stroke-dashoffset 0.8s linear; }
+
+        .coin {
+            width: 130px; height: 130px; position: absolute; top: 35px; left: 35px;
+            transform-style: preserve-3d; transition: transform 0.6s; z-index: 5;
+        }
+        .coin.spinning { animation: spin3d 4s infinite linear; }
+        .face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 50%; background: #fff; padding: 15px; }
+        .face.back { transform: rotateY(180deg); }
+        .face img { width: 100%; height: 100%; object-fit: contain; }
+
+        @keyframes spin3d { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
+
+        .time-left { font-size: 60px; font-weight: 800; margin-top: 25px; letter-spacing: -3px; font-variant-numeric: tabular-nums; }
+
+        /* FOOTER */
+        footer {
+            padding: 30px 60px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .apple-btn {
+            background: var(--apple-text); color: #fff; border: none;
+            padding: 12px 24px; border-radius: 12px; font-size: 15px; font-weight: 600;
+            cursor: pointer; transition: 0.2s;
+        }
+        .apple-btn:hover { opacity: 0.8; transform: scale(1.02); }
+        .btn-gray { background: #e8e8ed; color: var(--apple-text); }
+
+        .grade-pill { background: #e8e8ed; padding: 4px; border-radius: 14px; display: flex; gap: 4px; }
+        .g-btn {
+            border: none; background: transparent; padding: 8px 16px; border-radius: 10px;
+            font-size: 13px; font-weight: 700; cursor: pointer; color: var(--apple-sub);
+        }
+        .g-btn.active { background: #fff; color: var(--apple-text); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+        /* SNOW EFFECT */
+        .snowflake { position: absolute; background: #fff; border-radius: 50%; opacity: 0.8; pointer-events: none; animation: fall linear infinite; }
+        @keyframes fall { from { transform: translateY(-10vh); } to { transform: translateY(90vh); } }
+
+        /* FIREWORKS */
+        .firework { position: absolute; width: 5px; height: 5px; border-radius: 50%; animation: explode 1s ease-out forwards; }
+        @keyframes explode {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(30); opacity: 0; box-shadow: 0 0 20px 5px currentColor; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="h-info">
+            <span class="h-lbl">Current Date</span>
+            <span class="h-val" id="dDisp">--.--.----</span>
+        </div>
+        <h1>Mr. Oz Tech Zone Pro</h1>
+        <div class="h-info" style="align-items: flex-end;">
+            <span class="h-lbl">System Time</span>
+            <span class="h-val" id="tDisp">00:00:00</span>
+        </div>
+    </header>
+
+    <main>
+        <div id="animation-container"></div>
+        
+        <div id="flight-deck">
+            <div class="deck-lbl">Session Deploys In</div>
+            <div id="slotTime">00:00:00</div>
+        </div>
+
+        <div class="grid">
+            <div class="card" id="card0">
+                <div class="s-title">Login</div>
+                <div class="s-dur">3 Minutes</div>
+                <div class="circle-wrap">
+                    <svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="ring0" cx="50" cy="50" r="45"/></svg>
+                    <div class="coin" id="coin0">
+                        <div class="face front"><img src="images/login.png"></div>
+                        <div class="face back"><img src="images/login.png"></div>
+                    </div>
+                </div>
+                <div class="time-left" id="tm0">03:00</div>
+            </div>
+
+            <div class="card" id="card1">
+                <div class="s-title">Learning</div>
+                <div class="s-dur">30 Minutes</div>
+                <div class="circle-wrap">
+                    <svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="ring1" cx="50" cy="50" r="45"/></svg>
+                    <div class="coin" id="coin1">
+                        <div class="face front"><img src="images/learning.png"></div>
+                        <div class="face back"><img src="images/learning.png"></div>
+                    </div>
+                </div>
+                <div class="time-left" id="tm1">30:00</div>
+            </div>
+
+            <div class="card" id="card2">
+                <div class="s-title" id="phase3Title">Typing</div>
+                <div class="s-dur">10 Minutes</div>
+                <div class="circle-wrap">
+                    <svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="ring2" cx="50" cy="50" r="45"/></svg>
+                    <div class="coin" id="coin2">
+                        <div class="face front"><img id="p3Front" src="images/typing.png"></div>
+                        <div class="face back"><img id="p3Back" src="images/nitrotype.jpg"></div>
+                    </div>
+                </div>
+                <div class="time-left" id="tm2">10:00</div>
+            </div>
+
+            <div class="card" id="card3">
+                <div class="s-title">Logout</div>
+                <div class="s-dur">2 Minutes</div>
+                <div class="circle-wrap">
+                    <svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="ring3" cx="50" cy="50" r="45"/></svg>
+                    <div class="coin" id="coin3">
+                        <div class="face front"><img src="images/logout.png"></div>
+                        <div class="face back"><img src="images/logout.png"></div>
+                    </div>
+                </div>
+                <div class="time-left" id="tm3">02:00</div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div style="display: flex; gap: 10px;">
+            <button class="apple-btn" onclick="startAll()">PLAY ALL</button>
+            <button class="apple-btn btn-gray" onclick="jump(0)">LOGIN</button>
+            <button class="apple-btn btn-gray" onclick="jump(1)">LEARN</button>
+            <button class="apple-btn btn-gray" onclick="jump(2)">GAME</button>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <div class="grade-pill">
+                <button class="g-btn active" id="g-prek" onclick="setGrade('prek')">PreK-2</button>
+                <button class="g-btn" id="g-35" onclick="setGrade('35')">Grade 3-5</button>
+            </div>
+            
+            <button onclick="playChime()" style="background:none; border:none; font-size:28px; cursor:pointer;">🔔</button>
+
+            <div class="grade-pill">
+                <button class="g-btn active" id="m-real" onclick="setMode('real')">Real</button>
+                <button class="g-btn" id="m-sim" onclick="setMode('sim')">Sim</button>
+                <button class="g-btn" id="m-flash" onclick="setMode('flash')">Flash</button>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const mins = [3, 30, 10, 2], names = ["Login", "Learning", "Typing", "Logout"];
+        let mode = 'real', anchor = null, activeIdx = -1, audioCtx = null;
+        const animContainer = document.getElementById('animation-container');
+
+        // ANIMATIONS: SNOW & FIREWORKS
+        function createSnow() {
+            for(let i=0; i<30; i++) {
+                const s = document.createElement('div');
+                s.className = 'snowflake';
+                const size = Math.random() * 8 + 4;
+                s.style.width = s.style.height = size + 'px';
+                s.style.left = Math.random() * 100 + 'vw';
+                s.style.animationDuration = Math.random() * 3 + 4 + 's';
+                s.style.animationDelay = Math.random() * 5 + 's';
+                animContainer.appendChild(s);
+            }
+        }
+
+        function createFirework() {
+            for(let i=0; i<5; i++) {
+                setTimeout(() => {
+                    const f = document.createElement('div');
+                    f.className = 'firework';
+                    f.style.left = Math.random() * 80 + 10 + 'vw';
+                    f.style.top = Math.random() * 60 + 20 + 'vh';
+                    f.style.color = `hsl(${Math.random()*360}, 100%, 50%)`;
+                    animContainer.appendChild(f);
+                    setTimeout(() => f.remove(), 1000);
+                }, i * 300);
+            }
+        }
+        createSnow();
+
+        function setGrade(val) {
+            document.querySelectorAll('.g-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('g-'+val).classList.add('active');
+            const title = document.getElementById('phase3Title'), front = document.getElementById('p3Front'), back = document.getElementById('p3Back');
+            if(val === 'prek') {
+                title.innerText = "ABC / PBS";
+                front.src = "images/abc.jpg"; back.src = "images/pbs.png";
+            } else {
+                title.innerText = "Typing / Nitro";
+                front.src = "images/typing.png"; back.src = "images/nitrotype.jpg";
+            }
+        }
+        setGrade('prek');
+
+        function getAudio() {
+            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            return audioCtx;
+        }
+
+        function playChime() {
+            const ctx = getAudio(); const now = ctx.currentTime;
+            [554, 440, 329, 277].forEach((f, i) => {
+                const o = ctx.createOscillator(); const g = ctx.createGain();
+                o.frequency.setValueAtTime(f, now + i * 0.45);
+                g.gain.setValueAtTime(0, now + i * 0.45);
+                g.gain.linearRampToValueAtTime(0.2, now + i * 0.45 + 0.05);
+                g.gain.exponentialRampToValueAtTime(0.01, now + (i + 1.2) * 0.85);
+                o.connect(g); g.connect(ctx.destination);
+                o.start(now + i * 0.45); o.stop(now + (i + 1.2) * 0.85);
+            });
+        }
+
+        async function announce(msg) {
+            playChime(); createFirework();
+            await new Promise(r => setTimeout(r, 2200));
+            window.speechSynthesis.speak(new SpeechSynthesisUtterance(msg));
+        }
+
+        function setMode(m) {
+            mode = m; anchor = null; activeIdx = -1;
+            document.querySelectorAll('.g-btn').forEach(b => b.id.startsWith('m-') && b.classList.remove('active'));
+            document.getElementById('m-'+m).classList.add('active');
+        }
+
+        function startAll() {
+            if(mode === 'real') setMode('sim');
+            const d = new Date(); d.setHours(7, 50, 0, 0);
+            anchor = { real: Date.now(), fake: d.getTime() };
+            activeIdx = -1;
+        }
+
+        function jump(idx) {
+            if(mode === 'real') setMode('sim');
+            const d = new Date();
+            let off = 0; for(let i=0; i<idx; i++) off += mins[i];
+            anchor = { real: Date.now(), fake: d.setHours(7, 50 + off, 0, 0) };
+            activeIdx = -1;
+        }
+
+        function tick() {
+            const real = new Date();
+            document.getElementById('dDisp').textContent = real.toLocaleDateString('tr-TR');
+            document.getElementById('tDisp').textContent = real.toLocaleTimeString('tr-TR', {hour12:false});
+
+            const startS = 7*3600 + 50*60, endS = startS + (45*60);
+            const inSession = (real.getHours()*3600 + real.getMinutes()*60) >= startS && (real.getHours()*3600 + real.getMinutes()*60) < endS;
+            const standby = mode === 'real' && !inSession;
+            
+            document.getElementById('flight-deck').classList.toggle('active', standby);
+
+            let now = (mode === 'real') ? real : (anchor ? new Date(anchor.fake + (Date.now() - anchor.real) * (mode === 'flash' ? 60 : 1)) : null);
+
+            if(now) {
+                const total = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
+                let acc = startS;
+                for(let i=0; i<4; i++) {
+                    const c = document.getElementById(`card${i}`), r = document.getElementById(`ring${i}`), t = document.getElementById(`tm${i}`), coin = document.getElementById(`coin${i}`);
+                    const dur = mins[i]*60;
+                    if(total >= acc && total < acc + dur) {
+                        if(i !== activeIdx) { announce(names[i] + " session is active."); activeIdx = i; }
+                        c.classList.add('active'); coin.classList.add('spinning');
+                        const rem = Math.ceil(acc + dur - total);
+                        t.textContent = new Date(rem * 1000).toISOString().substr(14, 5);
+                        r.style.strokeDashoffset = 283 - ((total - acc) / dur * 283);
+                    } else {
+                        c.classList.remove('active'); coin.classList.remove('spinning');
+                        r.style.strokeDashoffset = (total >= acc+dur) ? 0 : 283;
+                        t.textContent = (total >= acc+dur) ? "DONE" : `${mins[i].toString().padStart(2,'0')}:00`;
+                    }
+                    acc += dur;
+                }
+            }
+
+            if(standby) {
+                let target = new Date(real); target.setHours(7,50,0,0);
+                if((real.getHours()*3600+real.getMinutes()*60) >= endS) target.setDate(target.getDate()+1);
+                while(target.getDay()===0 || target.getDay()===6) target.setDate(target.getDate()+1);
+                const diff = Math.floor((target - real) / 1000);
+                const h = Math.floor(diff/3600), m = Math.floor((diff%3600)/60), s = diff%60;
+                document.getElementById('slotTime').textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            }
+        }
+        setInterval(tick, 1000); tick();
+    </script>
+</body>
+</html>

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mr. Oz Tech Zone Pro | Elite Edition</title>
+    <style>
+        /* TESLA & APPLE STYLE DESIGN */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap');
+
+        :root {
+            --accent: #007AFF; /* Apple Blue */
+            --bg: #000000;
+            --card-bg: rgba(28, 28, 30, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #FFFFFF;
+            --text-sec: #8E8E93;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: radial-gradient(circle at center, #1c1c1e 0%, #000000 100%);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HEADER - MINIMALIST PREMIUM */
+        header {
+            padding: 40px 80px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            z-index: 10;
+        }
+
+        .header-info { display: flex; flex-direction: column; gap: 5px; }
+        .h-label { font-size: 18px; font-weight: 700; color: var(--text-sec); letter-spacing: 2px; text-transform: uppercase; }
+        .h-value { font-size: 65px; font-weight: 900; letter-spacing: -2px; font-variant-numeric: tabular-nums; }
+
+        .brand { text-align: center; margin-top: 10px; }
+        .brand h1 { font-size: 32px; font-weight: 300; letter-spacing: 8px; text-transform: uppercase; color: #fff; opacity: 0.9; }
+
+        /* FLIGHT DECK - TESLA MODE */
+        #flight-deck {
+            position: absolute; top: 180px; width: 100%; text-align: center;
+            opacity: 0; transform: translateY(-20px); transition: all 0.8s ease;
+        }
+        #flight-deck.active { opacity: 1; transform: translateY(0); }
+        #slotTime { font-size: 140px; font-weight: 900; letter-spacing: -8px; color: var(--text-main); line-height: 1; }
+        .deck-sub { font-size: 24px; color: var(--accent); font-weight: 700; letter-spacing: 4px; margin-top: 10px; }
+
+        /* MAIN CONTENT - THE GRID */
+        main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 0 60px; z-index: 5; }
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px; width: 100%; max-width: 1800px; }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 40px;
+            padding: 50px 30px;
+            text-align: center;
+            transition: all 0.6s cubic-bezier(0.2, 1, 0.2, 1);
+            position: relative;
+            backdrop-filter: blur(20px);
+        }
+
+        .card.active {
+            transform: scale(1.1) translateY(-10px);
+            background: rgba(44, 44, 46, 0.9);
+            border-color: var(--accent);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+        }
+
+        .card.active::after {
+            content: ''; position: absolute; inset: -2px; border-radius: 42px;
+            background: linear-gradient(135deg, var(--accent), #5856D6);
+            z-index: -1; opacity: 0.3; filter: blur(15px);
+        }
+
+        .s-title { font-size: 40px; font-weight: 900; letter-spacing: -1px; margin-bottom: 5px; }
+        .s-dur { font-size: 16px; font-weight: 700; color: var(--text-sec); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; }
+
+        /* REVOLVING COIN ANIMATION */
+        .circle-wrap { width: 220px; height: 220px; margin: 0 auto; position: relative; perspective: 1000px; }
+        .ring-svg { transform: rotate(-90deg); position: absolute; inset: 0; z-index: 5; pointer-events: none; }
+        .ring-bg { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 8; }
+        .ring-bar { fill: none; stroke: var(--accent); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 283; stroke-dashoffset: 283; transition: stroke-dashoffset 0.8s linear; }
+
+        .coin {
+            width: 140px; height: 140px; position: absolute; top: 40px; left: 40px;
+            transform-style: preserve-3d; transition: transform 0.6s; z-index: 2;
+        }
+        .coin.spinning { animation: spin-3d 5s infinite linear; }
+        
+        .face { 
+            position: absolute; width: 100%; height: 100%; backface-visibility: hidden; 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            background: #1c1c1e; padding: 20px;
+        }
+        .face.back { transform: rotateY(180deg); }
+        .face img { width: 100%; height: 100%; object-fit: contain; }
+
+        @keyframes spin-3d { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
+
+        .time-left { font-size: 70px; font-weight: 900; margin-top: 30px; font-variant-numeric: tabular-nums; letter-spacing: -2px; }
+
+        /* FOOTER - APPLE DESIGN */
+        footer {
+            padding: 40px 80px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border);
+        }
+
+        .btn-group { display: flex; gap: 15px; }
+        .btn {
+            background: var(--text-main); color: #000; border: none;
+            padding: 16px 32px; border-radius: 100px; font-size: 16px; font-weight: 700;
+            cursor: pointer; transition: all 0.3s;
+        }
+        .btn:hover { transform: scale(1.05); background: var(--accent); color: #fff; }
+        .btn-ghost { background: var(--card-bg); color: #fff; border: 1px solid var(--border); }
+
+        .controls { display: flex; align-items: center; gap: 30px; }
+        
+        /* GRADE SWITCH */
+        .grade-switch { background: var(--card-bg); padding: 5px; border-radius: 100px; display: flex; border: 1px solid var(--border); }
+        .g-btn {
+            border: none; background: transparent; color: var(--text-sec);
+            padding: 10px 25px; border-radius: 100px; font-weight: 700; cursor: pointer; transition: 0.3s;
+        }
+        .g-btn.active { background: var(--text-main); color: #000; }
+
+        /* MODE SELECT */
+        .mode-ui { background: rgba(255,255,255,0.05); padding: 5px; border-radius: 12px; display: flex; gap: 5px; }
+        .m-btn {
+            border: none; background: transparent; color: var(--text-sec);
+            padding: 8px 15px; border-radius: 8px; font-size: 12px; font-weight: 800; cursor: pointer;
+        }
+        .m-btn.active { background: rgba(255,255,255,0.1); color: #fff; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-info">
+            <span class="h-label">Date</span>
+            <span class="h-value" id="dateDisplay">01.01.2024</span>
+        </div>
+        <div class="brand">
+            <h1>Oz Tech Zone</h1>
+        </div>
+        <div class="header-info" style="align-items: flex-end;">
+            <span class="h-label">Time</span>
+            <span class="h-value" id="timeDisplay">00:00:00</span>
+        </div>
+    </header>
+
+    <div id="flight-deck">
+        <div class="deck-sub">NEXT SESSION IN</div>
+        <div id="slotTime">00:00:00</div>
+    </div>
+
+    <main>
+        <div class="grid">
+            <div class="card" id="card0">
+                <div class="s-title">Login</div>
+                <div class="s-dur">3 Minutes</div>
+                <div class="circle-wrap">
+                    <svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="ring0" cx="50" cy="50" r="45"/></svg>
+                    <div class="coin" id="coin0">
+                        <div class="face front"><img src="images/login.png"></div>
+                        <div class="face back"><img src="images/login.png"></div>
+                    </div>
+                </div>
+                <div class="time-left" id="tm0">03:00</div>
+            </div>
+
+            <div class="card" id="card1">
+                <div class="s-title">Learning</div>
+                <div class="s-dur">30 Minutes</div>
+                <div class="circle-wrap">
+                    <svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="ring1" cx="50" cy="50" r="45"/></svg>
+                    <div class="coin" id="coin1">
+                        <div class="face front"><img src="images/learning.png"></div>
+                        <div class="face back"><img src="images/learning.png"></div>
+                    </div>
+                </div>
+                <div class="time-left" id="tm1">30:00</div>
+            </div>
+
+            <div class="card" id="card2">
+                <div class="s-title" id="phase3Title">Typing</div>
+                <div class="s-dur">10 Minutes</div>
+                <div class="circle-wrap">
+                    <svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="ring2" cx="50" cy="50" r="45"/></svg>
+                    <div class="coin" id="coin2">
+                        <div class="face front"><img id="p3ImgFront" src="images/typing.png"></div>
+                        <div class="face back"><img id="p3ImgBack" src="images/nitrotype.jpg"></div>
+                    </div>
+                </div>
+                <div class="time-left" id="tm2">10:00</div>
+            </div>
+
+            <div class="card" id="card3">
+                <div class="s-title">Logout</div>
+                <div class="s-dur">2 Minutes</div>
+                <div class="circle-wrap">
+                    <svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="ring3" cx="50" cy="50" r="45"/></svg>
+                    <div class="coin" id="coin3">
+                        <div class="face front"><img src="images/logout.png"></div>
+                        <div class="face back"><img src="images/logout.png"></div>
+                    </div>
+                </div>
+                <div class="time-left" id="tm3">02:00</div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="btn-group">
+            <button class="btn" onclick="triggerSession('all')">Start Class</button>
+            <button class="btn btn-ghost" onclick="triggerSession(0)">Login</button>
+            <button class="btn btn-ghost" onclick="triggerSession(1)">Learn</button>
+            <button class="btn btn-ghost" onclick="triggerSession(2)">Type/Game</button>
+            <button class="btn btn-ghost" onclick="triggerSession(3)">Exit</button>
+        </div>
+
+        <div class="controls">
+            <div class="grade-switch">
+                <button class="g-btn" id="g-prek" onclick="setGrade('prek')">PreK-2</button>
+                <button class="g-btn active" id="g-35" onclick="setGrade('35')">Grade 3-5</button>
+            </div>
+
+            <button onclick="playChime()" style="background: none; border: none; font-size: 30px; cursor: pointer;">🔔</button>
+
+            <div class="mode-ui">
+                <button class="m-btn active" id="m-real" onclick="setMode('real')">Real</button>
+                <button class="m-btn" id="m-sim" onclick="setMode('sim')">Sim</button>
+                <button class="m-btn" id="m-flash" onclick="setMode('flash')">Flash</button>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const mins = [3, 30, 10, 2], names = ["Login", "Learning", "Typing", "Logout"];
+        let mode = 'real', anchor = null, activeIdx = -1, audioCtx = null;
+        let grade = '35';
+
+        function setGrade(val) {
+            grade = val;
+            document.querySelectorAll('.g-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('g-' + val).classList.add('active');
+            
+            const title = document.getElementById('phase3Title');
+            const front = document.getElementById('p3ImgFront');
+            const back = document.getElementById('p3ImgBack');
+
+            if(val === 'prek') {
+                title.innerText = "ABC / PBS";
+                front.src = "images/abc.jpg";
+                back.src = "images/abc.jpg"; // abc.jpg tree'de var, pbs.jpg yoksa abc'yi döndürürüz
+            } else {
+                title.innerText = "Typing";
+                front.src = "images/typing.png";
+                back.src = "images/nitrotype.jpg";
+            }
+        }
+
+        function getAudio() {
+            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            return audioCtx;
+        }
+
+        function playChime() {
+            const ctx = getAudio();
+            const now = ctx.currentTime;
+            [554, 440, 329, 277].forEach((f, i) => {
+                const o = ctx.createOscillator(); const g = ctx.createGain();
+                o.frequency.setValueAtTime(f, now + i * 0.45);
+                g.gain.setValueAtTime(0, now + i * 0.45);
+                g.gain.linearRampToValueAtTime(0.3, now + i * 0.45 + 0.05);
+                g.gain.exponentialRampToValueAtTime(0.01, now + (i + 1.2) * 0.85);
+                o.connect(g); g.connect(ctx.destination);
+                o.start(now + i * 0.45); o.stop(now + (i + 1.2) * 0.85);
+            });
+        }
+
+        async function announce(msg) {
+            playChime();
+            await new Promise(r => setTimeout(r, 2200));
+            window.speechSynthesis.speak(new SpeechSynthesisUtterance(msg));
+        }
+
+        function setMode(m) {
+            mode = m; anchor = null; activeIdx = -1;
+            document.querySelectorAll('.m-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('m-'+m).classList.add('active');
+            document.querySelectorAll('.card').forEach(c => {
+                c.classList.remove('active');
+                c.querySelector('.coin').classList.remove('spinning');
+            });
+        }
+
+        function triggerSession(idx) {
+            if(mode === 'real') setMode('sim');
+            const d = new Date();
+            let off = 0; if(idx !== 'all') for(let i=0; i<idx; i++) off += mins[i];
+            anchor = { real: Date.now(), fake: d.setHours(7, 50 + off, 0, 0) };
+            activeIdx = -1;
+        }
+
+        function tick() {
+            const real = new Date();
+            document.getElementById('dateDisplay').textContent = real.toLocaleDateString('en-US');
+            document.getElementById('timeDisplay').textContent = real.toLocaleTimeString('en-US', {hour12:false});
+
+            const startS = 7*3600 + 50*60, endS = startS + (45*60);
+            const inSession = (real.getHours()*3600 + real.getMinutes()*60) >= startS && (real.getHours()*3600 + real.getMinutes()*60) < endS;
+
+            const isStandby = mode === 'real' && !inSession;
+            document.getElementById('flight-deck').classList.toggle('active', isStandby);
+
+            let now = (mode === 'real') ? real : (anchor ? new Date(anchor.fake + (Date.now() - anchor.real) * (mode === 'flash' ? 60 : 1)) : null);
+
+            if(now) {
+                const totalS = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
+                let acc = startS;
+                for(let i=0; i<4; i++) {
+                    const c = document.getElementById(`card${i}`), r = document.getElementById(`ring${i}`), t = document.getElementById(`tm${i}`), coin = document.getElementById(`coin${i}`);
+                    const dur = mins[i]*60;
+                    if(totalS >= acc && totalS < acc + dur) {
+                        if(i !== activeIdx) { announce(names[i] + " session is active."); activeIdx = i; }
+                        c.classList.add('active');
+                        coin.classList.add('spinning');
+                        const rem = Math.ceil(acc + dur - totalS);
+                        t.textContent = new Date(rem * 1000).toISOString().substr(14, 5);
+                        r.style.strokeDashoffset = 283 - ((totalS - acc) / dur * 283);
+                    } else {
+                        c.classList.remove('active');
+                        coin.classList.remove('spinning');
+                        r.style.strokeDashoffset = (totalS >= acc + dur) ? 0 : 283;
+                        t.textContent = (totalS >= acc + dur) ? "DONE" : `${mins[i].toString().padStart(2,'0')}:00`;
+                    }
+                    acc += dur;
+                }
+            }
+
+            if(isStandby) {
+                let target = new Date(real); target.setHours(7,50,0,0);
+                if((real.getHours()*3600+real.getMinutes()*60) >= endS) target.setDate(target.getDate()+1);
+                while(target.getDay()===0 || target.getDay()===6) target.setDate(target.getDate()+1);
+                const diff = Math.floor((target - real) / 1000);
+                const h = Math.floor(diff/3600), m = Math.floor((diff%3600)/60), s = diff%60;
+                document.getElementById('slotTime').textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            }
+        }
+
+        setInterval(tick, 1000); tick();
+    </script>
+</body>
+</html>
