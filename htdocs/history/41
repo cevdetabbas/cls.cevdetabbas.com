@@ -500,7 +500,7 @@
             <circle class="ringTrack" cx="50" cy="50" r="46"></circle>
             <circle class="ringProg"  cx="50" cy="50" r="46"></circle>
           </svg>
-          <div class="imgwrap"><img src="./images/login.png" alt="Login"></div>
+          <div class="imgwrap"><img src="../images/login.png" alt="Login"></div>
         </div>
 
         <div class="cdLabel">Remaining time</div>
@@ -515,7 +515,7 @@
             <circle class="ringTrack" cx="50" cy="50" r="46"></circle>
             <circle class="ringProg"  cx="50" cy="50" r="46"></circle>
           </svg>
-          <div class="imgwrap"><img src="./images/learning.png" alt="Learning.com"></div>
+          <div class="imgwrap"><img src="../images/learning.png" alt="Learning.com"></div>
         </div>
 
         <div class="cdLabel">Remaining time</div>
@@ -551,7 +551,7 @@
             <circle class="ringTrack" cx="50" cy="50" r="46"></circle>
             <circle class="ringProg"  cx="50" cy="50" r="46"></circle>
           </svg>
-          <div class="imgwrap"><img src="./images/logout.png" alt="Logout"></div>
+          <div class="imgwrap"><img src="../images/logout.png" alt="Logout"></div>
         </div>
 
         <div class="cdLabel">Remaining time</div>
