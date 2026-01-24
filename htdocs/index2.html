@@ -280,6 +280,9 @@
       
       <div class="pill">
         <button class="g-btn active" id="m-real" onclick="setMode('real')">Real</button>
+      </div>
+      
+      <div class="pill">
         <button class="g-btn" id="m-sim" onclick="setMode('sim')">Sim</button>
         <button class="g-btn" id="m-flash" onclick="setMode('flash')">Flash</button>
       </div>
@@ -672,6 +675,39 @@
         if (b.id.startsWith('m-')) b.classList.remove('active');
       });
       document.getElementById('m-'+m).classList.add('active');
+      
+      updateButtonStates();
+    }
+    
+    function updateButtonStates() {
+      const isRealMode = (mode === 'real');
+      
+      document.getElementById('g-prek').disabled = isRealMode;
+      document.getElementById('g-35').disabled = isRealMode;
+      
+      document.querySelector('button[onclick="startAll()"]').disabled = isRealMode;
+      document.getElementById('btn-jump0').disabled = isRealMode;
+      document.getElementById('btn-jump1').disabled = isRealMode;
+      document.getElementById('btn-jump2').disabled = isRealMode;
+      document.getElementById('btn-jump3').disabled = isRealMode;
+      
+      if (isRealMode) {
+        document.getElementById('g-prek').style.opacity = '0.5';
+        document.getElementById('g-35').style.opacity = '0.5';
+        document.querySelector('button[onclick="startAll()"]').style.opacity = '0.5';
+        document.getElementById('btn-jump0').style.opacity = '0.5';
+        document.getElementById('btn-jump1').style.opacity = '0.5';
+        document.getElementById('btn-jump2').style.opacity = '0.5';
+        document.getElementById('btn-jump3').style.opacity = '0.5';
+      } else {
+        document.getElementById('g-prek').style.opacity = '1';
+        document.getElementById('g-35').style.opacity = '1';
+        document.querySelector('button[onclick="startAll()"]').style.opacity = '1';
+        document.getElementById('btn-jump0').style.opacity = '1';
+        document.getElementById('btn-jump1').style.opacity = '1';
+        document.getElementById('btn-jump2').style.opacity = '1';
+        document.getElementById('btn-jump3').style.opacity = '1';
+      }
     }
 
     function startAll() {
@@ -820,6 +856,7 @@
       }
     }
     setInterval(tick, 1000); tick();
+    updateButtonStates();
   </script>
 </body>
 </html>
