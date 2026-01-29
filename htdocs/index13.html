@@ -49,10 +49,12 @@
     h1 { text-align: center; margin: 0; font-size: 24px; font-weight: 950; letter-spacing: -1px; z-index: 2; position: relative; }
 
     #flight-deck {
-      background: #000; color: #fff; height: 100px; overflow: hidden;
+      background: #000; color: #fff; height: 0; overflow: hidden;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
+      transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 90;
     }
+    #flight-deck.active { height: 100px; }
     .deck-lbl { font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
     .slot-timer { font-family: 'Courier New', Courier, monospace; font-size: 40px; font-weight: 900; color: #ffcc00; text-shadow: 0 0 10px #ffcc0044; margin: 5px 0; }
 
@@ -139,12 +141,16 @@
     @keyframes rainbowMove { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
     svg defs { height: 0; width: 0; }
     
-    .speed-pill { background: #f2f2f7; padding: 4px; border-radius: 14px; display: flex; gap: 4px; }
+    .speed-pill { background: #f2f2f7; padding: 4px; border-radius: 14px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
     .speed-btn {
       border: none; background: transparent; padding: 8px 16px; border-radius: 10px;
       font-size: 12px; font-weight: 750; cursor: pointer; color: var(--muted);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
     }
+    .speed-btn span { font-size: 10px; opacity: 0.6; }
     .speed-btn.active { background: #fff; color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    
+    .day-name { font-size: 12px; font-weight: 800; color: var(--blue); text-transform: uppercase; margin-top: -2px; }
   </style>
 </head>
 <body id="body-main">
@@ -152,12 +158,15 @@
   <header>
     <div><span class="head-label">Date:</span><span class="head-val" id="dDisp">--.--.----</span></div>
     <h1>Mr. Oz Tech Zone Elite [FLASH]</h1>
-    <div style="text-align: right;"><span class="head-label">Time:</span><span class="head-val" id="tDisp">00:00:00</span></div>
+    <div style="text-align: right;">
+      <span class="head-label">Time:</span><span class="head-val" id="tDisp">00:00:00</span>
+      <div id="dayDisp" class="day-name">---</div>
+    </div>
   </header>
 
   <div id="flight-deck">
-    <div class="deck-lbl">Flash Simulation Active</div>
-    <div id="slotTime" class="slot-timer">SPEED: <span id="speed-val">2</span>x</div>
+    <div class="deck-lbl" id="deck-label">Flash Simulation Active</div>
+    <div id="slotTime" class="slot-timer">FLASH ACTIVE</div>
   </div>
 
   <main id="main-stage">
@@ -232,16 +241,17 @@
     </div>
 
     <div class="btn-group" id="footer-btns">
-      <button class="apple-btn" onclick="startFlash()">START FLASH</button>
       <button onclick="playChime()" style="background:none; border:none; font-size:24px; cursor:pointer; margin-left:10px;">🔔</button>
     </div>
 
     <div style="display: flex; gap: 20px;">
        <div class="speed-pill">
-        <button class="speed-btn active" onclick="setSpeed(2)">2x</button>
-        <button class="speed-btn" onclick="setSpeed(3)">3x</button>
-        <button class="speed-btn" onclick="setSpeed(5)">5x</button>
-        <button class="speed-btn" onclick="setSpeed(10)">10x</button>
+        <button class="speed-btn" onclick="addTime(10)">+10s</button>
+        <button class="speed-btn" onclick="addTime(300)">+5m</button>
+        <button class="speed-btn" onclick="addTime(3600)">+1h</button>
+        <button class="speed-btn" onclick="addTime(-10)">-10s</button>
+        <button class="speed-btn" onclick="addTime(-300)">-5m</button>
+        <button class="speed-btn" onclick="addTime(-3600)">-1h</button>
       </div>
     </div>
   </footer>
@@ -249,7 +259,7 @@
   <script>
     const mins = [3, 30, 10, 2], names = ["Login", "Learning", "Typing", "Logout"];
     let anchor = null, activeIdx = -1, audioCtx = null, voices = [];
-    let speed = 2;
+    let timeOffset = 0; // Accumulated manual time jumps in milliseconds
     const animContainer = document.getElementById('animation-container');
 
     function loadVoices() { voices = window.speechSynthesis.getVoices(); }
@@ -298,62 +308,203 @@
       else if (idx === 3) msg = "Dear Students. The class is over now, please log out from your accounts, close your chromebooks, organize your desk,.. Please Stand up Push your chairs And stand up right next to your chair. Please wait until your teacher dismiss you. Have a wonderful day";
       
       const utterance = new SpeechSynthesisUtterance(msg); utterance.voice = getBestVoice();
-      utterance.rate = 1.2; // Speed up announcements too
+      utterance.rate = 0.9;
       window.speechSynthesis.speak(utterance);
     }
 
+    const scheduleMonThu = [
+      { name: 'Breakfast', type: 'nonclass', start: '07:20', end: '07:47' },
+      { name: 'Passing',   type: 'nonclass', start: '07:47', end: '07:50' },
+      { name: 'Period 1',  type: 'class',    start: '07:50', end: '08:38' },
+      { name: 'Passing',   type: 'nonclass', start: '08:38', end: '08:41' },
+      { name: 'Period 2',  type: 'class',    start: '08:41', end: '09:29' },
+      { name: 'Passing',   type: 'nonclass', start: '09:29', end: '09:32' },
+      { name: 'Period 3',  type: 'class',    start: '09:32', end: '10:20' },
+      { name: 'Passing',   type: 'nonclass', start: '10:20', end: '10:23' },
+      { name: 'Period 4',  type: 'class',    start: '10:23', end: '11:10' },
+      { name: 'Passing',   type: 'nonclass', start: '11:10', end: '11:13' },
+      { name: 'Period 5',  type: 'class',    start: '11:13', end: '12:01' },
+      { name: 'Passing',   type: 'nonclass', start: '12:01', end: '12:04' },
+      { name: 'Period 6',  type: 'class',    start: '12:04', end: '12:52' },
+      { name: 'Passing',   type: 'nonclass', start: '12:52', end: '12:55' },
+      { name: 'Period 7',  type: 'class',    start: '12:55', end: '13:43' },
+      { name: 'Passing',   type: 'nonclass', start: '13:43', end: '13:46' },
+      { name: 'Period 8',  type: 'class',    start: '13:46', end: '14:34' },
+      { name: 'Passing',   type: 'nonclass', start: '14:34', end: '14:37' },
+      { name: 'Period 9',  type: 'class',    start: '14:37', end: '15:25' }
+    ];
+
+    const scheduleFriday = [
+      { name: 'Breakfast', type: 'nonclass', start: '07:20', end: '07:47' },
+      { name: 'Passing',   type: 'nonclass', start: '07:47', end: '07:50' },
+      { name: 'Period 1',  type: 'class',    start: '07:50', end: '08:34' },
+      { name: 'Passing',   type: 'nonclass', start: '08:34', end: '08:37' },
+      { name: 'Period 2',  type: 'class',    start: '08:37', end: '09:21' },
+      { name: 'Passing',   type: 'nonclass', start: '09:21', end: '09:24' },
+      { name: 'Period 3',  type: 'class',    start: '09:24', end: '10:08' },
+      { name: 'Passing',   type: 'nonclass', start: '10:08', end: '10:11' },
+      { name: 'Period 4',  type: 'class',    start: '10:11', end: '10:54' },
+      { name: 'Passing',   type: 'nonclass', start: '10:54', end: '10:57' },
+      { name: 'Period 5',  type: 'class',    start: '10:57', end: '11:41' },
+      { name: 'Passing',   type: 'nonclass', start: '11:41', end: '11:44' },
+      { name: 'Period 6',  type: 'class',    start: '11:44', end: '12:28' },
+      { name: 'Passing',   type: 'nonclass', start: '12:28', end: '12:31' },
+      { name: 'Period 7',  type: 'class',    start: '12:31', end: '13:15' }
+    ];
+
+    function timeToSeconds(timeStr) {
+      const [h, m] = timeStr.split(':').map(Number);
+      return h * 3600 + m * 60;
+    }
+
     function startFlash() {
-      const d = new Date(); d.setHours(8, 0, 0, 0); 
-      anchor = { real: Date.now(), fake: d.getTime() };
+      anchor = { real: Date.now(), fake: Date.now() };
       activeIdx = -1;
+      timeOffset = 0;
+      updateSpeedButtons(1);
+      tick();
+    }
+    startFlash(); // Auto start on page load
+
+    function updateSpeedButtons(val) {
+      document.querySelectorAll('.speed-btn').forEach(b => {
+        const isReset = b.innerText.toLowerCase().includes('reset');
+        b.classList.toggle('active', isReset && val === 1);
+      });
     }
 
     function setSpeed(val) {
-      if (anchor) {
-        // Recalculate anchor to prevent time jump
-        const currentSimTime = anchor.fake + (Date.now() - anchor.real) * speed;
-        anchor = { real: Date.now(), fake: currentSimTime };
+      if (val === 1) {
+        window.speechSynthesis.cancel();
+        startFlash();
       }
-      speed = val;
-      document.querySelectorAll('.speed-btn').forEach(b => {
-        b.classList.toggle('active', parseInt(b.innerText) === val);
-      });
-      document.getElementById('speed-val').innerText = val;
     }
 
-    function tick() {
-      const realNow = new Date();
-      document.getElementById('dDisp').textContent = `${String(realNow.getMonth()+1).padStart(2,'0')}.${String(realNow.getDate()).padStart(2,'0')}.${realNow.getFullYear()}`;
-      
-      if (!anchor) {
-        document.getElementById('tDisp').textContent = realNow.toLocaleTimeString('tr-TR', {hour12:false});
-        return;
+    function addTime(seconds) {
+      window.speechSynthesis.cancel();
+      timeOffset += seconds * 1000;
+      document.querySelectorAll('.speed-btn').forEach(b => {
+        b.classList.remove('active');
+      });
+      tick();
+    }
+
+  function tick() {
+    const realNow = Date.now();
+    
+    if (!anchor) {
+      const d = new Date(realNow);
+      document.getElementById('dDisp').textContent = `${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}.${d.getFullYear()}`;
+      document.getElementById('tDisp').textContent = d.toLocaleTimeString('tr-TR', {hour12:false});
+      return;
+    }
+
+    const elapsed = realNow - anchor.real;
+    const simTime = anchor.fake + elapsed + timeOffset;
+    const simNow = new Date(simTime);
+    
+    document.getElementById('tDisp').textContent = simNow.toLocaleTimeString('tr-TR', {hour12:false});
+    document.getElementById('dDisp').textContent = `${String(simNow.getMonth()+1).padStart(2,'0')}.${String(simNow.getDate()).padStart(2,'0')}.${simNow.getFullYear()}`;
+    
+    const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    document.getElementById('dayDisp').textContent = dayNames[simNow.getDay()];
+
+    const day = simNow.getDay();
+    const schedule = (day === 5) ? scheduleFriday : scheduleMonThu;
+    const currentSecs = simNow.getHours() * 3600 + simNow.getMinutes() * 60 + simNow.getSeconds();
+
+    let activeClass = null;
+    let nextClass = null;
+
+    for (let i = 0; i < schedule.length; i++) {
+      const s = schedule[i];
+      const start = timeToSeconds(s.start);
+      const end = timeToSeconds(s.end);
+      if (currentSecs >= start && currentSecs < end) {
+        if (s.type === 'class') activeClass = s;
       }
+      if (start > currentSecs && s.type === 'class') {
+        if (!nextClass) nextClass = s;
+      }
+    }
 
-      const simNow = new Date(anchor.fake + (Date.now() - anchor.real) * speed);
-      document.getElementById('tDisp').textContent = simNow.toLocaleTimeString('tr-TR', {hour12:false});
+    // Determine which class to display on cards (current or last one started)
+    let displayClass = null;
+    const classesOnly = schedule.filter(s => s.type === 'class');
+    for (const c of classesOnly) {
+      if (currentSecs >= timeToSeconds(c.start)) displayClass = c;
+    }
+    if (!displayClass && classesOnly.length > 0) displayClass = classesOnly[0];
 
-      const totalSecs = simNow.getHours() * 3600 + simNow.getMinutes() * 60 + simNow.getSeconds();
-      const simStart = 8 * 3600;
-      let acc = simStart;
-
+    let foundActiveSession = false;
+    if (displayClass) {
+      const classStart = timeToSeconds(displayClass.start);
+      let acc = classStart;
       for (let i = 0; i < 4; i++) {
         const card = document.getElementById(`card${i}`), ring = document.getElementById(`ring${i}`), tm = document.getElementById(`tm${i}`), coin = document.getElementById(`coin${i}`);
         const dur = mins[i] * 60;
-        if (totalSecs >= acc && totalSecs < acc + dur) {
+        
+        if (currentSecs >= acc && currentSecs < acc + dur) {
+          foundActiveSession = true;
           if (activeIdx !== i) { announce(i); activeIdx = i; }
           card.classList.add('active'); coin.classList.add('spinning');
-          const rem = acc + dur - totalSecs;
+          const rem = acc + dur - currentSecs;
           tm.textContent = new Date(rem * 1000).toISOString().substr(14, 5);
-          ring.style.strokeDashoffset = 283 - ((totalSecs - acc) / dur * 283);
+          ring.style.strokeDashoffset = 283 - ((currentSecs - acc) / dur * 283);
         } else {
           card.classList.remove('active'); coin.classList.remove('spinning');
-          ring.style.strokeDashoffset = (totalSecs >= acc + dur) ? 0 : 283;
-          tm.textContent = (totalSecs >= acc + dur) ? "DONE" : `${mins[i].toString().padStart(2, '0')}:00`;
+          ring.style.strokeDashoffset = (currentSecs >= acc + dur) ? 0 : 283;
+          tm.textContent = (currentSecs >= acc + dur) ? "DONE" : `${mins[i].toString().padStart(2, '0')}:00`;
         }
         acc += dur;
       }
     }
+
+    const inActivePeriod = activeClass && currentSecs >= timeToSeconds(activeClass.start) && currentSecs < timeToSeconds(activeClass.end);
+
+    if (inActivePeriod && foundActiveSession) {
+      document.getElementById('flight-deck').classList.remove('active');
+    } else {
+      document.getElementById('flight-deck').classList.add('active');
+      activeIdx = -1;
+
+      if (inActivePeriod && !foundActiveSession) {
+        const classEnd = timeToSeconds(activeClass.end);
+        const diff = classEnd - currentSecs;
+        const h = Math.floor(diff/3600), m = Math.floor((diff%3600)/60), s = diff%60;
+        document.getElementById('slotTime').textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        document.getElementById('deck-label').textContent = "Class Session Ends In";
+      } else if (nextClass) {
+        const diff = timeToSeconds(nextClass.start) - currentSecs;
+        const h = Math.floor(diff/3600), m = Math.floor((diff%3600)/60), s = diff%60;
+        document.getElementById('slotTime').textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        document.getElementById('deck-label').textContent = "Next Class Is Going To Start In";
+      } else {
+        let checkDay = (day + 1) % 7;
+        let daysAway = 1;
+        let foundNextDay = false;
+        while (daysAway < 7) {
+          const checkSchedule = (checkDay === 5) ? scheduleFriday : scheduleMonThu;
+          const firstClass = checkSchedule.find(s => s.type === 'class');
+          if (firstClass && checkDay !== 0 && checkDay !== 6) {
+            const secondsInDay = 86400;
+            let diff = (secondsInDay - currentSecs) + ((daysAway - 1) * secondsInDay) + timeToSeconds(firstClass.start);
+            const h = Math.floor(diff/3600), m = Math.floor((diff%3600)/60), s = diff%60;
+            document.getElementById('slotTime').textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            document.getElementById('deck-label').textContent = "Next Class Starts In";
+            foundNextDay = true;
+            break;
+          }
+          checkDay = (checkDay + 1) % 7;
+          daysAway++;
+        }
+        if (!foundNextDay) {
+          document.getElementById('slotTime').textContent = "--:--:--";
+          document.getElementById('deck-label').textContent = "No More Classes Today";
+        }
+      }
+    }
+  }
     setInterval(tick, 1000); tick();
   </script>
 </body>
