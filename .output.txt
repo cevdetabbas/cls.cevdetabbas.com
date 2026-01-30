@@ -1,0 +1,276 @@
+#!/bin/bash
+set -euo pipefail
+# --------------------------------------------------
+# BASIC
+# --------------------------------------------------
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+TARFILE="/root/tm_Backup_${TIMESTAMP}.tar"
+LOGFILE="/home/tm/Desktop/Iskele-Backup-Summary.log"
+START_TIME=$(date +%s)
+# --------------------------------------------------
+# REMOTE (WSL Ubuntu on cybertron -> E:)
+# --------------------------------------------------
+SSH_PORT=2222
+REMOTE_USER="tm"
+REMOTE_HOST="cybertorun"
+REMOTE_DIR="/mnt/e/IskeleDailyBackups"
+# LIMIT: 1TB (remote folder max)
+LIMIT_BYTES=$((1024*1024*1024*1024))
+# KEEP COUNTS
+KEEP_WEEKLY=12
+KEEP_MONTHLY=6
+# --------------------------------------------------
+# LOCK (prevent overlap)
+# --------------------------------------------------
+LOCKFILE="/run/iskele-backup.lock"
+exec 200>"$LOCKFILE"
+if ! flock -n 200; then
+  echo "$(date "+%F %T") | INFO: Another backup already running." >> "$LOGFILE"
+  exit 0
+fi
+# --------------------------------------------------
+# HELPERS
+# --------------------------------------------------
+human_bytes() {
+  local b=$1
+  if [ "$b" -lt $((1024*1024*1024)) ]; then
+    echo "$(echo "scale=2; $b/1024/1024" | bc)MB"
+  elif [ "$b" -lt $((1024*1024*1024*1024)) ]; then
+    echo "$(echo "scale=2; $b/1024/1024/1024" | bc)GB"
+  else
+    echo "$(echo "scale=2; $b/1024/1024/1024/1024" | bc)TB"
+  fi
+}
+human_time() {
+  local s=$1
+  local h=$((s / 3600))
+  local m=$(((s % 3600) / 60))
+  local r=$((s % 60))
+  if [ "$h" -gt 0 ]; then echo "${h}h ${m}m ${r}s"
+  elif [ "$m" -gt 0 ]; then echo "${m}m ${r}s"
+  else echo "${r}s"; fi
+}
+rssh() {
+  ssh -p "$SSH_PORT" -o BatchMode=yes -o ConnectTimeout=3 "${REMOTE_USER}@${REMOTE_HOST}" "$@"
+}
+wsl_ready_or_exit() {
+  for _ in {1..20}; do
+    if rssh "echo OK" >/dev/null 2>&1; then return 0; fi
+    sleep 3
+  done
+  return 1
+}
+remote_dir_size_bytes() {
+  rssh "mkdir -p \"$REMOTE_DIR\" && find \"$REMOTE_DIR\" -type f -printf '%s\n' 2>/dev/null | awk '{s+=\$1} END{print s+0}'"
+}
+# Oldest DAILY only (never delete Weekly/Monthly)
+remote_oldest_daily_file() {
+  rssh "find \"$REMOTE_DIR\" -maxdepth 1 -type f -name 'tm_Backup_*.tar' \
+    ! -name 'tm_Backup_Weekly_*.tar' ! -name 'tm_Backup_Monthly_*.tar' \
+    -printf '%T@|%p\n' 2>/dev/null | sort -n | head -n 1 | cut -d'|' -f2-"
+}
+remote_file_size_bytes() {
+  rssh "stat -c%s \"$1\" 2>/dev/null"
+}
+remote_delete_file() {
+  rssh "rm -f \"$1\""
+}
+remote_copy_file() {
+  local src="$1"
+  local dst="$2"
+  rssh "cp -f \"$src\" \"$dst\""
+}
+remote_rotate_pattern_keep_n() {
+  local pattern="$1"
+  local keep="$2"
+  # Delete older than N newest (by mtime)
+  rssh "cd \"$REMOTE_DIR\" && \
+    ls -1t $pattern 2>/dev/null | tail -n +$((keep+1)) | xargs -r rm -f"
+}
+scp_with_retry() {
+  local src="$1"
+  local dst="$2"
+  local tries=3
+  local wait=10
+  local i
+  for i in $(seq 1 $tries); do
+    if scp -o ConnectTimeout=10 -o ServerAliveInterval=30 -o ServerAliveCountMax=3 "$src" "$dst"; then
+      return 0
+    fi
+    sleep "$wait"
+  done
+  return 1
+}
+remote_cleanup_size_with_new_bytes_daily_only() {
+  local new_bytes="$1"
+  local before_bytes
+  before_bytes=$(remote_dir_size_bytes)
+  local deleted_count=0
+  local deleted_details=""
+  # If even with deletable dailies removed we can't fit, we will stop and report.
+  while [ $((before_bytes + new_bytes)) -gt "$LIMIT_BYTES" ]; do
+    local oldest
+    oldest=$(remote_oldest_daily_file)
+    if [ -z "$oldest" ]; then
+      echo "NO_MORE_DAILY|$deleted_count|$deleted_details|$before_bytes"
+      return 0
+    fi
+    local osize
+    osize=$(remote_file_size_bytes "$oldest" || echo 0)
+    remote_delete_file "$oldest"
+    deleted_count=$((deleted_count + 1))
+    deleted_details="${deleted_details}
+│    🗑️ $(basename "$oldest") ($(human_bytes "$osize"))"
+    before_bytes=$(remote_dir_size_bytes)
+  done
+  echo "OK|$deleted_count|$deleted_details|$before_bytes"
+}
+# --------------------------------------------------
+# WSL READY CHECK
+# --------------------------------------------------
+if ! wsl_ready_or_exit; then
+  echo "$(date "+%F %T") | ERROR: WSL SSH not reachable." >> "$LOGFILE"
+  exit 1
+fi
+# --------------------------------------------------
+# 1) CREATE TAR (NO COMPRESSION) + avoid sockets + systemd symlink warnings
+# --------------------------------------------------
+TAR_START=$(date +%s)
+ionice -c2 -n7 tar \
+  --exclude='home/tm/.cache/**' \
+  --exclude='home/tm/.config/systemd/user/**' \
+  --exclude='home/tm/**/oauc_pipe' \
+  --exclude='home/tm/**/*.socket' \
+  --exclude='home/tm/**/system.socket' \
+  --ignore-failed-read \
+  --warning=no-file-changed \
+  -cpf "$TARFILE" -C / home/tm
+TAR_TIME=$(( $(date +%s) - TAR_START ))
+# Quick integrity check
+tar -tf "$TARFILE" >/dev/null
+TAR_SIZE_BYTES=$(stat -c%s "$TARFILE")
+TAR_SIZE_H=$(human_bytes "$TAR_SIZE_BYTES")
+LIMIT_H=$(human_bytes "$LIMIT_BYTES")
+# --------------------------------------------------
+# 2) REMOTE CLEANUP (daily only) to make room for NEW TAR
+# --------------------------------------------------
+PRE_REMOTE_BYTES=$(remote_dir_size_bytes)
+PRE_REMOTE_H=$(human_bytes "$PRE_REMOTE_BYTES")
+CLEANUP_STATUS=""
+CLEANUP_DETAILS=""
+DELETED_COUNT=0
+if [ "$TAR_SIZE_BYTES" -gt "$LIMIT_BYTES" ]; then
+  CLEANUP_STATUS="❌ LOCAL FILE TOO BIG (${TAR_SIZE_H}) – SCP SKIPPED"
+  CLEANUP_REASON="local_too_big"
+else
+  RES=$(remote_cleanup_size_with_new_bytes_daily_only "$TAR_SIZE_BYTES")
+  STATUS=$(echo "$RES" | cut -d'|' -f1)
+  DELETED_COUNT=$(echo "$RES" | cut -d'|' -f2)
+  CLEANUP_DETAILS=$(echo "$RES" | cut -d'|' -f3- | sed 's/|/\n/g' | tail -n +1)
+  if [ "$STATUS" = "NO_MORE_DAILY" ]; then
+    CLEANUP_STATUS="❌ REMOTE FULL (only Weekly/Monthly left) – SCP SKIPPED"
+    CLEANUP_REASON="remote_only_protected"
+  else
+    if [ "$DELETED_COUNT" -gt 0 ]; then
+      CLEANUP_STATUS="✅ REMOTE CLEANUP (daily): ${DELETED_COUNT} file(s)"
+    else
+      CLEANUP_STATUS="✅ NO REMOTE CLEANUP NEEDED"
+    fi
+    CLEANUP_REASON="ok"
+  fi
+fi
+# --------------------------------------------------
+# 3) SCP (with retry)
+# --------------------------------------------------
+SCP_EXIT=1
+SCP_TIME=0
+DEST_HUMAN="E:/IskeleDailyBackups/$(basename "$TARFILE")"
+REMOTE_NEW_PATH="${REMOTE_DIR}/$(basename "$TARFILE")"
+if [[ "$CLEANUP_STATUS" == ✅* ]]; then
+  SCP_START=$(date +%s)
+  if scp_with_retry "$TARFILE" "admin@cybertron:E:\IskeleDailyBackups"; then
+    SCP_EXIT=0
+  else
+    SCP_EXIT=1
+  fi
+  SCP_TIME=$(( $(date +%s) - SCP_START ))
+  # success => remove local tar
+  [ "$SCP_EXIT" -eq 0 ] && rm -f "$TARFILE"
+fi
+# --------------------------------------------------
+# 4) WEEKLY/MONTHLY COPIES (REMOTE) + ROTATION
+#    Weekly: every Monday (keep 12)
+#    Monthly: day 01 of month (keep 6)
+# --------------------------------------------------
+WEEKLY_ACTION="NO"
+MONTHLY_ACTION="NO"
+if [ "$SCP_EXIT" -eq 0 ]; then
+  DOW=$(date +%u)   # 1=Mon ... 7=Sun
+  DOM=$(date +%d)   # 01..31
+  MONTH_SHORT=$(date +%b)  # Jan, Feb...
+  MONTH_FULL=$(date +%B)   # January...
+  DAYNUM=$(date +%d)       # 01..31
+  # Weekly copy on Monday
+  if [ "$DOW" -eq 1 ]; then
+    WEEKLY_NAME="tm_Backup_Weekly_${MONTH_SHORT}${DAYNUM}.tar"
+    remote_copy_file "$REMOTE_NEW_PATH" "${REMOTE_DIR}/${WEEKLY_NAME}"
+    remote_rotate_pattern_keep_n "tm_Backup_Weekly_*.tar" "$KEEP_WEEKLY"
+    WEEKLY_ACTION="YES (${WEEKLY_NAME}, keep ${KEEP_WEEKLY})"
+  fi
+  # Monthly copy on 1st day of month
+  if [ "$DOM" = "01" ]; then
+    MONTHLY_NAME="tm_Backup_Monthly_${MONTH_FULL}.tar"
+    # Avoid spaces just in case (some shells/tools hate it)
+    MONTHLY_NAME="${MONTHLY_NAME// /_}"
+    remote_copy_file "$REMOTE_NEW_PATH" "${REMOTE_DIR}/${MONTHLY_NAME}"
+    remote_rotate_pattern_keep_n "tm_Backup_Monthly_*.tar" "$KEEP_MONTHLY"
+    MONTHLY_ACTION="YES (${MONTHLY_NAME}, keep ${KEEP_MONTHLY})"
+  fi
+  # After creating protected copies, re-check size.
+  # If remote exceeds limit, delete DAILY only (never touch Weekly/Monthly).
+  POSTCOPY_RES=$(remote_cleanup_size_with_new_bytes_daily_only 0)
+  POSTCOPY_STATUS=$(echo "$POSTCOPY_RES" | cut -d'|' -f1)
+  if [ "$POSTCOPY_STATUS" = "NO_MORE_DAILY" ]; then
+    # Remote is full but only protected remain; we just log it.
+    :
+  fi
+fi
+POST_REMOTE_BYTES=$(remote_dir_size_bytes)
+POST_REMOTE_H=$(human_bytes "$POST_REMOTE_BYTES")
+TOTAL_TIME=$(( $(date +%s) - START_TIME ))
+TAR_TIME_H=$(human_time "$TAR_TIME")
+SCP_TIME_H=$(human_time "$SCP_TIME")
+TOTAL_TIME_H=$(human_time "$TOTAL_TIME")
+# --------------------------------------------------
+# 5) LOG
+# --------------------------------------------------
+HEADER="Iskele Backup | Date: $(date +%m/%d/%Y) Time: $(date +%H:%M)"
+echo "" >> "$LOGFILE"
+echo "╭─ ${HEADER} ─────────────────────────────────────────────" >> "$LOGFILE"
+echo "│ 📂 Source ..................... /home/tm (tar only)" >> "$LOGFILE"
+echo "│ 📁 Tar Size ................... $TAR_SIZE_H" >> "$LOGFILE"
+echo "│ 🌐 Remote Folder (pre) ........ $PRE_REMOTE_H" >> "$LOGFILE"
+echo "│ 🌐 Remote Folder (post) ....... $POST_REMOTE_H" >> "$LOGFILE"
+echo "│ 📦 Max Remote Folder Size ..... $LIMIT_H" >> "$LOGFILE"
+echo "│ 🧰 Tar Time ................... $TAR_TIME_H" >> "$LOGFILE"
+echo "│ 🚀 SCP Transfer Time .......... $SCP_TIME_H" >> "$LOGFILE"
+echo "│ ⏱️ Total Time ................. $TOTAL_TIME_H" >> "$LOGFILE"
+echo "│ 🧹 Cleanup .................... $CLEANUP_STATUS" >> "$LOGFILE"
+if [ "$DELETED_COUNT" -gt 0 ]; then
+  echo "│   Deleted daily files:" >> "$LOGFILE"
+  echo "$CLEANUP_DETAILS" >> "$LOGFILE"
+fi
+if [ "$SCP_EXIT" -eq 0 ]; then
+  echo "│ ✅ SCP ........................ SUCCESS" >> "$LOGFILE"
+elif [[ "$CLEANUP_STATUS" == ❌* ]]; then
+  echo "│ ✅ SCP ........................ SKIPPED" >> "$LOGFILE"
+else
+  echo "│ ✅ SCP ........................ FAILED (after retries)" >> "$LOGFILE"
+fi
+echo "│ 🗓️ Weekly Copy ................ $WEEKLY_ACTION" >> "$LOGFILE"
+echo "│ 📅 Monthly Copy ............... $MONTHLY_ACTION" >> "$LOGFILE"
+echo "│" >> "$LOGFILE"
+echo "│ ✅ Destination: ${DEST_HUMAN}" >> "$LOGFILE"
+echo "╰──────────────────────────────────────────────────────────" >> "$LOGFILE"
+echo "" >> "$LOGFILE"
+echo "✅ Backup tamamlandı! Log: $LOGFILE"
