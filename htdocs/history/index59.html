@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tech Zone Pro Elite v63</title>
+  <title>v2 gen5 | v75</title>
   <style>
     :root {
       --bg: #f5f5f7;
@@ -20,6 +20,7 @@
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
       background: var(--bg); color: var(--text);
       display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+      transition: background-color 2s ease;
     }
 
     /* HEADER */
@@ -28,10 +29,43 @@
       display: grid; grid-template-columns: 220px 1fr 220px; align-items: center;
       border-bottom: 1px solid #e5e5e5; z-index: 100;
       backdrop-filter: blur(20px);
+      position: relative; overflow: hidden;
     }
-    .head-label { font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; margin-right: 5px; }
-    .head-val { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 18px; }
-    h1 { text-align: center; margin: 0; font-size: 24px; font-weight: 950; letter-spacing: -1px; }
+    header::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(-45deg, rgba(0, 113, 227, 0.05), rgba(52, 199, 89, 0.05), rgba(255, 149, 0, 0.05), rgba(0, 113, 227, 0.05));
+      background-size: 400% 400%;
+      animation: headerGradient 15s ease infinite;
+      z-index: 0;
+    }
+    @keyframes headerGradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .head-label { font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; margin-right: 5px; z-index: 2; position: relative; }
+    .head-val { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 18px; z-index: 2; position: relative; }
+    h1 { text-align: center; margin: 0; font-size: 24px; font-weight: 950; letter-spacing: -1px; z-index: 2; position: relative; }
+
+    /* HEADER BUBBLES */
+    .h-bubble {
+      position: absolute;
+      bottom: -20px;
+      background: rgba(0, 113, 227, 0.15);
+      border-radius: 50%;
+      pointer-events: none;
+      animation: h-rise linear forwards;
+      z-index: 1;
+      filter: blur(2px);
+    }
+    @keyframes h-rise {
+      0% { transform: translateY(0) scale(1); opacity: 0; }
+      20% { opacity: 0.3; }
+      80% { opacity: 0.3; }
+      100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
+    }
 
     /* FLIGHT DECK (STANDBY BAR) */
     #flight-deck {
@@ -45,7 +79,7 @@
     .slot-timer { font-family: 'Courier New', Courier, monospace; font-size: 40px; font-weight: 900; color: #34c759; text-shadow: 0 0 10px #34c75944; margin: 5px 0; }
 
     /* LAYOUT */
-    main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 30px; position: relative; }
+    main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 30px; position: relative; overflow: hidden; }
     .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px; width: 100%; max-width: 1500px; z-index: 10; }
 
     /* CARDS */
@@ -65,7 +99,7 @@
     .session-info { font-size: 13px; font-weight: 800; color: var(--muted); text-transform: uppercase; margin-bottom: 5px; }
     .s-title { font-size: 32px; font-weight: 800; letter-spacing: -1.5px; margin-bottom: 15px; }
 
-    /* REVOLVING COIN (From 62) */
+    /* REVOLVING COIN */
     .circle-wrap { width: 180px; height: 180px; margin: 0 auto; position: relative; perspective: 1000px; }
     .ring-svg { transform: rotate(-90deg); position: absolute; inset: 0; z-index: 10; width: 100%; height: 100%; }
     .ring-bg { fill: none; stroke: #e5e5ea; stroke-width: 8; }
@@ -74,13 +108,22 @@
     .active .ring-bar { stroke: url(#rainbowGrad); }
 
     .coin {
-      width: 120px; height: 120px; position: absolute; top: 30px; left: 30px;
+      width: 140px; height: 140px; position: absolute; top: 20px; left: 20px;
       transform-style: preserve-3d; transition: transform 0.6s; z-index: 5;
     }
     .coin.spinning { animation: spin3d 4s infinite linear; }
-    .face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 50%; background: #fff; padding: 15px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); }
+    .face { 
+        position: absolute; width: 100%; height: 100%; backface-visibility: hidden; 
+        border-radius: 50%; background: #fff; overflow: hidden;
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+        border: 2px solid #fff;
+    }
     .face.back { transform: rotateY(180deg); }
-    .face img { width: 100%; height: 100%; object-fit: contain; }
+    .face img { 
+        width: 100%; height: 100%; 
+        object-fit: cover; 
+        display: block;
+    }
 
     @keyframes spin3d { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
 
@@ -89,8 +132,20 @@
 
     /* FOOTER */
     footer {
-      background: #fff; border-top: 1px solid #e5e5e5; padding: 20px 40px; 
+      background: rgba(255, 255, 255, 0.9); border-top: 1px solid #e5e5e5; padding: 20px 40px; 
       display: flex; justify-content: space-between; align-items: center; z-index: 100;
+      position: relative; overflow: hidden;
+    }
+    #footer-matrix-canvas {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.2;
+    }
+    .btn-group, .pill, footer button, footer .apple-btn {
+      position: relative;
+      z-index: 1;
     }
     .btn-group { display: flex; gap: 10px; }
     .apple-btn {
@@ -108,25 +163,49 @@
     }
     .g-btn.active { background: #fff; color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 
-    /* ANIMATIONS (From 62) */
+    /* ANIMATIONS */
     #animation-container { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
     .snowflake { position: absolute; background: #fff; border-radius: 50%; opacity: 0.8; pointer-events: none; animation: fall linear infinite; }
     @keyframes fall { from { transform: translateY(-10vh); } to { transform: translateY(110vh); } }
-    .firework { position: absolute; width: 5px; height: 5px; border-radius: 50%; animation: explode 1s ease-out forwards; }
-    @keyframes explode { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(30); opacity: 0; box-shadow: 0 0 20px 5px currentColor; } }
-    .bubble { position: absolute; bottom: -120px; width: 35px; height: 35px; border-radius: 50%; background: rgba(255, 255, 255, 0.45); box-shadow: 0 0 15px rgba(255, 255, 255, 0.7); animation: rise 12s infinite ease-in; pointer-events: none; }
-    @keyframes rise { 0% { transform: translateY(0) translateX(0) scale(0.8); opacity: 0; } 10% { opacity: 0.9; } 100% { transform: translateY(-120vh) translateX(40px) scale(1.1); opacity: 0; } }
-    .sparkle { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: radial-gradient(circle, #fff, transparent); opacity: 0; animation: sparkle 2s ease-out forwards; pointer-events: none; }
-    @keyframes sparkle { 0% { opacity: 0.9; transform: scale(1); } 100% { opacity: 0; transform: scale(4); } }
-    .penguin { position: absolute; bottom: 85px; width: 50px; height: 65px; background: url("images/tux.png") center/contain no-repeat; animation: waddle 20s linear infinite; pointer-events: none; opacity: 0.8; z-index: 1; }
-    @keyframes waddle { 0% { transform: translateX(-10vw) scaleX(1); } 45% { transform: translateX(110vw) scaleX(1); } 50% { transform: translateX(110vw) scaleX(-1); } 100% { transform: translateX(-10vw) scaleX(-1); } }
+    
+    .firework { position: absolute; width: 6px; height: 6px; border-radius: 50%; animation: explode 1s ease-out forwards; z-index: 5; }
+    @keyframes explode { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(40); opacity: 0; box-shadow: 0 0 30px 10px currentColor; } }
+
+    .bubble { 
+      position: absolute; bottom: -120px; width: 35px; height: 35px; border-radius: 50%; 
+      background: rgba(255, 255, 255, 0.4); box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.5); 
+      animation: rise 10s infinite ease-in; pointer-events: none; border: 1px solid rgba(255,255,255,0.3);
+    }
+    @keyframes rise { 0% { transform: translateY(0) translateX(0) scale(0.6); opacity: 0; } 10% { opacity: 0.8; } 100% { transform: translateY(-120vh) translateX(60px) scale(1.2); opacity: 0; } }
+
+    .sparkle { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: radial-gradient(circle, #fff, transparent); opacity: 0; animation: sparkle 2.5s ease-out forwards; pointer-events: none; }
+    @keyframes sparkle { 0% { opacity: 1; transform: scale(1) rotate(0deg); } 100% { opacity: 0; transform: scale(5) rotate(180deg); } }
+
+    .penguin { 
+      position: absolute; bottom: 80px; width: 60px; height: 75px; 
+      background: url("images/tux.png") center/contain no-repeat; 
+      animation: waddle 15s linear infinite; pointer-events: none; opacity: 0.9; z-index: 15;
+      filter: drop-shadow(0 5px 10px rgba(0,0,0,0.2));
+    }
+    @keyframes waddle { 
+      0% { transform: translateX(-15vw) scaleX(1) rotate(0deg); } 
+      25% { transform: translateX(45vw) scaleX(1) rotate(5deg); }
+      45% { transform: translateX(115vw) scaleX(1) rotate(0deg); } 
+      50% { transform: translateX(115vw) scaleX(-1) rotate(0deg); } 
+      75% { transform: translateX(45vw) scaleX(-1) rotate(-5deg); }
+      100% { transform: translateX(-15vw) scaleX(-1) rotate(0deg); } 
+    }
+
+    /* MATRIX EFFECT */
+    #matrix-canvas { position: absolute; inset: 0; opacity: 0; transition: opacity 1s; z-index: 1; pointer-events: none; }
+    .matrix-active #matrix-canvas { opacity: 0.15; }
     
     @keyframes rainbowMove { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
 
     svg defs { height: 0; width: 0; }
   </style>
 </head>
-<body>
+<body id="body-main">
 
   <header>
     <div><span class="head-label">Date:</span><span class="head-val" id="dDisp">--.--.----</span></div>
@@ -139,7 +218,8 @@
     <div id="slotTime" class="slot-timer">00:00:00</div>
   </div>
 
-  <main>
+  <main id="main-stage">
+    <canvas id="matrix-canvas"></canvas>
     <div id="animation-container"></div>
     
     <div class="grid">
@@ -198,8 +278,8 @@
         <div class="circle-wrap">
           <svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="ring3" cx="50" cy="50" r="45"/></svg>
           <div class="coin" id="coin3">
-            <div class="face front"><img src="images/logout.png"></div>
-            <div class="face back"><img src="images/logout.png"></div>
+            <div class="face front"><img src="images/logout4.png"></div>
+            <div class="face back"><img src="images/logout4.png"></div>
           </div>
         </div>
         <div class="time-left" id="tm3">02:00</div>
@@ -208,11 +288,13 @@
   </main>
 
   <footer>
-    <div class="btn-group">
+    <canvas id="footer-matrix-canvas"></canvas>
+    <div class="btn-group" id="footer-btns">
       <button class="apple-btn" onclick="startAll()">PLAY ALL</button>
-      <button class="apple-btn btn-gray" onclick="jump(0)">LOGIN</button>
-      <button class="apple-btn btn-gray" onclick="jump(1)">LEARN</button>
-      <button class="apple-btn btn-gray" onclick="jump(2)">GAME</button>
+      <button class="apple-btn btn-gray" id="btn-jump0" onclick="jump(0)">LOGIN</button>
+      <button class="apple-btn btn-gray" id="btn-jump1" onclick="jump(1)">LEARN</button>
+      <button class="apple-btn btn-gray" id="btn-jump2" onclick="jump(2)">GAME</button>
+      <button class="apple-btn btn-gray" id="btn-jump3" onclick="jump(3)">LOGOUT</button>
       <button onclick="playChime()" style="background:none; border:none; font-size:24px; cursor:pointer; margin-left:10px;">🔔</button>
     </div>
 
@@ -232,8 +314,105 @@
 
   <script>
     const mins = [3, 30, 10, 2], names = ["Login", "Learning", "Typing", "Logout"];
-    let mode = 'real', anchor = null, activeIdx = -1, audioCtx = null;
+    let mode = 'real', anchor = null, activeIdx = -1, audioCtx = null, voices = [];
     const animContainer = document.getElementById('animation-container');
+    const mainStage = document.getElementById('main-stage');
+    const bodyMain = document.getElementById('body-main');
+
+    // --- VOICE INITIALIZATION ---
+    function loadVoices() {
+      voices = window.speechSynthesis.getVoices();
+    }
+    loadVoices();
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    function getBestVoice() {
+      // Preferred voices: Siri-like or high quality female voices
+      const preferred = ["Samantha", "Siri", "Google US English", "Microsoft Zira", "English (United States)"];
+      for (let p of preferred) {
+        let v = voices.find(v => v.name.includes(p) || v.voiceURI.includes(p));
+        if (v) return v;
+      }
+      // Fallback to any female-sounding voice or first english voice
+      return voices.find(v => v.lang.includes("en")) || voices[0];
+    }
+
+    // --- MATRIX EFFECT ---
+    const canvas = document.getElementById('matrix-canvas');
+    const ctx_m = canvas.getContext('2d');
+    let characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+-*/=%\"'#&_(),.;:?!\\|{}<>[]^~";
+    characters = characters.split("");
+    let fontSize = 14, columns = 0, drops = [];
+
+    function initMatrix() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        columns = canvas.width / fontSize;
+        drops = [];
+        for (let x = 0; x < columns; x++) drops[x] = 1;
+        initFooterMatrix();
+    }
+    window.onresize = initMatrix;
+    initMatrix();
+
+    function drawMatrix() {
+        ctx_m.fillStyle = "rgba(0, 0, 0, 0.05)";
+        ctx_m.fillRect(0, 0, canvas.width, canvas.height);
+        ctx_m.fillStyle = "#0F0";
+        ctx_m.font = fontSize + "px arial";
+        for (let i = 0; i < drops.length; i++) {
+            const text = characters[Math.floor(Math.random() * characters.length)];
+            ctx_m.fillText(text, i * fontSize, drops[i] * fontSize);
+            if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+            drops[i]++;
+        }
+    }
+    setInterval(drawMatrix, 35);
+
+    // --- FOOTER MATRIX EFFECT ---
+    const fCanvas = document.getElementById('footer-matrix-canvas');
+    const fCtx = fCanvas.getContext('2d');
+    let fDrops = [];
+
+    function initFooterMatrix() {
+        fCanvas.width = fCanvas.offsetWidth;
+        fCanvas.height = fCanvas.offsetHeight;
+        const fColumns = fCanvas.width / fontSize;
+        fDrops = [];
+        for (let x = 0; x < fColumns; x++) fDrops[x] = 1;
+    }
+
+    function drawFooterMatrix() {
+        fCtx.fillStyle = "rgba(255, 255, 255, 0.1)"; 
+        fCtx.fillRect(0, 0, fCanvas.width, fCanvas.height);
+        fCtx.fillStyle = "#0F0";
+        fCtx.font = fontSize + "px arial";
+        for (let i = 0; i < fDrops.length; i++) {
+            const text = characters[Math.floor(Math.random() * characters.length)];
+            fCtx.fillText(text, i * fontSize, fDrops[i] * fontSize);
+            if (fDrops[i] * fontSize > fCanvas.height && Math.random() > 0.975) fDrops[i] = 0;
+            fDrops[i]++;
+        }
+    }
+    setInterval(drawFooterMatrix, 40);
+
+    // --- ANIMATION MANAGER ---
+    let currentAnimTheme = 0; // 0: Default, 1: Matrix, 2: Colorful, 3: Bubble Burst
+    function rotateTheme() {
+        currentAnimTheme = (currentAnimTheme + 1) % 4;
+        mainStage.classList.remove('matrix-active');
+        bodyMain.style.backgroundColor = "";
+        
+        if (currentAnimTheme === 1) {
+            mainStage.classList.add('matrix-active');
+        } else if (currentAnimTheme === 2) {
+            const colors = ["#f5f5f7", "#e3f2fd", "#f1f8e9", "#fff3e0", "#fce4ec", "#f3e5f5"];
+            bodyMain.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        }
+    }
+    setInterval(rotateTheme, 5000);
 
     // --- ANIMATIONS ---
     function createSnow() {
@@ -250,7 +429,8 @@
     }
 
     function createFirework() {
-      for(let i=0; i<5; i++) {
+      const count = 5;
+      for(let i=0; i<count; i++) {
         setTimeout(() => {
           const f = document.createElement('div');
           f.className = 'firework';
@@ -263,43 +443,61 @@
       }
     }
 
-    function createBubbles() {
-      for (let i = 0; i < 12; i++) {
+    function createBubbles(count = 12) {
+      for (let i = 0; i < count; i++) {
         const b = document.createElement('div');
         b.className = 'bubble';
-        const size = Math.random() * 25 + 15;
+        const size = Math.random() * 30 + 15;
         b.style.width = b.style.height = size + 'px';
         b.style.left = Math.random() * 100 + 'vw';
-        b.style.animationDuration = (8 + Math.random() * 8) + 's';
-        b.style.animationDelay = (Math.random() * 8) + 's';
+        b.style.animationDuration = (7 + Math.random() * 7) + 's';
+        b.style.animationDelay = (Math.random() * 5) + 's';
         animContainer.appendChild(b);
       }
     }
 
     function createSparkles() {
-      for (let i = 0; i < 8; i++) {
+      for (let i = 0; i < 10; i++) {
         const s = document.createElement('div');
         s.className = 'sparkle';
-        s.style.left = (20 + Math.random() * 60) + 'vw';
-        s.style.top = (30 + Math.random() * 40) + 'vh';
+        s.style.left = (Math.random() * 100) + 'vw';
+        s.style.top = (Math.random() * 100) + 'vh';
         animContainer.appendChild(s);
-        setTimeout(() => s.remove(), 2000);
+        setTimeout(() => s.remove(), 2500);
       }
     }
 
-    function createPenguins() {
-      for (let i = 0; i < 2; i++) {
+    function createPenguins(count = 2) {
+      for (let i = 0; i < count; i++) {
         const p = document.createElement('div');
         p.className = 'penguin';
-        p.style.left = (-10 - i * 8) + 'vw';
-        p.style.bottom = (85 + i * 15) + 'px';
+        p.style.left = (-15 - i * 10) + 'vw';
+        p.style.bottom = (70 + i * 25) + 'px';
+        p.style.animationDelay = (i * 3) + 's';
         animContainer.appendChild(p);
       }
     }
 
     createSnow();
     createBubbles();
-    createPenguins();
+    createPenguins(3);
+
+    // --- HEADER BUBBLES ---
+    function createHeaderBubbles() {
+      const header = document.querySelector('header');
+      setInterval(() => {
+        const b = document.createElement('div');
+        b.className = 'h-bubble';
+        const size = Math.random() * 15 + 5;
+        b.style.width = size + 'px';
+        b.style.height = size + 'px';
+        b.style.left = Math.random() * 100 + '%';
+        b.style.animationDuration = (Math.random() * 2 + 2) + 's';
+        header.appendChild(b);
+        setTimeout(() => b.remove(), 4000);
+      }, 400);
+    }
+    createHeaderBubbles();
 
     // --- LOGIC ---
     function setGrade(val) {
@@ -310,12 +508,20 @@
       const title = document.getElementById('phase3Title'),
             front = document.getElementById('p3Front'),
             back = document.getElementById('p3Back');
+            
+      const b0 = document.getElementById('btn-jump0'),
+            b1 = document.getElementById('btn-jump1'),
+            b2 = document.getElementById('btn-jump2'),
+            b3 = document.getElementById('btn-jump3');
+
       if(val === 'prek') {
         title.innerText = "ABC / PBS";
         front.src = "images/abc.jpg"; back.src = "images/pbs.png";
+        b0.innerText = "LOGIN"; b1.innerText = "LEARN"; b2.innerText = "GAMING"; b3.innerText = "LOGOUT";
       } else {
         title.innerText = "Typing / Nitro";
         front.src = "images/typing.png"; back.src = "images/nitrotype.jpg";
+        b0.innerText = "LOGIN"; b1.innerText = "LEARN"; b2.innerText = "TYPING"; b3.innerText = "LOGOUT";
       }
     }
     setGrade('prek');
@@ -327,7 +533,9 @@
     }
 
     function playChime() {
-      const ctx = getAudio(); const now = ctx.currentTime;
+      const ctx = getAudio();
+      // Add a small initial delay to ensure clean start
+      const now = ctx.currentTime + 0.1; 
       [554, 440, 329, 277].forEach((f, i) => {
         const o = ctx.createOscillator(); const g = ctx.createGain();
         o.frequency.setValueAtTime(f, now + i * 0.45);
@@ -339,10 +547,32 @@
       });
     }
 
-    async function announce(msg) {
+    async function announce(idx) {
+      // Small pause before chime to let the environment settle
+      await new Promise(r => setTimeout(r, 100));
       playChime(); createFirework();
-      await new Promise(r => setTimeout(r, 2200));
-      window.speechSynthesis.speak(new SpeechSynthesisUtterance(msg));
+      await new Promise(r => setTimeout(r, 2300)); // Adjusted to 2300 to account for initial delay
+      
+      let msg = "";
+      const isPreK = document.getElementById('g-prek').classList.contains('active');
+
+      if (idx === 0) {
+        msg = "Please login to your accounts.";
+      } else if (idx === 1) {
+        msg = "Dear students you can start working on learning.com right now. this session is going to take 30 min. Please do not remove any equipment, mouse, keyboard, headphones, from the desktop computers. If you need anything please ask your teacher for assistance.";
+      } else if (idx === 2) {
+        msg = isPreK ? "It is educational game time." : "Typing session started. you can start working on typing.com or nitrotype.com now.";
+      } else if (idx === 3) {
+        msg = "Dear Students. The class is over now, please log out from your accounts, close your chromebooks, organize your desk,.. Please Stand up Push your chairs And stand up right next to your chair. Please wait until your teacher dismiss you. Have a wonderful day";
+      } else {
+        msg = names[idx] + " session is active."; // Fallback
+      }
+
+      const utterance = new SpeechSynthesisUtterance(msg);
+      utterance.voice = getBestVoice();
+      utterance.rate = 0.9; // Slightly slower for clarity
+      utterance.pitch = 1.0;
+      window.speechSynthesis.speak(utterance);
     }
 
     function setMode(m) {
@@ -370,7 +600,12 @@
 
     function tick() {
       const real = new Date();
-      document.getElementById('dDisp').textContent = real.toLocaleDateString('tr-TR');
+      
+      const month = String(real.getMonth() + 1).padStart(2, '0');
+      const day = String(real.getDate()).padStart(2, '0');
+      const year = real.getFullYear();
+      document.getElementById('dDisp').textContent = `${month}.${day}.${year}`;
+      
       document.getElementById('tDisp').textContent = real.toLocaleTimeString('tr-TR', {hour12:false});
 
       const startS = 7*3600 + 50*60, endS = startS + (45*60);
@@ -397,7 +632,7 @@
           const dur = mins[i]*60;
           if(total >= acc && total < acc + dur) {
             anyActive = true;
-            if(i !== activeIdx) { announce(names[i] + " session is active."); activeIdx = i; }
+            if(i !== activeIdx) { announce(i); activeIdx = i; }
             c.classList.add('active'); coin.classList.add('spinning');
             const rem = Math.ceil(acc + dur - total);
             t.textContent = new Date(rem * 1000).toISOString().substr(14, 5);
@@ -409,6 +644,13 @@
           }
           acc += dur;
         }
+      }
+
+      // STANDBY / WAITING TIME ANIMATIONS
+      if (standby) {
+          if (Math.random() < 0.2) createFirework();
+          if (Math.random() < 0.15) createSparkles();
+          if (Math.random() < 0.1) createBubbles(2);
       }
 
       if (!standby && now && !anyActive) {

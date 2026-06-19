@@ -3,283 +3,324 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tech App with Mr. Oz - Pro Edition</title>
+  <title>Mr. Oz Tech Zone Pro - Projector Edition</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Inter:wght@400;900&display=swap');
+
     :root {
-      --bg: #f5f5f7;
-      --card: rgba(255, 255, 255, 0.82);
-      --text: #1d1d1f;
-      --muted: rgba(29, 29, 31, 0.6);
-      --line: rgba(0, 0, 0, 0.1);
-      --blue: #0071e3;
-      --pink: #ff2d55;
-      --green: #34c759;
-      --rainbow: linear-gradient(120deg, #ff3b30, #ff9500, #ffcc00, #34c759, #007aff, #5856d6, #ff2d55);
+      --neon-blue: #00d2ff;
+      --neon-pink: #ff007f;
+      --neon-green: #39ff14;
+      --glass: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.1);
     }
 
     * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
+    body, html { 
+      margin: 0; padding: 0; width: 100%; height: 100%; 
+      background: #050505; color: #fff; 
+      font-family: 'Inter', sans-serif; overflow: hidden; 
     }
 
-    /* HEADER */
-    header {
-      background: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(25px);
-      -webkit-backdrop-filter: blur(25px);
-      border-bottom: 1px solid var(--line);
-      padding: 12px 30px;
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      align-items: center;
-      z-index: 100;
-      flex-shrink: 0;
+    /* ATMOSPHERE - FULL SCREEN ANIMATIONS */
+    #atmosphere { position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0; transition: opacity 1s; }
+    #atmosphere.visible { opacity: 1; }
+    .stage { position: absolute; inset: 0; opacity: 0; transition: opacity 1.5s ease; }
+    .stage.active { opacity: 1; }
+
+    /* HEADER - MISSION CONTROL STYLE */
+    header { 
+      background: rgba(0,0,0,0.8); backdrop-filter: blur(20px);
+      border-bottom: 2px solid var(--neon-blue); 
+      display: grid; grid-template-columns: 1.5fr 1fr 1.5fr; padding: 30px 60px; 
+      align-items: center; position: relative; z-index: 100;
+      box-shadow: 0 10px 30px rgba(0,210,255,0.2);
+    }
+    .h-box { display: flex; align-items: baseline; gap: 15px; }
+    .h-lbl { font-family: 'Orbitron', sans-serif; font-size: 24px; color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); }
+    .h-val { font-family: 'Orbitron', sans-serif; font-size: 55px; font-weight: 900; letter-spacing: 2px; }
+    h1 { 
+      font-family: 'Orbitron', sans-serif; font-size: 32px; font-weight: 900; 
+      text-align: center; color: #fff; margin: 0;
+      text-transform: uppercase; letter-spacing: 4px;
+      background: linear-gradient(to right, #fff, var(--neon-blue), #fff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
 
-    .chip {
-      background: white; border: 1px solid var(--line);
-      padding: 8px 16px; border-radius: 12px;
-      font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums;
+    /* STANDBY BAR (FLIGHT DECK) */
+    #flight-deck { 
+      background: linear-gradient(90deg, transparent, #000, transparent);
+      height: 0; overflow: hidden; display: flex; flex-direction: column; 
+      align-items: center; justify-content: center; 
+      transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1); z-index: 90;
     }
-    h1 { margin: 0; font-size: clamp(24px, 4vw, 32px); font-weight: 800; letter-spacing: -0.03em; }
+    #flight-deck.active { height: 250px; border-bottom: 1px solid var(--glass-border); }
+    #slotTime { font-family: 'Orbitron', sans-serif; font-size: 110px; font-weight: 900; color: var(--neon-green); text-shadow: 0 0 20px var(--neon-green); margin: 10px 0; }
+    .deck-label { font-size: 35px; font-weight: 900; opacity: 0.7; letter-spacing: 5px; }
 
-    /* MAIN AREA & STANDBY */
-    main { 
-      flex: 1; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      padding: 20px; 
-      position: relative; 
-      overflow: hidden;
-    }
+    /* GRID & CARDS */
+    main { position: relative; z-index: 10; height: calc(100vh - 450px); display: flex; align-items: center; justify-content: center; padding: 40px; }
+    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px; width: 100%; max-width: 1800px; }
 
-    #standby {
-      position: absolute;
-      inset: 0;
-      background: var(--bg);
-      z-index: 50;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
+    .card { 
+      background: var(--glass); border-radius: 50px; padding: 40px; 
+      text-align: center; border: 2px solid var(--glass-border); 
+      transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1); position: relative;
+      backdrop-filter: blur(10px);
     }
-    #standby.show { display: flex; }
-    .standby-time { font-size: clamp(5rem, 12vw, 10rem); font-weight: 900; letter-spacing: -5px; line-height: 1; }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 20px;
-      width: 100%;
-      max-width: 1400px;
-      z-index: 10;
-    }
-
-    /* CARD STYLING */
-    .card {
-      background: var(--card); border-radius: 30px; padding: 20px;
-      text-align: center; border: 1px solid rgba(255,255,255,0.4);
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
-      transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
-      opacity: 0.35; position: relative;
-    }
-    .card.active {
-      opacity: 1; transform: scale(1.06) translateY(-10px);
-      background: white; box-shadow: 0 30px 60px rgba(0,0,0,0.12);
-    }
+    .session-title { font-size: 45px; font-weight: 900; color: #fff; margin-bottom: 15px; font-family: 'Orbitron', sans-serif; }
+    .session-time { font-size: 24px; color: var(--neon-blue); font-weight: 800; margin-bottom: 25px; }
+    
+    .card.active { transform: scale(1.1) translateY(-20px); border-color: var(--neon-blue); background: rgba(0,210,255,0.05); }
     .card.active::before {
-      content: ''; position: absolute; inset: -3px;
-      background: var(--rainbow); background-size: 300% 300%;
-      border-radius: 33px; z-index: -1;
-      animation: rainbowMove 4s linear infinite;
-      opacity: 0.6; filter: blur(10px);
-    }
-    @keyframes rainbowMove {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+      content: ''; position: absolute; inset: -5px; border-radius: 55px;
+      background: linear-gradient(45deg, var(--neon-blue), var(--neon-pink), var(--neon-green));
+      background-size: 400%; z-index: -1; animation: flow 5s linear infinite; filter: blur(20px);
     }
 
-    .circle-wrap { position: relative; width: 100%; aspect-ratio: 1; margin: 15px 0; display: flex; align-items: center; justify-content: center; }
+    .circle-wrap { position: relative; width: 200px; height: 200px; margin: 0 auto; }
     .ring-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
-    .ring-bg { fill: none; stroke: rgba(0,0,0,0.05); stroke-width: 8; }
-    .ring-bar { fill: none; stroke: var(--blue); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 283; stroke-dashoffset: 283; transition: stroke-dashoffset 0.3s ease; }
-    .img-box { position: absolute; width: 76%; height: 76%; border-radius: 50%; overflow: hidden; border: 5px solid white; background: white; }
-    .img-box img { width: 100%; height: 100%; object-fit: cover; }
-    .cd { font-weight: 950; font-size: clamp(2.5rem, 4vw, 3.2rem); font-variant-numeric: tabular-nums; letter-spacing: -2px; opacity: 0; }
-    .active .cd { opacity: 1; }
+    .ring-bg { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 12; }
+    .ring-bar { fill: none; stroke: var(--neon-blue); stroke-width: 12; stroke-linecap: round; stroke-dasharray: 283; stroke-dashoffset: 283; filter: drop-shadow(0 0 8px var(--neon-blue)); }
+    
+    .timer-text { font-family: 'Orbitron', sans-serif; font-size: 65px; font-weight: 900; margin-top: 30px; letter-spacing: -2px; }
 
     /* FOOTER */
-    footer {
-      background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px);
-      padding: 15px 40px; border-top: 1px solid var(--line);
-      display: flex; justify-content: space-between; align-items: center;
-      gap: 20px; flex-shrink: 0;
+    footer { 
+      position: fixed; bottom: 0; left: 0; right: 0; 
+      background: rgba(0,0,0,0.9); border-top: 2px solid var(--glass-border); 
+      padding: 30px 60px; display: flex; justify-content: space-between; align-items: center; z-index: 100; 
     }
-
-    .info-box { display: flex; flex-direction: column; gap: 2px; min-width: 250px; }
-    .info-class { font-weight: 800; font-size: 1.1rem; }
-    .info-period { font-weight: 600; color: var(--muted); font-size: 0.9rem; }
-
-    .sim-controls { display: flex; align-items: center; gap: 20px; flex: 1; justify-content: flex-end; }
-    .jump-group { display: flex; gap: 8px; background: rgba(0,0,0,0.03); padding: 6px; border-radius: 14px; border: 1px solid var(--line); }
-    
-    .btn-jump {
-      background: white; border: 1px solid var(--line);
-      padding: 10px 16px; border-radius: 10px; font-weight: 800;
-      cursor: pointer; transition: all 0.2s; font-size: 12px;
+    .btn { 
+      background: #fff; color: #000; border: none; padding: 15px 35px; 
+      border-radius: 20px; font-size: 20px; font-weight: 900; cursor: pointer; 
+      transition: 0.3s; font-family: 'Orbitron', sans-serif;
     }
-    .btn-jump:hover { transform: translateY(-3px); background: var(--blue); color: white; border-color: var(--blue); }
+    .btn:hover { background: var(--neon-blue); color: #fff; transform: scale(1.1); box-shadow: 0 0 20px var(--neon-blue); }
+    .btn-sec { background: var(--glass); color: #fff; border: 1px solid var(--glass-border); margin-left:10px; }
 
-    /* TOGGLE SWITCH */
-    .switch { position: relative; width: 50px; height: 28px; }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider { position: absolute; cursor: pointer; inset: 0; border-radius: 34px; background-color: #ccc; transition: .4s; }
-    .slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: .4s; }
-    input:checked + .slider { background-color: var(--green); }
-    input:checked + .slider:before { transform: translateX(22px); }
+    .mode-group { display: flex; background: #111; padding: 10px; border-radius: 25px; gap: 10px; border: 1px solid var(--glass-border); }
+    .mode-btn { border: none; padding: 12px 25px; border-radius: 15px; font-weight: 900; font-size: 16px; cursor: pointer; background: transparent; color: #555; transition: 0.3s; }
+    .mode-btn.active { background: var(--neon-blue); color: #000; box-shadow: 0 0 15px var(--neon-blue); }
 
-    #banner { position: fixed; top: 90px; left: 50%; transform: translateX(-50%) translateY(-20px); background: var(--blue); color: white; padding: 10px 25px; border-radius: 999px; font-weight: 700; opacity: 0; transition: 0.5s; z-index: 900; text-transform: uppercase; }
-    #banner.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    /* ANIMATIONS */
+    .bubble { position: absolute; bottom: -100px; background: radial-gradient(circle, var(--neon-blue), transparent); opacity: 0.3; border-radius: 50%; animation: rise 10s infinite ease-in; }
+    .snow { position: absolute; background: #fff; border-radius: 50%; opacity: 0.5; animation: fall 6s infinite linear; }
+    .penguin { position: absolute; font-size: 100px; bottom: 40px; animation: waddle 20s infinite linear; filter: drop-shadow(0 0 15px #fff); }
+
+    @keyframes flow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+    @keyframes rise { from { transform: translateY(0); opacity: 0.5; } to { transform: translateY(-120vh); opacity: 0; } }
+    @keyframes fall { from { transform: translateY(-100px); } to { transform: translateY(110vh); } }
+    @keyframes waddle { 0% { left: -150px; transform: rotate(15deg); } 50% { transform: rotate(-15deg); } 100% { left: 110vw; transform: rotate(15deg); } }
   </style>
 </head>
 <body>
 
+  <div id="atmosphere">
+    <div id="stage-0" class="stage active"></div>
+    <div id="stage-1" class="stage"></div>
+    <div id="stage-2" class="stage"></div>
+  </div>
+
   <header>
-    <div class="chip" id="dateChip">00/00/0000</div>
-    <h1>Mr. Oz's Tech Zone</h1>
-    <div style="text-align: right;"><div class="chip" id="timeChip">00:00:00</div></div>
+    <div class="h-box"><span class="h-lbl">DATE:</span><span class="h-val" id="dVal">00/00/0000</span></div>
+    <h1>Mr. Oz Tech Zone Pro</h1>
+    <div class="h-box" style="justify-content: flex-end;"><span class="h-lbl">TIME:</span><span class="h-val" id="tVal">00:00:00</span></div>
   </header>
 
-  <div id="banner">SESSION STARTED</div>
+  <div id="flight-deck">
+    <div class="deck-label">NEXT MISSION DEPLOYS IN</div>
+    <div id="slotTime">00:00:00</div>
+    <div id="targetNote" class="deck-label" style="color: var(--neon-green);">MONDAY 07:50</div>
+  </div>
 
   <main>
-    <!-- Standby screen is now local to 'main' -->
-    <div id="standby">
-      <div class="standby-time" id="bigClock">00:00</div>
-      <div style="font-size: 24px; font-weight: 700; color: var(--muted); margin-top:10px;">Waiting for Class</div>
-    </div>
-
     <div class="grid">
-      <div class="card" id="card0"><div class="title">Login</div><div class="circle-wrap"><svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="ring0" cx="50" cy="50" r="45"/></svg><div class="img-box"><img src="./images/login.png"></div></div><div class="cd" id="cd0">00:00</div></div>
-      <div class="card" id="card1"><div class="title">Learning.com</div><div class="circle-wrap"><svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="ring1" cx="50" cy="50" r="45"/></svg><div class="img-box"><img src="./images/learning.png"></div></div><div class="cd" id="cd1">00:00</div></div>
-      <div class="card" id="card2"><div class="title">Typing / Nitro</div><div class="circle-wrap"><svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="ring2" cx="50" cy="50" r="45"/></svg><div class="img-box"><img src="./images/typing.png"></div></div><div class="cd" id="cd2">00:00</div></div>
-      <div class="card" id="card3"><div class="title">Logout</div><div class="circle-wrap"><svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="ring3" cx="50" cy="50" r="45"/></svg><div class="img-box"><img src="./images/logout.png"></div></div><div class="cd" id="cd3">00:00</div></div>
+      <div class="card" id="card0">
+        <div class="session-title">LOGIN</div>
+        <div class="session-time">DURATION: 3 MIN</div>
+        <div class="circle-wrap">
+          <svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="ring0" cx="50" cy="50" r="45"/></svg>
+        </div>
+        <div class="timer-text" id="tm0">03:00</div>
+      </div>
+      <div class="card" id="card1">
+        <div class="session-title">LEARNING</div>
+        <div class="session-time">DURATION: 30 MIN</div>
+        <div class="circle-wrap">
+          <svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="ring1" cx="50" cy="50" r="45"/></svg>
+        </div>
+        <div class="timer-text" id="tm1">30:00</div>
+      </div>
+      <div class="card" id="card2">
+        <div class="session-title">TYPING</div>
+        <div class="session-time">DURATION: 10 MIN</div>
+        <div class="circle-wrap">
+          <svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="ring2" cx="50" cy="50" r="45"/></svg>
+        </div>
+        <div class="timer-text" id="tm2">10:00</div>
+      </div>
+      <div class="card" id="card3">
+        <div class="session-title">LOGOUT</div>
+        <div class="session-time">DURATION: 2 MIN</div>
+        <div class="circle-wrap">
+          <svg class="ring-svg" viewBox="0 0 100 100"><circle class="ring-bg" cx="50" cy="50" r="45"/><circle class="ring-bar" id="ring3" cx="50" cy="50" r="45"/></svg>
+        </div>
+        <div class="timer-text" id="tm3">02:00</div>
+      </div>
     </div>
   </main>
 
   <footer>
-    <div class="info-box">
-      <div class="info-class" id="footerClass">Tech Apps</div>
-      <div class="info-period" id="footerPeriod">Waiting...</div>
+    <div style="display: flex;">
+      <button class="btn" onclick="startClass()">▶ START CLASS</button>
+      <button class="btn btn-sec" onclick="jumpTo(0)">LOGIN</button>
+      <button class="btn btn-sec" onclick="jumpTo(1)">LEARNING</button>
+      <button class="btn btn-sec" onclick="jumpTo(2)">TYPING</button>
+      <button class="btn btn-sec" onclick="jumpTo(3)">LOGOUT</button>
     </div>
-    <div class="sim-controls">
-      <div class="jump-group">
-        <button class="btn-jump" onclick="jumpTo(0)">Jump to Login</button>
-        <button class="btn-jump" onclick="jumpTo(1)">Jump to Learning</button>
-        <button class="btn-jump" onclick="jumpTo(2)">Jump to Typing</button>
-        <button class="btn-jump" onclick="jumpTo(3)">Jump to Logout</button>
+    <div style="display: flex; align-items: center; gap: 30px;">
+      <button class="btn btn-sec" onclick="playChime()" style="font-size: 30px; border-radius: 50%; width: 70px; height: 70px; padding: 0;">🔔</button>
+      <div class="mode-group">
+        <button class="mode-btn active" id="m-real" onclick="setMode('real')">REALTIME</button>
+        <button class="mode-btn" id="m-sim" onclick="setMode('sim')">SIMULATE</button>
+        <button class="mode-btn" id="m-flash" onclick="setMode('flash')">FLASH</button>
       </div>
-      <div style="display:flex; align-items:center; gap:10px;"><span style="font-size: 13px; font-weight: 700; color: var(--muted); text-transform:uppercase;">Sim</span><label class="switch"><input type="checkbox" id="simSwitch"><span class="slider"></span></label></div>
     </div>
   </footer>
 
   <script>
-    const assignedMinutes = [3, 30, 10, 2];
-    let simulationOn = false;
-    let simAnchor = null;
-    let lastStage = -1;
+    const sessionMins = [3, 30, 10, 2], names = ["Login", "Learning", "Typing", "Logout"];
+    let currentMode = 'real', timeAnchor = null, lastStage = -1;
+    const audio = new (window.AudioContext || window.webkitAudioContext)();
 
-    function getNow() {
-      if (!simulationOn) return new Date();
-      if (!simAnchor) simAnchor = { real: Date.now(), fake: Date.now() };
-      const elapsed = (Date.now() - simAnchor.real) * 60;
-      return new Date(simAnchor.fake + elapsed);
+    // ATMOSPHERE ENGINE
+    function initAtmosphere() {
+      const stages = [document.getElementById('stage-0'), document.getElementById('stage-1'), document.getElementById('stage-2')];
+      stages.forEach((s, idx) => {
+        s.innerHTML = '';
+        for(let i=0; i<25; i++) {
+          const p = document.createElement('div');
+          p.style.left = Math.random()*100 + 'vw';
+          p.style.animationDelay = Math.random()*5 + 's';
+          if(idx===0) { p.className = 'bubble'; p.style.width = p.style.height = (30+Math.random()*70)+'px'; }
+          if(idx===1) { p.className = 'snow'; p.style.width = p.style.height = (8+Math.random()*12)+'px'; }
+          if(idx===2 && i===0) { p.className = 'penguin'; p.innerText = '🐧'; }
+          s.appendChild(p);
+        }
+      });
+    }
+    let stageCycle = 0;
+    setInterval(() => {
+      if(currentMode !== 'real') return;
+      document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
+      stageCycle = (stageCycle + 1) % 3;
+      document.getElementById(`stage-${stageCycle}`).classList.add('active');
+    }, 8000);
+    initAtmosphere();
+
+    async function announce(msg) {
+      playChime();
+      await new Promise(r => setTimeout(r, 2200)); 
+      const ut = new SpeechSynthesisUtterance(msg);
+      ut.rate = 0.9; ut.pitch = 1.1;
+      window.speechSynthesis.speak(ut);
     }
 
-    function jumpTo(stageIdx) {
-      simulationOn = true;
-      document.getElementById('simSwitch').checked = true;
-      const now = new Date();
-      let offsetMin = 0;
-      for (let i = 0; i < stageIdx; i++) offsetMin += assignedMinutes[i];
-      // Force jump to a school time (07:50 + offset)
-      simAnchor = { real: Date.now(), fake: now.setHours(7, 50 + offsetMin, 0, 0) };
-      announce("Jumped to Stage " + (stageIdx + 1));
+    function playChime() {
+      const now = audio.currentTime;
+      const freq = [554.37, 440.00, 329.63, 277.18]; // Haalimanı Anons Tonu
+      freq.forEach((f, i) => {
+        const o = audio.createOscillator(); const g = audio.createGain();
+        o.frequency.setValueAtTime(f, now + i * 0.45);
+        g.gain.setValueAtTime(0, now + i * 0.45);
+        g.gain.linearRampToValueAtTime(0.3, now + i * 0.45 + 0.05);
+        g.gain.exponentialRampToValueAtTime(0.01, now + (i + 1.2) * 0.8);
+        o.connect(g); g.connect(audio.destination);
+        o.start(now + i * 0.45); o.stop(now + (i + 1.2) * 0.8);
+      });
     }
 
-    function announce(msg) {
-      const b = document.getElementById('banner');
-      b.textContent = msg; b.classList.add('show');
-      setTimeout(() => b.classList.remove('show'), 3000);
-      window.speechSynthesis.speak(new SpeechSynthesisUtterance(msg));
+    function setMode(m) {
+      currentMode = m; timeAnchor = null;
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('m-'+m).classList.add('active');
+      lastStage = -1;
+      // Reset cards visually
+      document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('.ring-bar').forEach(r => r.style.strokeDashoffset = 283);
+    }
+
+    function startClass() {
+      if(currentMode === 'real') setMode('sim');
+      const d = new Date(); d.setHours(7, 50, 0, 0);
+      timeAnchor = { real: Date.now(), fake: d.getTime() };
+      announce("Welcome to the Tech Zone. The class session is now beginning.");
+    }
+
+    function jumpTo(idx) {
+      if(currentMode === 'real') setMode('sim');
+      const d = new Date();
+      let offset = 0; for(let i=0; i<idx; i++) offset += sessionMins[i];
+      d.setHours(7, 50 + offset, 0, 0);
+      timeAnchor = { real: Date.now(), fake: d.getTime() };
+      announce(names[idx] + " session is now active.");
     }
 
     function tick() {
-      const now = getNow();
-      document.getElementById('dateChip').textContent = now.toLocaleDateString();
-      document.getElementById('timeChip').textContent = now.toLocaleTimeString('en-US', {hour12:false});
-      document.getElementById('bigClock').textContent = now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit', hour12:false});
+      const realNow = new Date();
+      document.getElementById('dVal').textContent = `${realNow.getMonth()+1}/${realNow.getDate()}/${realNow.getFullYear()}`;
+      document.getElementById('tVal').textContent = realNow.toLocaleTimeString('en-US', {hour12:false});
 
-      const currentMin = now.getHours() * 60 + now.getMinutes() + now.getSeconds()/60;
-      const startMin = 7 * 60 + 50; 
-      const periodLenSec = 45 * 60;
-      const elapsedSec = (currentMin - startMin) * 60;
+      const start = 7*3600 + 50*60, end = start + (45*60);
+      const isClassReal = (realNow.getHours()*3600 + realNow.getMinutes()*60) >= start && (realNow.getHours()*3600 + realNow.getMinutes()*60) < end;
 
-      const isOutsideClass = elapsedSec < 0 || elapsedSec > periodLenSec;
+      // Atmosphere & Deck Visibility
+      const isStandby = currentMode === 'real' && !isClassReal;
+      document.getElementById('atmosphere').classList.toggle('visible', isStandby);
+      document.getElementById('flight-deck').classList.toggle('active', isStandby);
+
+      let workingTime = (currentMode === 'real') ? realNow : (timeAnchor ? new Date(timeAnchor.fake + (Date.now() - timeAnchor.real) * (currentMode === 'flash' ? 60 : 1)) : null);
       
-      // Standby only shows if NOT simulating or IF simulating but outside the fake class time
-      document.getElementById('standby').classList.toggle('show', isOutsideClass);
-
-      if (!isOutsideClass) {
-        document.getElementById('footerPeriod').textContent = "Period 1 (07:50 - 08:35)";
-        const totalMin = assignedMinutes.reduce((a,b)=>a+b, 0);
-        const stageDurs = assignedMinutes.map(m => (m/totalMin) * periodLenSec);
-        let acc = 0;
-        let currentIdx = -1;
-
+      if(workingTime) {
+        const curr = workingTime.getHours()*3600 + workingTime.getMinutes()*60 + workingTime.getSeconds();
+        let acc = start;
+        let anyActive = false;
+        
         for(let i=0; i<4; i++) {
-          const card = document.getElementById(`card${i}`);
-          const ring = document.getElementById(`ring${i}`);
-          const cd = document.getElementById(`cd${i}`);
-          if (elapsedSec >= acc && elapsedSec < (acc + stageDurs[i])) {
-            currentIdx = i;
-            card.classList.add('active');
-            const left = Math.ceil(acc + stageDurs[i] - elapsedSec);
-            cd.textContent = new Date(left * 1000).toISOString().substr(14, 5);
-            ring.style.strokeDashoffset = 283 - ((elapsedSec - acc) / stageDurs[i] * 283);
+          const c = document.getElementById(`card${i}`), r = document.getElementById(`ring${i}`), t = document.getElementById(`tm${i}`);
+          const dur = sessionMins[i]*60;
+          
+          if (curr >= acc && curr < acc + dur) {
+            anyActive = true;
+            if (i !== lastStage) { announce(names[i] + " session starting now."); lastStage = i; }
+            c.classList.add('active');
+            const rem = Math.ceil(acc + dur - curr);
+            t.textContent = new Date(rem * 1000).toISOString().substr(14, 5);
+            r.style.strokeDashoffset = 283 - ((curr - acc) / dur * 283);
           } else {
-            card.classList.remove('active');
-            ring.style.strokeDashoffset = 283;
+            c.classList.remove('active');
+            r.style.strokeDashoffset = (curr >= acc + dur) ? 0 : 283;
+            t.textContent = (curr >= acc + dur) ? "DONE" : `${sessionMins[i].toString().padStart(2,'0')}:00`;
           }
-          acc += stageDurs[i];
+          acc += dur;
         }
-        if (currentIdx !== -1 && currentIdx !== lastStage) {
-          const names = ["Login", "Learning", "Typing", "Logout"];
-          announce(names[currentIdx] + " Started");
-          lastStage = currentIdx;
-        }
-      } else {
-        document.getElementById('footerPeriod').textContent = "No Class in Session";
-        lastStage = -1;
+        if(!anyActive && curr >= end && timeAnchor) { timeAnchor = null; lastStage = -1; announce("Class session complete."); }
+      }
+
+      if(isStandby) {
+        let t = new Date(realNow); t.setHours(7,50,0,0);
+        if((realNow.getHours()*3600 + realNow.getMinutes()*60) >= end) t.setDate(t.getDate()+1);
+        while(t.getDay() === 0 || t.getDay() === 6) t.setDate(t.getDate()+1);
+        const diff = Math.floor((t - realNow) / 1000);
+        const h = Math.floor(diff/3600), m = Math.floor((diff%3600)/60), s = diff%60;
+        document.getElementById('slotTime').textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        document.getElementById('targetNote').textContent = t.toLocaleDateString('en-US',{weekday:'long'}).toUpperCase() + " 07:50";
       }
     }
 
-    document.getElementById('simSwitch').addEventListener('change', (e) => {
-      simulationOn = e.target.checked;
-      simAnchor = null;
-    });
-
-    setInterval(tick, 500);
+    setInterval(tick, 1000); 
+    tick();
   </script>
 </body>
 </html>

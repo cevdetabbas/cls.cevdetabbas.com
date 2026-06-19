@@ -3,24 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tech App with Mr. Oz - Real Bell Schedule</title>
+  <title>Tech App with Mr. Oz - Classroom Timer</title>
 
   <style>
     :root{
       --bg: #f5f5f7;
-      --card: rgba(255,255,255,0.78);
+      --card: rgba(255,255,255,0.86);
       --text: #1d1d1f;
       --muted: rgba(29,29,31,0.68);
       --line: rgba(0,0,0,0.10);
       --shadow: 0 18px 45px rgba(0,0,0,0.10);
-      --shadow2: 0 8px 20px rgba(0,0,0,0.08);
+      --shadow2: 0 10px 24px rgba(0,0,0,0.10);
 
       --blue:  #0071e3;
       --green: #34c759;
       --amber: #ff9f0a;
       --pink:  #ff2d55;
-
-      --gray: rgba(29,29,31,0.25);
     }
 
     html, body { height: 100%; }
@@ -46,361 +44,391 @@
 
     header {
       text-align: center;
-      padding: 22px 10px 10px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.86), rgba(245,245,247,0.70));
+      padding: 22px 10px 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.90), rgba(245,245,247,0.74));
       border-bottom: 1px solid var(--line);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       position: relative;
+      overflow: hidden;
     }
 
-    /* top row for date/time */
-    .header-top {
-      display: flex;
-      justify-content: center;
-      align-items: baseline;
-      gap: 20px;
-      margin-bottom: 8px;
-    }
-
-    .header-pill {
-      background: rgba(255,255,255,0.78);
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 6px 14px;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.06);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      font-size: clamp(26px, 3.3vw, 44px); /* make big like title */
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      color: rgba(29,29,31,0.82);
-      display: inline-flex;
-      align-items: baseline;
-      gap: 10px;
-      white-space: nowrap;
-    }
-
-    .header-pill .label {
-      font-weight: 600;
-      color: rgba(29,29,31,0.55);
-      font-size: 0.6em;
-      text-transform: uppercase;
-    }
-
-    .header-pill .value {
-      font-weight: 800;
-      color: var(--text);
+    header::after{
+      content:"";
+      position:absolute;
+      inset:-60px -80px -80px -80px;
+      background:
+        radial-gradient(520px 190px at 15% 40%, rgba(0,113,227,0.18), transparent 60%),
+        radial-gradient(520px 190px at 85% 40%, rgba(255,45,85,0.14), transparent 60%),
+        radial-gradient(520px 210px at 50% 120%, rgba(52,199,89,0.12), transparent 60%);
+      filter: blur(10px);
+      pointer-events:none;
+      z-index:0;
     }
 
     header h1 {
-      margin: 0;
-      font-size: clamp(32px, 3.3vw, 44px);
-      line-height: 1.06;
+      position: relative;
+      z-index: 2;
+      margin: 6px 0 0;
+      font-size: clamp(36px, 3.6vw, 56px);
+      line-height: 1.05;
       letter-spacing: -0.02em;
-      font-weight: 700;
+      font-weight: 900;
       color: var(--text);
-      padding-top: 4px;
+    }
+
+    /* PSPINC Clock embed pinned top-right */
+    .clock-embed{
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 3;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 18px 50px rgba(0,0,0,0.18);
+      border: 1px solid rgba(0,0,0,0.12);
+      background: rgba(255,255,255,0.75);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    /* keep exact requested size on big screens */
+    .clock-embed iframe{
+      display:block;
+      width: 450px;
+      height: 210px;
+    }
+
+    /* auto scale down on smaller screens */
+    @media (max-width: 980px){
+      .clock-embed{
+        transform: scale(0.78);
+        transform-origin: top right;
+      }
+    }
+    @media (max-width: 760px){
+      .clock-embed{
+        position: static;
+        margin: 0 auto 10px;
+        transform: none;
+        width: 100%;
+        max-width: 450px;
+      }
+      header{
+        padding-top: 14px;
+      }
     }
 
     main {
       flex: 1;
       display: flex;
       justify-content: center;
-      align-items: center;
-      padding: 34px 20px;
+      align-items: stretch;
+      padding: 24px 20px 18px;
     }
 
     .card-row {
-      display: flex;
+      width: min(1320px, 100%);
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 18px;
-      flex-wrap: wrap;
-      justify-content: center;
+      align-items: stretch;
     }
 
     .stage-card {
       background: var(--card);
-      border-radius: 22px;
-      padding: 22px;
+      border-radius: 24px;
+      padding: 18px;
       position: relative;
       box-shadow: var(--shadow2);
       border: 1px solid var(--line);
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, opacity 0.2s ease;
-      min-width: 210px;
-      flex: 1;
-      max-width: 250px;
+      gap: 14px;
       overflow: hidden;
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
+      transform: translateY(0);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
     }
 
     .stage-card.dimmed {
-      opacity: 0.45;
+      opacity: 0.40;
       transform: none !important;
-      box-shadow: 0 10px 18px rgba(0,0,0,0.06);
-    }
-
-    .stage-card::before {
-      content: '';
-      position: absolute;
-      top: -2px;
-      left: -2px;
-      right: -2px;
-      bottom: -2px;
-      background: conic-gradient(
-        rgba(0,0,0,0) 0deg,
-        rgba(0,0,0,0) 14deg,
-        #ff2d55 70deg,
-        #ff9f0a 110deg,
-        #34c759 150deg,
-        #0071e3 200deg,
-        rgba(0,0,0,0) 260deg,
-        rgba(0,0,0,0) 360deg
-      );
-      border-radius: 26px;
-      z-index: 1;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      animation: none;
-      filter: blur(10px);
-      pointer-events: none;
     }
 
     .stage-card.active {
-      transform: translateY(-10px) scale(1.03);
-      border-color: transparent;
+      transform: translateY(-8px);
       box-shadow: var(--shadow);
+      border-color: rgba(0,0,0,0.16);
     }
 
-    .stage-card.active::before {
-      opacity: 1;
-      animation: neonRotate 3s linear infinite;
-    }
-
-    @keyframes neonRotate {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
+    /* bigger title, includes assigned minutes */
     .stage-title {
-      font-size: 20px;
-      line-height: 1.2;
-      font-weight: 700;
+      font-size: clamp(22px, 2.0vw, 32px);
+      line-height: 1.15;
+      font-weight: 900;
       text-align: center;
-      position: relative;
-      z-index: 10;
-      letter-spacing: -0.015em;
+      letter-spacing: -0.02em;
     }
 
-    .stage-time {
-      font-size: 14px;
-      line-height: 1.25;
-      text-align: center;
-      position: relative;
-      z-index: 10;
-      color: rgba(29,29,31,0.62);
-      font-weight: 600;
-      letter-spacing: -0.005em;
-    }
-
-    .stage-image {
-      border-radius: 14px;
-      min-height: 120px;
-      position: relative;
-      z-index: 10;
-      border: 1px solid var(--line);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
-      overflow: hidden;
-      background: rgba(255,255,255,0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .stage-image img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      padding: 10px;
-      display: block;
-      filter: drop-shadow(0 10px 18px rgba(0,0,0,0.12));
-      user-select: none;
-      -webkit-user-drag: none;
-    }
-
-    .stage-meta {
-      text-align: center;
-      font-size: 13px;
+    .stage-title .mins{
+      display:block;
+      margin-top: 6px;
+      font-size: 0.72em;
+      font-weight: 900;
+      letter-spacing: -0.01em;
       color: rgba(29,29,31,0.70);
-      font-weight: 600;
-      letter-spacing: -0.01em;
     }
 
-    .stage-countdown {
-      text-align: center;
-      font-size: 16px;
-      color: var(--blue);
-      font-weight: 700;
-      letter-spacing: -0.01em;
-      margin-top: 2px;
+    /* Circle progress area */
+    .stage-circle{
+      position: relative;
+      flex: 1;
+      min-height: 240px;
+      display: grid;
+      place-items: center;
+    }
+
+    .ring{
+      width: min(260px, 90%);
+      aspect-ratio: 1 / 1;
+      position: relative;
+      display:grid;
+      place-items:center;
+    }
+
+    .ring svg{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      transform: rotate(-90deg);
+      filter: drop-shadow(0 14px 24px rgba(0,0,0,0.12));
+    }
+
+    .ring .bg{
+      stroke: rgba(0,0,0,0.12);
+      stroke-width: 16;
+      fill: rgba(255,255,255,0.55);
+    }
+
+    .ring .fg{
+      stroke-width: 16;
+      fill: none;
+      stroke-linecap: round;
+      stroke-dasharray: 999;
+      stroke-dashoffset: 999;
+      transition: stroke-dashoffset 0.12s linear;
+      opacity: 0.95;
+    }
+
+    .fg.stage-0{ stroke: var(--blue); }
+    .fg.stage-1{ stroke: var(--green); }
+    .fg.stage-2{ stroke: var(--amber); }
+    .fg.stage-3{ stroke: var(--pink); }
+
+    .ring img{
+      width: 72%;
+      height: 72%;
+      object-fit: contain;
+      user-select:none;
+      -webkit-user-drag:none;
+      filter: drop-shadow(0 12px 18px rgba(0,0,0,0.10));
+      border-radius: 18px;
+    }
+
+    /* Countdown under each section (only visible when active) */
+    .stage-countdown{
+      text-align:center;
+      font-variant-numeric: tabular-nums;
+      font-size: clamp(26px, 2.4vw, 44px);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.18s ease, transform 0.18s ease;
+      color: rgba(29,29,31,0.82);
+    }
+
+    .stage-card.active .stage-countdown{
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .stage-card.active .stage-countdown.neonish{
+      color: #ffffff;
+      background: rgba(0,0,0,0.74);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 16px;
+      padding: 10px 12px;
+      box-shadow:
+        0 16px 46px rgba(0,0,0,0.22),
+        0 0 22px rgba(0,113,227,0.12),
+        0 0 22px rgba(255,45,85,0.08);
     }
 
     footer {
-      padding: 18px 20px 24px;
-      background: linear-gradient(180deg, rgba(245,245,247,0.78), rgba(255,255,255,0.78));
+      padding: 16px 20px 22px;
+      background: linear-gradient(180deg, rgba(245,245,247,0.80), rgba(255,255,255,0.82));
       border-top: 1px solid var(--line);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
     }
 
-    .timer-row {
-      display: flex;
+    .big-timer-wrap{
+      width: min(1320px, 100%);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .big-countdown{
+      background: rgba(0,0,0,0.78);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 24px;
+      padding: 16px 18px;
+      box-shadow:
+        0 18px 52px rgba(0,0,0,0.20),
+        0 0 26px rgba(0,113,227,0.14),
+        0 0 22px rgba(255,45,85,0.10);
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 14px;
       align-items: center;
-      gap: 16px;
-      margin-bottom: 12px;
-      flex-wrap: wrap;
+      overflow: hidden;
     }
 
-    .time-label {
-      font-size: 15px;
-      line-height: 1.2;
-      color: rgba(29,29,31,0.72);
-      min-width: 260px;
-      font-weight: 600;
-      letter-spacing: -0.005em;
+    .big-left{
+      display: grid;
+      gap: 8px;
+      align-content: center;
     }
 
-    .time-label span {
-      font-weight: 700;
-      color: var(--blue);
+    .big-segment{
+      font-size: clamp(22px, 2.2vw, 34px);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      opacity: 0.95;
     }
 
-    .timer-bar {
-      flex: 1;
-      height: 24px;
-      background: rgba(255,255,255,0.85);
+    .big-stage{
+      font-size: clamp(18px, 1.8vw, 28px);
+      font-weight: 800;
+      opacity: 0.88;
+    }
+
+    .big-time{
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      font-size: clamp(56px, 7.0vw, 110px);
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      text-shadow:
+        0 0 10px rgba(0,113,227,0.22),
+        0 0 18px rgba(52,199,89,0.14),
+        0 10px 40px rgba(0,0,0,0.28);
+    }
+
+    .giant-bar{
+      height: 42px;
       border-radius: 999px;
-      border: 1px solid var(--line);
+      border: 1px solid rgba(0,0,0,0.14);
+      background: rgba(255,255,255,0.88);
       overflow: hidden;
       position: relative;
-      min-width: 350px;
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
     }
 
-    .smooth-fill {
-      position: absolute;
-      top: 0;
-      left: 0;
-      height: 100%;
-      width: 0%;
+    .giant-fill{
+      position:absolute;
+      left:0;
+      top:0;
+      height:100%;
+      width:0%;
       border-radius: 999px;
       transition: width 0.12s linear;
       opacity: 0.95;
-      pointer-events: none;
     }
 
-    .progress-unit {
-      position: absolute;
-      top: 0;
-      height: 100%;
-      width: calc(100% / 45);
-      opacity: 0.10;
-      transition: opacity 0.2s ease;
-      border-radius: 999px;
-      pointer-events: none;
-    }
-
-    .progress-unit.stage-0 { background: linear-gradient(90deg, rgba(0,113,227,0.9), rgba(0,113,227,0.55)); }
-    .progress-unit.stage-1 { background: linear-gradient(90deg, rgba(52,199,89,0.9), rgba(52,199,89,0.55)); }
-    .progress-unit.stage-2 { background: linear-gradient(90deg, rgba(255,159,10,0.9), rgba(255,159,10,0.55)); }
-    .progress-unit.stage-3 { background: linear-gradient(90deg, rgba(255,45,85,0.9), rgba(255,45,85,0.55)); }
-
-    .progress-unit.active { opacity: 0.26; }
+    .giant-fill.stage-0{ background: linear-gradient(90deg, rgba(0,113,227,0.95), rgba(0,113,227,0.55)); }
+    .giant-fill.stage-1{ background: linear-gradient(90deg, rgba(52,199,89,0.95), rgba(52,199,89,0.55)); }
+    .giant-fill.stage-2{ background: linear-gradient(90deg, rgba(255,159,10,0.95), rgba(255,159,10,0.55)); }
+    .giant-fill.stage-3{ background: linear-gradient(90deg, rgba(255,45,85,0.95), rgba(255,45,85,0.55)); }
 
     .controls {
       display: flex;
       justify-content: center;
       flex-wrap: wrap;
       gap: 12px;
-      margin-top: 10px;
+      margin-top: 4px;
     }
 
     .btn {
-      border: 1px solid rgba(0,0,0,0.10);
+      border: 1px solid rgba(0,0,0,0.12);
       border-radius: 999px;
-      padding: 10px 18px;
-      font-size: 14px;
+      padding: 14px 22px;
+      font-size: 16px;
       line-height: 1;
       cursor: pointer;
       background: linear-gradient(180deg, rgba(0,113,227,0.95), rgba(0,113,227,0.80));
       color: #fff;
-      font-weight: 700;
+      font-weight: 900;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      transition: transform 0.25s ease, box-shadow 0.25s ease;
-      box-shadow: 0 8px 18px rgba(0,113,227,0.18);
+      gap: 10px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 10px 22px rgba(0,113,227,0.18);
       letter-spacing: -0.01em;
     }
 
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 22px rgba(0,113,227,0.22);
-    }
+    .btn:hover { transform: translateY(-2px); }
 
     .btn.secondary {
-      background: linear-gradient(180deg, rgba(255,255,255,0.90), rgba(245,245,247,0.90));
+      background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(245,245,247,0.92));
       color: var(--text);
-      box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+      box-shadow: 0 10px 22px rgba(0,0,0,0.10);
     }
-
-    .btn.secondary:hover { box-shadow: 0 12px 22px rgba(0,0,0,0.10); }
 
     .status-text {
       text-align: center;
-      font-size: 14px;
-      color: rgba(29,29,31,0.68);
-      margin-top: 8px;
-      font-weight: 600;
+      font-size: 16px;
+      color: rgba(29,29,31,0.70);
+      margin-top: 6px;
+      font-weight: 700;
       letter-spacing: -0.005em;
     }
 
+    @media (max-width: 1100px) {
+      .card-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 700px) {
+      .card-row { grid-template-columns: 1fr; }
+      .big-countdown{ grid-template-columns: 1fr; }
+      .big-time{ text-align: left; }
+    }
+
     @media (prefers-reduced-motion: reduce) {
-      .stage-card, .stage-card::before { transition: none; animation: none; }
-      .smooth-fill { transition: none; }
-    }
-
-    @media (max-width: 768px) {
-      .header-top {
-        flex-direction: column;
-        gap: 8px;
-      }
-      .header-pill {
-        font-size: clamp(22px, 6vw, 32px);
-      }
-      .card-row { flex-direction: column; gap: 15px; }
-      .stage-card { max-width: none; flex: 1; min-width: 250px; }
-      .timer-bar { min-width: 300px; }
-      .time-label { min-width: 220px; }
-    }
-
-    @media (max-width: 420px) {
-      .header-pill .label { display: none; }
+      .fg, .giant-fill { transition: none; }
+      .stage-card { transition: none; }
     }
   </style>
 </head>
+
 <body>
   <header>
-    <div class="header-top">
-      <div class="header-pill" id="datePill">
-        <span class="label">Date</span><span class="value" id="dateText">--/--/----</span>
-      </div>
-      <div class="header-pill" id="timePill">
-        <span class="label">Time</span><span class="value" id="timeText">--:-- --</span>
-      </div>
+    <div class="clock-embed">
+      <iframe
+        scrolling="no"
+        frameborder="no"
+        clocktype="html5"
+        style="overflow:hidden;border:0;margin:0;padding:0;width:450px;height:210px;"
+        src="https://www.clocklink.com/html5embed.php?clock=049&timezone=ACST&color=white&size=450&Title=&Message=&Target=&From=2026,1,1,0,0,0">
+      </iframe>
     </div>
 
     <h1>Tech App with Mr. Oz</h1>
@@ -409,91 +437,126 @@
   <main>
     <div class="card-row">
       <div class="stage-card" data-stage="0">
-        <div class="stage-title">Login</div>
-        <div class="stage-time" id="tLogin">...</div>
-        <div class="stage-image">
-          <img src="./images/login.png" alt="Login" />
+        <div class="stage-title">
+          Login
+          <span class="mins" id="label0">...</span>
         </div>
-        <div class="stage-meta" id="dLogin">Duration: 3:00</div>
-        <div class="stage-countdown" id="cLogin">Countdown: --:--</div>
+
+        <div class="stage-circle">
+          <div class="ring">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="bg" cx="60" cy="60" r="48"></circle>
+              <circle class="fg stage-0" id="ring0" cx="60" cy="60" r="48"></circle>
+            </svg>
+            <img src="./images/login.png" alt="Login" />
+          </div>
+        </div>
+
+        <div class="stage-countdown neonish" id="cd0">--:--</div>
       </div>
 
       <div class="stage-card" data-stage="1">
-        <div class="stage-title">Learning.com</div>
-        <div class="stage-time" id="tLearn">...</div>
-        <div class="stage-image">
-          <img src="./images/learning.png" alt="Learning.com" />
+        <div class="stage-title">
+          Learning.com
+          <span class="mins" id="label1">...</span>
         </div>
-        <div class="stage-meta" id="dLearn">Duration: 30:00</div>
-        <div class="stage-countdown" id="cLearn">Countdown: --:--</div>
+
+        <div class="stage-circle">
+          <div class="ring">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="bg" cx="60" cy="60" r="48"></circle>
+              <circle class="fg stage-1" id="ring1" cx="60" cy="60" r="48"></circle>
+            </svg>
+            <img src="./images/learning.png" alt="Learning.com" />
+          </div>
+        </div>
+
+        <div class="stage-countdown neonish" id="cd1">--:--</div>
       </div>
 
       <div class="stage-card" data-stage="2">
-        <div class="stage-title">Typing.com</div>
-        <div class="stage-time" id="tTyping">...</div>
-        <div class="stage-image">
-          <img src="./images/typing.png" alt="Typing.com" />
+        <div class="stage-title">
+          Typing.com
+          <span class="mins" id="label2">...</span>
         </div>
-        <div class="stage-meta" id="dTyping">Duration: 10:00</div>
-        <div class="stage-countdown" id="cTyping">Countdown: --:--</div>
+
+        <div class="stage-circle">
+          <div class="ring">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="bg" cx="60" cy="60" r="48"></circle>
+              <circle class="fg stage-2" id="ring2" cx="60" cy="60" r="48"></circle>
+            </svg>
+            <img src="./images/typing.png" alt="Typing.com" />
+          </div>
+        </div>
+
+        <div class="stage-countdown neonish" id="cd2">--:--</div>
       </div>
 
       <div class="stage-card" data-stage="3">
-        <div class="stage-title">Logout</div>
-        <div class="stage-time" id="tLogout">...</div>
-        <div class="stage-image">
-          <img src="./images/logout.png" alt="Logout" />
+        <div class="stage-title">
+          Logout
+          <span class="mins" id="label3">...</span>
         </div>
-        <div class="stage-meta" id="dLogout">Duration: 2:00</div>
-        <div class="stage-countdown" id="cLogout">Countdown: --:--</div>
+
+        <div class="stage-circle">
+          <div class="ring">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="bg" cx="60" cy="60" r="48"></circle>
+              <circle class="fg stage-3" id="ring3" cx="60" cy="60" r="48"></circle>
+            </svg>
+            <img src="./images/logout.png" alt="Logout" />
+          </div>
+        </div>
+
+        <div class="stage-countdown neonish" id="cd3">--:--</div>
       </div>
     </div>
   </main>
 
   <footer>
-    <div class="timer-row">
-      <div class="time-label">
-        <span id="modeLabel">Auto</span> · <span id="timeLeftLabel">--:--</span> · <span id="segmentLabel">...</span>
+    <div class="big-timer-wrap">
+      <div class="big-countdown">
+        <div class="big-left">
+          <div class="big-segment" id="bigSegment">...</div>
+          <div class="big-stage" id="bigStage">...</div>
+        </div>
+        <div class="big-time" id="bigTime">--:--</div>
       </div>
-      <div class="timer-bar" id="timerBar"></div>
-    </div>
 
-    <div class="controls">
-      <button class="btn secondary" id="toggleSimBtn">Simulation: OFF</button>
-      <button class="btn" id="resetSimBtn">Reset Sim</button>
+      <div class="giant-bar" aria-hidden="true">
+        <div class="giant-fill stage-0" id="giantFill"></div>
+      </div>
+
+      <div class="controls">
+        <button class="btn secondary" id="toggleSimBtn">Simulation: OFF</button>
+        <button class="btn" id="resetSimBtn">Reset Sim</button>
+      </div>
+
       <div class="status-text" id="statusText">Uses local computer time. Simulation lets you test fast.</div>
-    </div>
 
-    <audio id="stageSound" src="beep.mp3" preload="auto"></audio>
+      <audio id="stageSound" src="beep.mp3" preload="auto"></audio>
+    </div>
   </footer>
 
   <script>
-    const dateText = document.getElementById('dateText');
-    const timeText = document.getElementById('timeText');
+    /*
+      Changes requested:
+      1) Removed custom date/time; embedded Clocklink iframe top-right (pspinc/clocklink).
+      2) Section titles show assigned time: "Login - 2 min", etc.
+      3) Progress shown as circles (rings). When active, countdown shows under the section.
+    */
 
-    function formatMDY(d) {
-      const m = d.getMonth() + 1;
-      const day = d.getDate();
-      const y = d.getFullYear();
-      return `${m}/${day}/${y}`;
-    }
+    // You can edit these "assigned minutes" any time:
+    // Example user gave: Login 2 min, Learning.com 30 min
+    // I set Typing=10, Logout=2 by default (change if you want).
+    const assignedMinutes = [2, 30, 10, 2];
 
-    // 12-hour with AM/PM
-    function formatHMS12(d) {
-      let h = d.getHours();
-      const m = String(d.getMinutes()).padStart(2,'0');
-      const s = String(d.getSeconds()).padStart(2,'0');
-      const ampm = h >= 12 ? 'PM' : 'AM';
-      h = h % 12;
-      h = h || 12;
-      return `${h}:${m}:${s} ${ampm}`;
-    }
+    // If periods are not exactly sum(assignedMinutes), we scale the routine to fit the actual period length.
+    // That way it always reaches Logout near the end of the class period.
+    const SCALE_TO_PERIOD = true;
 
-    function updateHeaderClock(now) {
-      dateText.textContent = formatMDY(now);
-      timeText.textContent = formatHMS12(now);
-    }
-
+    // Helper: HH:MM -> minutes since midnight
     function hmToMin(hm) {
       const [h, m] = hm.split(':').map(Number);
       return h * 60 + m;
@@ -556,85 +619,50 @@
     ];
 
     function getDaySchedule(dateObj) {
-      const day = dateObj.getDay();
+      const day = dateObj.getDay(); // 0 Sun ... 5 Fri ... 6 Sat
       if (day === 5) return { type: 'Friday', items: scheduleFriday };
       if (day >= 1 && day <= 4) return { type: 'Mon-Thu', items: scheduleMonThu };
       return { type: 'Weekend', items: [] };
     }
 
-    // NEW fixed routine durations (minutes)
-    const routineDurMinutes = [3, 30, 10, 2];
-    const routineUnits = routineDurMinutes; // keep array shape
-    const TOTAL_UNITS = routineUnits.reduce((a,b)=>a+b,0);
-    const SCALE_TO_PERIOD = false; // use fixed durations now
-
+    // Simulation
     let simulationOn = false;
     const SIM_SPEED = 60;
 
-    const stageCards  = document.querySelectorAll('.stage-card');
-    const stageSound  = document.getElementById('stageSound');
+    // UI hooks
+    const stageCards = document.querySelectorAll('.stage-card');
+    const stageSound = document.getElementById('stageSound');
 
-    const modeLabel = document.getElementById('modeLabel');
-    const timeLeftLabel = document.getElementById('timeLeftLabel');
-    const segmentLabel = document.getElementById('segmentLabel');
+    const bigSegment = document.getElementById('bigSegment');
+    const bigStage = document.getElementById('bigStage');
+    const bigTime = document.getElementById('bigTime');
+
     const statusText = document.getElementById('statusText');
-
-    const timerBar = document.getElementById('timerBar');
-
-    const tLogin = document.getElementById('tLogin');
-    const tLearn = document.getElementById('tLearn');
-    const tTyping = document.getElementById('tTyping');
-    const tLogout = document.getElementById('tLogout');
-
-    const cLogin = document.getElementById('cLogin');
-    const cLearn = document.getElementById('cLearn');
-    const cTyping = document.getElementById('cTyping');
-    const cLogout = document.getElementById('cLogout');
-
     const toggleSimBtn = document.getElementById('toggleSimBtn');
     const resetSimBtn = document.getElementById('resetSimBtn');
 
-    let smoothFillEl = null;
+    const ringEls = [
+      document.getElementById('ring0'),
+      document.getElementById('ring1'),
+      document.getElementById('ring2'),
+      document.getElementById('ring3'),
+    ];
 
-    function buildGradient() {
-      const colors = ['#0071e3', '#34c759', '#ff9f0a', '#ff2d55'];
-      let acc = 0;
-      const stops = [];
-      for (let i = 0; i < routineUnits.length; i++) {
-        const startPct = (acc / TOTAL_UNITS) * 100;
-        acc += routineUnits[i];
-        const endPct = (acc / TOTAL_UNITS) * 100;
-        stops.push(`${colors[i]} ${startPct.toFixed(3)}%`);
-        stops.push(`${colors[i]} ${endPct.toFixed(3)}%`);
-      }
-      return `linear-gradient(90deg, ${stops.join(', ')})`;
-    }
+    const cdEls = [
+      document.getElementById('cd0'),
+      document.getElementById('cd1'),
+      document.getElementById('cd2'),
+      document.getElementById('cd3'),
+    ];
 
-    function createUnits() {
-      timerBar.innerHTML = '';
+    const labelEls = [
+      document.getElementById('label0'),
+      document.getElementById('label1'),
+      document.getElementById('label2'),
+      document.getElementById('label3'),
+    ];
 
-      smoothFillEl = document.createElement('div');
-      smoothFillEl.className = 'smooth-fill';
-      smoothFillEl.style.background = buildGradient();
-      smoothFillEl.style.width = '0%';
-      timerBar.appendChild(smoothFillEl);
-
-      for (let i = 0; i < TOTAL_UNITS; i++) {
-        const unit = document.createElement('div');
-        unit.className = 'progress-unit';
-
-        let cumulative = 0;
-        for (let stage = 0; stage < routineUnits.length; stage++) {
-          cumulative += routineUnits[stage];
-          if (i < cumulative) {
-            unit.classList.add(`stage-${stage}`);
-            break;
-          }
-        }
-        unit.style.left = `${i * (100 / TOTAL_UNITS)}%`;
-        timerBar.appendChild(unit);
-      }
-    }
+    const giantFill = document.getElementById('giantFill');
 
     function playStageSound() {
       stageSound.currentTime = 0;
@@ -645,8 +673,10 @@
 
     function formatHMS(totalSeconds) {
       totalSeconds = Math.max(0, Math.floor(totalSeconds));
-      const m = Math.floor(totalSeconds / 60);
+      const h = Math.floor(totalSeconds / 3600);
+      const m = Math.floor((totalSeconds % 3600) / 60);
       const s = totalSeconds % 60;
+      if (h > 0) return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
       return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
     }
 
@@ -668,22 +698,56 @@
       return { current: null, startMin: null, endMin: null, next: upcoming };
     }
 
-    function routineStageAt(progressSec) {
-      const scaled = routineUnits.map(u => u * 60); // minutes to seconds
-      const total = scaled.reduce((a,b)=>a+b,0);
+    // Ring math
+    function setRingProgress(ringEl, pct) {
+      const r = 48; // must match SVG circle r
+      const C = 2 * Math.PI * r;
+      ringEl.style.strokeDasharray = C.toFixed(3);
+      ringEl.style.strokeDashoffset = (C * (1 - clamp(pct, 0, 100)/100)).toFixed(3);
+    }
 
+    function setAllRings(stageIdx, stagePct){
+      for (let i = 0; i < ringEls.length; i++) {
+        setRingProgress(ringEls[i], (i === stageIdx) ? stagePct : 0);
+      }
+    }
+
+    function setGiantFill(stageIdx, pct) {
+      giantFill.className = 'giant-fill stage-' + stageIdx;
+      giantFill.style.width = clamp(pct, 0, 100) + '%';
+    }
+
+    function stageName(i){
+      return ['Login', 'Learning.com', 'Typing.com', 'Logout'][i] || '';
+    }
+
+    // Convert assignedMinutes into stage seconds for this period
+    function computeStageDurationsSec(periodLenSec){
+      const baseTotalMin = assignedMinutes.reduce((a,b)=>a+b,0);
+      if (!SCALE_TO_PERIOD) {
+        return assignedMinutes.map(m => m * 60);
+      }
+      // scale to fill period length
+      return assignedMinutes.map(m => (m / baseTotalMin) * periodLenSec);
+    }
+
+    // stage boundaries from durations
+    function stageAt(segElapsedSec, durationsSec){
       let acc = 0;
-      for (let i = 0; i < scaled.length; i++) {
+      for (let i = 0; i < durationsSec.length; i++) {
         const start = acc;
-        const end = acc + scaled[i];
-        if (progressSec >= start && progressSec < end) {
-          return { stage: i, stageStart: start, stageEnd: end, scaled };
+        const end = acc + durationsSec[i];
+        if (segElapsedSec >= start && segElapsedSec < end) {
+          return { stage: i, stageStart: start, stageEnd: end };
         }
         acc = end;
       }
-      return { stage: 3, stageStart: total - scaled[3], stageEnd: total, scaled };
+      // if elapsed exceeds (due to rounding), stick to last stage
+      const total = durationsSec.reduce((a,b)=>a+b,0);
+      return { stage: 3, stageStart: total - durationsSec[3], stageEnd: total };
     }
 
+    // Simulation engine
     let lastStage = -1;
     let simAnchorRealMs = null;
     let simAnchorScheduleMin = null;
@@ -708,124 +772,115 @@
       return fake;
     }
 
-    function clearCountdowns() {
-      cLogin.textContent  = 'Countdown: --:--';
-      cLearn.textContent  = 'Countdown: --:--';
-      cTyping.textContent = 'Countdown: --:--';
-      cLogout.textContent = 'Countdown: --:--';
+    // Labels under titles (assigned minutes)
+    function initTitleLabels(){
+      labelEls[0].textContent = '2 min';
+      labelEls[1].textContent = '30 min';
+      labelEls[2].textContent = '10 min';
+      labelEls[3].textContent = '2 min';
+
+      // If you change assignedMinutes, automatically update:
+      for (let i = 0; i < assignedMinutes.length; i++) {
+        labelEls[i].textContent = assignedMinutes[i] + ' min';
+      }
     }
 
     function tick() {
       const now = getNowForEngine();
-      updateHeaderClock(now);
-
       const dayInfo = getDaySchedule(now);
       const items = dayInfo.items;
 
       if (dayInfo.type === 'Weekend' || items.length === 0) {
-        modeLabel.textContent = simulationOn ? 'Sim' : 'Auto';
-        segmentLabel.textContent = 'Weekend';
-        timeLeftLabel.textContent = '--:--';
+        bigSegment.textContent = 'Weekend';
+        bigStage.textContent = 'No schedule';
+        bigTime.textContent = '--:--';
         statusText.textContent = 'Weekend mode. (No bell schedule configured.)';
+
         stageCards.forEach(c => { c.classList.remove('active'); c.classList.add('dimmed'); });
-        if (smoothFillEl) smoothFillEl.style.width = '0%';
-        clearCountdowns();
+        setAllRings(-1, 0);
+        setGiantFill(0, 0);
+        cdEls.forEach(el => el.textContent = '--:--');
+        lastStage = -1;
         return;
       }
 
       const nowMin = toMinSinceMidnight(now);
       const seg = getSegmentForNow(items, nowMin);
 
-      modeLabel.textContent = simulationOn ? 'Sim' : 'Auto';
-
       if (!seg.current) {
-        stageCards.forEach(c => { c.classList.remove('active'); c.classList.add('dimmed'); });
-        segmentLabel.textContent = seg.next ? ('Waiting for ' + seg.next.name) : 'After school';
-        timeLeftLabel.textContent = '--:--';
-        statusText.textContent = seg.next ? ('Not in schedule yet. Next: ' + seg.next.name) : 'Schedule complete.';
-        if (smoothFillEl) smoothFillEl.style.width = '0%';
-        lastStage = -1;
+        const label = seg.next ? ('Waiting for ' + seg.next.name + ' @ ' + seg.next.start) : 'After school';
+        bigSegment.textContent = label;
+        bigStage.textContent = '';
+        bigTime.textContent = '--:--';
+        statusText.textContent = seg.next ? ('Next: ' + seg.next.name) : 'Schedule complete.';
 
-        tLogin.textContent  = '—';
-        tLearn.textContent  = '—';
-        tTyping.textContent = '—';
-        tLogout.textContent = '—';
-        clearCountdowns();
+        stageCards.forEach(c => { c.classList.remove('active'); c.classList.add('dimmed'); });
+        setAllRings(-1, 0);
+        setGiantFill(0, 0);
+        cdEls.forEach(el => el.textContent = '--:--');
+        lastStage = -1;
         return;
       }
 
-      const totalRoutineSec = routineUnits.reduce((a,b)=>a+b,0) * 60;
-      const segLenSec = totalRoutineSec; // ignore actual bell length, use fixed routine
-      const dayStartMin = seg.startMin;
-      const segElapsedSec = clamp((nowMin - dayStartMin) * 60, 0, segLenSec);
+      const segStart = seg.startMin;
+      const segEnd = seg.endMin;
+
+      const segLenSec = (segEnd - segStart) * 60;
+      const segElapsedSec = clamp((nowMin - segStart) * 60, 0, segLenSec);
       const segRemainingSec = Math.max(0, segLenSec - segElapsedSec);
 
-      segmentLabel.textContent = seg.current.name + ' (' + seg.current.start + '–' + seg.current.end + ')';
-      timeLeftLabel.textContent = formatHMS(segRemainingSec);
+      const overallPct = (segElapsedSec / segLenSec) * 100;
 
       if (seg.current.type !== 'class') {
-        stageCards.forEach(c => { c.classList.remove('active'); c.classList.add('dimmed'); });
-
-        const pct = (segElapsedSec / segLenSec) * 100;
-        if (smoothFillEl) smoothFillEl.style.width = clamp(pct, 0, 100) + '%';
-
-        const unitNow = Math.floor((segElapsedSec / segLenSec) * TOTAL_UNITS);
-        const allUnits = timerBar.querySelectorAll('.progress-unit');
-        allUnits.forEach((u, idx) => u.classList.toggle('active', idx < unitNow));
+        bigSegment.textContent = seg.current.name + ' (' + seg.current.start + '–' + seg.current.end + ')';
+        bigStage.textContent = 'Non-class segment';
+        bigTime.textContent = formatHMS(segRemainingSec);
 
         statusText.textContent = 'Non-class segment: ' + seg.current.name;
-        lastStage = -1;
 
-        tLogin.textContent  = '—';
-        tLearn.textContent  = '—';
-        tTyping.textContent = '—';
-        tLogout.textContent = '—';
-        clearCountdowns();
+        stageCards.forEach(c => { c.classList.remove('active'); c.classList.add('dimmed'); });
+        setAllRings(-1, 0);
+        setGiantFill(0, overallPct);
+        cdEls.forEach(el => el.textContent = '--:--');
+
+        lastStage = -1;
         return;
       }
 
-      stageCards.forEach(c => c.classList.remove('dimmed'));
-
-      const info = routineStageAt(segElapsedSec);
+      // Class segment: circle stages
+      const durationsSec = computeStageDurationsSec(segLenSec);
+      const info = stageAt(segElapsedSec, durationsSec);
       const stage = info.stage;
 
+      stageCards.forEach(c => c.classList.remove('dimmed'));
       stageCards.forEach((card, idx) => card.classList.toggle('active', idx === stage));
 
+      // stage progress inside its ring
+      const stagePct = ((segElapsedSec - info.stageStart) / Math.max(0.001, (info.stageEnd - info.stageStart))) * 100;
+      setAllRings(stage, clamp(stagePct, 0, 100));
+      setGiantFill(stage, overallPct);
+
+      // per-card countdown only for active
+      for (let i = 0; i < cdEls.length; i++) {
+        if (i === stage) {
+          const stageRemaining = Math.max(0, info.stageEnd - segElapsedSec);
+          cdEls[i].textContent = formatHMS(stageRemaining);
+        } else {
+          cdEls[i].textContent = '--:--';
+        }
+      }
+
+      // sound on stage change
       if (lastStage !== -1 && stage !== lastStage) playStageSound();
       lastStage = stage;
 
-      const pct = (segElapsedSec / segLenSec) * 100;
-      if (smoothFillEl) smoothFillEl.style.width = clamp(pct, 0, 100) + '%';
-
-      const unitNow = Math.floor((segElapsedSec / segLenSec) * TOTAL_UNITS);
-      const allUnits = timerBar.querySelectorAll('.progress-unit');
-      allUnits.forEach((u, idx) => u.classList.toggle('active', idx < unitNow));
-
-      const d0 = routineUnits[0] * 60;
-      const d1 = routineUnits[1] * 60;
-      const d2 = routineUnits[2] * 60;
-      const d3 = routineUnits[3] * 60;
-
-      tLogin.textContent  = 'Login stage inside: ' + formatHMS(d0);
-      tLearn.textContent  = 'Learning stage inside: ' + formatHMS(d1);
-      tTyping.textContent = 'Typing stage inside: ' + formatHMS(d2);
-      tLogout.textContent = 'Logout stage inside: ' + formatHMS(d3);
-
       const stageRemaining = Math.max(0, info.stageEnd - segElapsedSec);
-      statusText.textContent =
-        seg.current.name + ' | Stage ' + (stage+1) + '/4 | Stage left: ' + formatHMS(stageRemaining);
 
-      clearCountdowns();
+      bigSegment.textContent = seg.current.name + ' (' + seg.current.start + '–' + seg.current.end + ')';
+      bigStage.textContent = 'Now: ' + stageName(stage) + ' | Stage left: ' + formatHMS(stageRemaining);
+      bigTime.textContent = formatHMS(segRemainingSec);
 
-      if (stage === 0) {
-        cLogin.textContent = 'Countdown: ' + formatHMS(stageRemaining);
-      } else if (stage === 1) {
-        cLearn.textContent = 'Countdown: ' + formatHMS(stageRemaining);
-      } else if (stage === 2) {
-        cTyping.textContent = 'Countdown: ' + formatHMS(stageRemaining);
-      } else if (stage === 3) {
-        cLogout.textContent = 'Countdown: ' + formatHMS(stageRemaining);
-      }
+      statusText.textContent = (simulationOn ? 'Simulation ON' : 'Auto') + ' | ' + dayInfo.type;
     }
 
     toggleSimBtn.addEventListener('click', () => {
@@ -845,7 +900,8 @@
       tick();
     });
 
-    createUnits();
+    // Init
+    initTitleLabels();
     toggleSimBtn.textContent = 'Simulation: OFF';
     setInterval(tick, 250);
     tick();

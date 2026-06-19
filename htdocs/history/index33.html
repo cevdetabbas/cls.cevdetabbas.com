@@ -8,7 +8,7 @@
   <style>
     :root{
       --bg:#f5f5f7;
-      --card: rgba(255,255,255,0.86);
+      --card: rgba(255,255,255,0.90);
       --text:#1d1d1f;
       --muted: rgba(29,29,31,0.62);
       --line: rgba(0,0,0,0.10);
@@ -91,9 +91,8 @@
       font-variant-numeric: tabular-nums;
       font-size: clamp(22px, 2vw, 40px);
       white-space: nowrap;
-
       color: rgba(29,29,31,0.92);
-      background: rgba(255,255,255,0.88);
+      background: rgba(255,255,255,0.90);
       box-shadow: 0 10px 24px rgba(0,0,0,0.08);
       position: relative;
       overflow: hidden;
@@ -115,7 +114,7 @@
         rgba(0,0,0,0) 360deg
       );
       filter: blur(16px);
-      opacity: 0.25;
+      opacity: 0.22;
       pointer-events:none;
     }
 
@@ -142,7 +141,7 @@
       display:flex;
       flex-direction:column;
       gap: 10px;
-      opacity: 0.45;
+      opacity: 0.50;
       box-shadow: var(--shadow);
       overflow:hidden;
       backdrop-filter: blur(12px);
@@ -180,8 +179,8 @@
       box-shadow: var(--shadow2);
     }
     .card.active::before{
-      opacity: 0.85;
-      animation: spin 3.6s linear infinite;
+      opacity: 0.72;
+      animation: spin 4.6s linear infinite; /* biraz daha sakin */
     }
     @keyframes spin{
       from { transform: rotate(0deg); }
@@ -216,38 +215,39 @@
 
     .ringSvg{
       position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
+      inset:-6px;                 /* halka daha disari */
+      width: calc(100% + 12px);
+      height: calc(100% + 12px);
       transform: rotate(-90deg);
       pointer-events:none;
     }
     .ringTrack{
       fill:none;
-      stroke: rgba(0,0,0,0.12);
-      stroke-width: 10;
+      stroke: rgba(0,0,0,0.10);
+      stroke-width: 12;
     }
     .ringProg{
       fill:none;
-      stroke-width: 10;
+      stroke-width: 12;
       stroke-linecap: round;
       stroke: var(--blue);
       opacity: 0.95;
       stroke-dasharray: 1 9999;
       stroke-dashoffset: 0;
-      filter: drop-shadow(0 8px 14px rgba(0,0,0,0.18));
+      filter: drop-shadow(0 10px 16px rgba(0,0,0,0.18));
       transition: opacity .15s ease;
     }
     .card .ringProg{ opacity: 0; }
     .card.active .ringProg{ opacity: 1; }
 
+    /* RESIMLER DAHA BUYUK GORUNSUN */
     .imgwrap{
-      width: calc(100% - 22px);
-      height: calc(100% - 22px);
+      width: calc(100% - 8px);     /* eskiden -22 idi, resim kuculuyordu */
+      height: calc(100% - 8px);
       border-radius: 999px;
       overflow:hidden;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.90);
+      border: 1px solid rgba(0,0,0,0.10);
+      background: rgba(255,255,255,0.92);
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
       position: relative;
     }
@@ -256,54 +256,38 @@
       height:100%;
       object-fit: cover;
       display:block;
+      transform: scale(1.06);      /* biraz zoom: daha dolu dursun */
     }
 
-    /* Coin flip (Typing stage will swap images depending on grade group) */
+    /* coin flip: 3D flip bazen “sikitili” hissediyor.
+       Bunu daha soft crossfade + yavas rotate gibi yaptim. */
     .coin{
       width:100%;
       height:100%;
       position:relative;
-      transform-style: preserve-3d;
-      animation: coinFlip 3.2s linear infinite;
     }
     .coinFace{
       position:absolute;
       inset:0;
-      backface-visibility: hidden;
+      opacity:0;
+      animation: faceFade 6s linear infinite;
     }
     .coinFace img{
       width:100%;
       height:100%;
       object-fit: cover;
       display:block;
+      transform: scale(1.06);
     }
-    .coinBack{ transform: rotateY(180deg); }
+    .coinFront{ animation-delay: 0s; }
+    .coinBack { animation-delay: 3s; }
 
-    @keyframes coinFlip{
-      0%   { transform: rotateY(0deg); }
-      50%  { transform: rotateY(180deg); }
-      100% { transform: rotateY(360deg); }
-    }
-
-    /* small badge overlay (NitroType) */
-    .badge{
-      position:absolute;
-      right: 10px;
-      bottom: 10px;
-      width: 62px;
-      height: 62px;
-      border-radius: 14px;
-      overflow:hidden;
-      border: 1px solid rgba(0,0,0,0.12);
-      background: rgba(255,255,255,0.92);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.14);
-      display:none;
-    }
-    .badge img{
-      width:100%;
-      height:100%;
-      object-fit: cover;
-      display:block;
+    @keyframes faceFade{
+      0%   { opacity:0; transform: rotate(0deg); }
+      10%  { opacity:1; transform: rotate(0deg); }
+      40%  { opacity:1; transform: rotate(6deg); }
+      50%  { opacity:0; transform: rotate(10deg); }
+      100% { opacity:0; transform: rotate(10deg); }
     }
 
     .cdLabel{
@@ -322,7 +306,7 @@
       text-align:center;
       font-weight: 950;
       font-variant-numeric: tabular-nums;
-      font-size: clamp(28px, 2.8vw, 56px);
+      font-size: clamp(30px, 3.1vw, 64px); /* countdown biraz buyudu */
       color: var(--text);
       visibility:hidden;
       position: relative;
@@ -446,6 +430,33 @@
       transform: translate(24px, -50%);
     }
 
+    /* Footer button (doorbell) */
+    .btn{
+      appearance:none;
+      border: 1px solid rgba(0,0,0,0.14);
+      background: rgba(255,255,255,0.92);
+      color: rgba(29,29,31,0.92);
+      font-weight: 900;
+      font-size: clamp(14px, 1.2vw, 18px);
+      padding: 10px 12px;
+      border-radius: 14px;
+      box-shadow: 0 10px 22px rgba(0,0,0,0.08);
+      cursor:pointer;
+      user-select:none;
+      transition: transform .08s ease, box-shadow .12s ease;
+      white-space: nowrap;
+    }
+    .btn:active{
+      transform: translateY(1px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.10);
+    }
+    .btnRow{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      flex-wrap: wrap;
+    }
+
     @media (max-width: 900px){
       .grid{ grid-template-columns: repeat(2, 1fr); }
       h1{ white-space: normal; }
@@ -457,7 +468,7 @@
     }
 
     @media (prefers-reduced-motion: reduce){
-      .card, .card::before, .coin { transition:none; animation:none; }
+      .card, .card::before, .coinFace { transition:none; animation:none; }
     }
   </style>
 </head>
@@ -489,7 +500,7 @@
             <circle class="ringTrack" cx="50" cy="50" r="46"></circle>
             <circle class="ringProg"  cx="50" cy="50" r="46"></circle>
           </svg>
-          <div class="imgwrap"><img src="./images/login.png" alt="Login"></div>
+          <div class="imgwrap"><img src="../images/login.png" alt="Login"></div>
         </div>
 
         <div class="cdLabel">Remaining time</div>
@@ -504,7 +515,7 @@
             <circle class="ringTrack" cx="50" cy="50" r="46"></circle>
             <circle class="ringProg"  cx="50" cy="50" r="46"></circle>
           </svg>
-          <div class="imgwrap"><img src="./images/learning.png" alt="Learning.com"></div>
+          <div class="imgwrap"><img src="../images/learning.png" alt="Learning.com"></div>
         </div>
 
         <div class="cdLabel">Remaining time</div>
@@ -525,10 +536,6 @@
               <div class="coinFace coinFront"><img id="coinFrontImg" src="./typing.jpg" alt="Front" /></div>
               <div class="coinFace coinBack"><img id="coinBackImg" src="./nitrotype.jpg" alt="Back" /></div>
             </div>
-
-            <div class="badge" id="typingBadge" title="NitroType">
-              <img src="./nitrotype.jpg" alt="NitroType" />
-            </div>
           </div>
         </div>
 
@@ -544,7 +551,7 @@
             <circle class="ringTrack" cx="50" cy="50" r="46"></circle>
             <circle class="ringProg"  cx="50" cy="50" r="46"></circle>
           </svg>
-          <div class="imgwrap"><img src="./images/logout.png" alt="Logout"></div>
+          <div class="imgwrap"><img src="../images/logout.png" alt="Logout"></div>
         </div>
 
         <div class="cdLabel">Remaining time</div>
@@ -564,30 +571,33 @@
         <div class="mini" id="footerExtra">—</div>
       </div>
 
-      <div class="switchBox">
-        <div class="swText" id="simLabel">Simulation: OFF</div>
-        <label class="switch" title="Simulation mode">
-          <input type="checkbox" id="simSwitch" />
-          <span class="slider"></span>
-        </label>
+      <div class="btnRow">
+        <button class="btn" id="bellBtn" type="button">Ring Bell</button>
+
+        <div class="switchBox">
+          <div class="swText" id="simLabel">Simulation: OFF</div>
+          <label class="switch" title="Simulation mode">
+            <input type="checkbox" id="simSwitch" />
+            <span class="slider"></span>
+          </label>
+        </div>
       </div>
     </div>
 
-    <audio id="stageSound" src="beep.mp3" preload="auto"></audio>
+    <!-- Put your sound file in the SAME folder as this HTML.
+         Example names: doorbell.mp3 or bell.mp3 -->
+    <audio id="stageSound" src="doorbell.mp3" preload="auto"></audio>
   </footer>
 
   <script>
     // ROUTINE DURATIONS
-    // Login 3 min (sen dedin). Others: change anytime.
-    const assignedMinutes = [3, 30, 10, 2];
+    const assignedMinutes = [3, 30, 10, 2]; // login=3, learning=30, typing=10, logout=2
     const SCALE_TO_PERIOD = true;
 
     // TIMEZONE
     const TZ = 'America/Chicago';
 
-    // YOUR WEEKLY TEACHER SCHEDULE (from your Google Calendar screenshot)
-    // day: 1=Mon ... 5=Fri (JS Date.getDay())
-    // IMPORTANT: times are in 12-hour input, we’ll convert.
+    // YOUR WEEKLY TEACHER SCHEDULE
     const teacherScheduleByDay = {
       1: [ // MON
         { title:'5A', start:'7:50am', end:'8:38am' },
@@ -637,7 +647,7 @@
       ],
     };
 
-    // SCHOOL BELL SCHEDULE (engine base)
+    // BELL SCHEDULE
     const scheduleMonThu = [
       { name:'Breakfast', type:'nonclass', start:'07:20', end:'07:47' },
       { name:'Passing',   type:'nonclass', start:'07:47', end:'07:50' },
@@ -687,7 +697,6 @@
     // UI
     const dateChip = document.getElementById('dateChip');
     const timeChip = document.getElementById('timeChip');
-
     const cards = document.querySelectorAll('.card');
     const cds = [0,1,2,3].map(i => document.getElementById('cd'+i));
     const ringProgs = Array.from(document.querySelectorAll('.ringProg'));
@@ -701,11 +710,16 @@
     const simLabel = document.getElementById('simLabel');
 
     const stageSound = document.getElementById('stageSound');
+    const bellBtn = document.getElementById('bellBtn');
 
     const typingTitle = document.getElementById('typingTitle');
     const coinFrontImg = document.getElementById('coinFrontImg');
     const coinBackImg  = document.getElementById('coinBackImg');
-    const typingBadge  = document.getElementById('typingBadge');
+
+    // Bell button (manual)
+    bellBtn.addEventListener('click', () => {
+      playDoorbell();
+    });
 
     // Helpers
     function hmToMin(hm){
@@ -797,7 +811,7 @@
       return { stage:3, stageStart: total-durs[3], stageEnd: total };
     }
 
-    function playBeep(){
+    function playDoorbell(){
       stageSound.currentTime = 0;
       stageSound.play().catch(()=>{});
     }
@@ -855,7 +869,7 @@
     }
 
     function pickTeacherEvent(now){
-      const day = now.getDay(); // 1..5 school days
+      const day = now.getDay();
       const list = teacherScheduleByDay[day] || [];
       const nowMin = now.getHours()*60 + now.getMinutes() + now.getSeconds()/60;
 
@@ -870,33 +884,19 @@
       return null;
     }
 
-    // Decide PK-2 vs 3-5 based on class code
-    // Rules:
-    // - PK* => PK-2
-    // - K*, KA, KB => PK-2
-    // - 1* or 2* => PK-2
-    // - otherwise => 3-5
     function isPreK2(classTitle){
       if(!classTitle) return false;
       const t = classTitle.toUpperCase().trim();
-
       if(t.startsWith('PK')) return true;
       if(t === 'KA' || t === 'KB' || t === 'K') return true;
-
-      // if starts with digit 1 or 2
       const m = t.match(/^(\d)/);
       if(m){
         const d = parseInt(m[1],10);
         if(d === 1 || d === 2) return true;
       }
-
-      // Some events are duties/clubs/etc -> treat as NOT PK-2 (doesn't matter)
       return false;
     }
 
-    // Update typing coin based on current class group
-    // PreK-2: PBS / ABC
-    // Grades 3-5: Typing / NitroType
     function setTypingMode(prek2){
       if(prek2){
         typingTitle.innerHTML = 'PBS / ABC <span class="mins" id="label2">10 min</span>';
@@ -904,14 +904,12 @@
         coinFrontImg.alt = 'PBS';
         coinBackImg.src  = './abc.jpg';
         coinBackImg.alt  = 'ABC';
-        typingBadge.style.display = 'none';
       } else {
         typingTitle.innerHTML = 'Typing / NitroType <span class="mins" id="label2">10 min</span>';
-        coinFrontImg.src = './typing.jpg';       // put typing.jpg in same folder OR change to ./typing.com.png etc
+        coinFrontImg.src = './typing.jpg';
         coinFrontImg.alt = 'Typing';
-        coinBackImg.src  = './nitrotype.jpg';    // you said nitrotype.jpg is in root folder
+        coinBackImg.src  = './nitrotype.jpg';
         coinBackImg.alt  = 'NitroType';
-        typingBadge.style.display = 'block';
       }
     }
 
@@ -934,12 +932,9 @@
 
       const dayInfo = getDaySchedule(now);
 
-      // Teacher event (from your calendar)
       const ev = pickTeacherEvent(now);
       const classText = ev ? ev.title : '—';
       const classIsPreK2 = ev ? isPreK2(ev.title) : false;
-
-      // Typing mode depends on who you have RIGHT NOW
       setTypingMode(classIsPreK2);
 
       if(dayInfo.type === 'Weekend' || dayInfo.items.length === 0){
@@ -959,7 +954,6 @@
       const nowMin = now.getHours()*60 + now.getMinutes() + now.getSeconds()/60;
       const seg = getSegmentForNow(dayInfo.items, nowMin);
 
-      // Footer always shows current calendar class + bell segment info
       footerClass.textContent = `Class: ${classText}`;
       footerPeriod.textContent = `Period: ${seg.current ? seg.current.name : '—'}`;
       footerRange.textContent = `Time: ${seg.current ? (seg.current.start + '–' + seg.current.end) : '—'}`;
@@ -970,7 +964,7 @@
       }
       footerExtra.textContent = `${gradeLabel} | Mode: ${simulationOn ? 'Sim' : 'Auto'} | ${dayInfo.type}`;
 
-      if(!seg.current){
+      if(!seg.current || seg.current.type !== 'class'){
         cards.forEach(c => c.classList.remove('active'));
         cds.forEach(el => el.textContent='--:--');
         setRingProgress(-1, 0);
@@ -978,15 +972,6 @@
         return;
       }
 
-      if(seg.current.type !== 'class'){
-        cards.forEach(c => c.classList.remove('active'));
-        cds.forEach(el => el.textContent='--:--');
-        setRingProgress(-1, 0);
-        lastStage = -1;
-        return;
-      }
-
-      // In-class routine
       const segLenSec = (seg.endMin - seg.startMin)*60;
       const segElapsedSec = Math.max(0, Math.min(segLenSec, (nowMin - seg.startMin)*60));
 
@@ -996,7 +981,6 @@
 
       cards.forEach((c, idx) => c.classList.toggle('active', idx === stage));
 
-      // countdown + ring progress for active stage
       cds.forEach((el, idx) => {
         if(idx === stage){
           const left = Math.max(0, info.stageEnd - segElapsedSec);
@@ -1011,11 +995,11 @@
         }
       });
 
-      if(lastStage !== -1 && stage !== lastStage) playBeep();
+      // Session change sound
+      if(lastStage !== -1 && stage !== lastStage) playDoorbell();
       lastStage = stage;
     }
 
-    // Init
     initRings();
     simLabel.textContent = 'Simulation: OFF';
     setInterval(tick, 250);

@@ -44,55 +44,44 @@
       letter-spacing: -0.01em;
     }
 
+    /* Header layout: date left, title center, time right */
     header {
-      text-align: center;
-      padding: 22px 10px;
+      padding: 12px 16px;
       background: linear-gradient(180deg, rgba(255,255,255,0.86), rgba(245,245,247,0.70));
       border-bottom: 1px solid var(--line);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      position: relative;
     }
 
-    /* NEW: top row for date/time */
-    .header-top {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      right: 10px;
-      display: flex;
-      justify-content: space-between;
+    .header-bar {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
       align-items: center;
-      gap: 10px;
-      pointer-events: none; /* purely display */
+      column-gap: 16px;
     }
 
-    .header-pill {
-      pointer-events: none;
-      background: rgba(255,255,255,0.78);
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 6px 10px;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.06);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      font-size: 14px;
-      font-weight: 700;
-      letter-spacing: -0.005em;
-      color: rgba(29,29,31,0.82);
-      display: inline-flex;
-      align-items: baseline;
-      gap: 8px;
-      white-space: nowrap;
+    .header-block {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
     }
 
-    .header-pill .label {
-      font-weight: 700;
+    .header-bar > .header-block:last-child {
+      align-items: flex-end;
+    }
+
+    .header-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
       color: rgba(29,29,31,0.55);
+      font-weight: 600;
     }
 
-    .header-pill .value {
+    .header-value {
+      font-size: clamp(24px, 3vw, 40px);
       font-weight: 800;
+      letter-spacing: -0.02em;
       color: var(--text);
     }
 
@@ -103,7 +92,8 @@
       letter-spacing: -0.02em;
       font-weight: 700;
       color: var(--text);
-      padding-top: 10px; /* a bit of space under top pills */
+      text-align: center;
+      white-space: nowrap;
     }
 
     main {
@@ -130,7 +120,7 @@
       border: 1px solid var(--line);
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
       transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, opacity 0.2s ease;
       min-width: 210px;
       flex: 1;
@@ -210,7 +200,6 @@
     }
 
     .stage-image {
-      flex: 1;
       border-radius: 14px;
       min-height: 120px;
       position: relative;
@@ -233,6 +222,23 @@
       filter: drop-shadow(0 10px 18px rgba(0,0,0,0.12));
       user-select: none;
       -webkit-user-drag: none;
+    }
+
+    .stage-meta {
+      text-align: center;
+      font-size: 13px;
+      color: rgba(29,29,31,0.70);
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .stage-countdown {
+      text-align: center;
+      font-size: 16px;
+      color: var(--blue);
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-top: 2px;
     }
 
     footer {
@@ -361,33 +367,39 @@
     }
 
     @media (max-width: 768px) {
-      header { padding-top: 46px; } /* room for top pills on mobile */
-      .header-top { top: 8px; left: 8px; right: 8px; }
-      .header-pill { font-size: 13px; padding: 6px 9px; }
+      .header-bar {
+        grid-template-columns: 1fr;
+        row-gap: 8px;
+        text-align: center;
+      }
+      .header-block {
+        align-items: center !important;
+      }
+      header h1 {
+        order: -1;
+      }
       .card-row { flex-direction: column; gap: 15px; }
       .stage-card { max-width: none; flex: 1; min-width: 250px; }
       .timer-bar { min-width: 300px; }
       .time-label { min-width: 220px; }
     }
-
-    @media (max-width: 420px) {
-      .header-pill .label { display: none; } /* keep it clean */
-    }
   </style>
 </head>
 <body>
   <header>
-    <!-- NEW: date left, time right -->
-    <div class="header-top">
-      <div class="header-pill" id="datePill">
-        <span class="label">Date</span><span class="value" id="dateText">--/--/----</span>
+    <div class="header-bar">
+      <div class="header-block">
+        <div class="header-label">Date</div>
+        <div class="header-value" id="dateText">--/--/----</div>
       </div>
-      <div class="header-pill" id="timePill">
-        <span class="label">Time</span><span class="value" id="timeText">--:--:--</span>
+
+      <h1>Tech App with Mr. Oz</h1>
+
+      <div class="header-block">
+        <div class="header-label">Time</div>
+        <div class="header-value" id="timeText">--:-- --</div>
       </div>
     </div>
-
-    <h1>Tech App with Mr. Oz</h1>
   </header>
 
   <main>
@@ -398,6 +410,8 @@
         <div class="stage-image">
           <img src="./images/login.png" alt="Login" />
         </div>
+        <div class="stage-meta" id="dLogin">Duration: 3:00</div>
+        <div class="stage-countdown" id="cLogin">Countdown: --:--</div>
       </div>
 
       <div class="stage-card" data-stage="1">
@@ -406,6 +420,8 @@
         <div class="stage-image">
           <img src="./images/learning.png" alt="Learning.com" />
         </div>
+        <div class="stage-meta" id="dLearn">Duration: 30:00</div>
+        <div class="stage-countdown" id="cLearn">Countdown: --:--</div>
       </div>
 
       <div class="stage-card" data-stage="2">
@@ -414,6 +430,8 @@
         <div class="stage-image">
           <img src="./images/typing.png" alt="Typing.com" />
         </div>
+        <div class="stage-meta" id="dTyping">Duration: 10:00</div>
+        <div class="stage-countdown" id="cTyping">Countdown: --:--</div>
       </div>
 
       <div class="stage-card" data-stage="3">
@@ -422,6 +440,8 @@
         <div class="stage-image">
           <img src="./images/logout.png" alt="Logout" />
         </div>
+        <div class="stage-meta" id="dLogout">Duration: 2:00</div>
+        <div class="stage-countdown" id="cLogout">Countdown: --:--</div>
       </div>
     </div>
   </main>
@@ -440,15 +460,14 @@
       <div class="status-text" id="statusText">Uses local computer time. Simulation lets you test fast.</div>
     </div>
 
+    <!-- Beep sound between stages -->
     <audio id="stageSound" src="beep.mp3" preload="auto"></audio>
+
+    <!-- Announcement audio: will change src to login.mp3, learning.mp3, etc. -->
+    <audio id="announceAudio" preload="auto"></audio>
   </footer>
 
   <script>
-    /*
-      Header date/time:
-      - Date format: M/D/YYYY (ex: 1/8/2026)
-      - Time format: H:MM:SS (ex: 8:34:12)
-    */
     const dateText = document.getElementById('dateText');
     const timeText = document.getElementById('timeText');
 
@@ -459,28 +478,20 @@
       return `${m}/${day}/${y}`;
     }
 
-    function formatHMS12or24(d) {
-      // You asked for "8:34 and also seconds" -> use H:MM:SS (no leading zero on hour)
-      const h = d.getHours();
+    function formatHMS12(d) {
+      let h = d.getHours();
       const m = String(d.getMinutes()).padStart(2,'0');
       const s = String(d.getSeconds()).padStart(2,'0');
-      return `${h}:${m}:${s}`;
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12;
+      h = h || 12;
+      return `${h}:${m}:${s} ${ampm}`;
     }
 
     function updateHeaderClock(now) {
       dateText.textContent = formatMDY(now);
-      timeText.textContent = formatHMS12or24(now);
+      timeText.textContent = formatHMS12(now);
     }
-
-    /*
-      Real bell schedule: Mon-Thu vs Friday.
-      When inside a Period segment, run 4-step routine scaled to that period length.
-      Images are loaded from:
-        ./images/login.png
-        ./images/learning.png
-        ./images/typing.png
-        ./images/logout.png
-    */
 
     function hmToMin(hm) {
       const [h, m] = hm.split(':').map(Number);
@@ -550,15 +561,16 @@
       return { type: 'Weekend', items: [] };
     }
 
-    const routineUnits = [5, 30, 5, 5];
+    // Fixed routine durations in minutes: [Login, Learning, Typing, Logout]
+    const routineUnits = [3, 30, 10, 2];
     const TOTAL_UNITS = routineUnits.reduce((a,b)=>a+b,0);
-    const SCALE_TO_PERIOD = true;
 
     let simulationOn = false;
     const SIM_SPEED = 60;
 
     const stageCards  = document.querySelectorAll('.stage-card');
     const stageSound  = document.getElementById('stageSound');
+    const announceAudio = document.getElementById('announceAudio');
 
     const modeLabel = document.getElementById('modeLabel');
     const timeLeftLabel = document.getElementById('timeLeftLabel');
@@ -571,6 +583,11 @@
     const tLearn = document.getElementById('tLearn');
     const tTyping = document.getElementById('tTyping');
     const tLogout = document.getElementById('tLogout');
+
+    const cLogin = document.getElementById('cLogin');
+    const cLearn = document.getElementById('cLearn');
+    const cTyping = document.getElementById('cTyping');
+    const cLogout = document.getElementById('cLogout');
 
     const toggleSimBtn = document.getElementById('toggleSimBtn');
     const resetSimBtn = document.getElementById('resetSimBtn');
@@ -626,10 +643,8 @@
 
     function formatHMS(totalSeconds) {
       totalSeconds = Math.max(0, Math.floor(totalSeconds));
-      const h = Math.floor(totalSeconds / 3600);
-      const m = Math.floor((totalSeconds % 3600) / 60);
+      const m = Math.floor(totalSeconds / 60);
       const s = totalSeconds % 60;
-      if (h > 0) return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
       return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
     }
 
@@ -651,21 +666,20 @@
       return { current: null, startMin: null, endMin: null, next: upcoming };
     }
 
-    function routineStageAt(progressSec, periodLenSec) {
-      const total = periodLenSec;
-      const unitSec = SCALE_TO_PERIOD ? (total / TOTAL_UNITS) : 60;
-      const scaled = routineUnits.map(u => u * unitSec);
+    function routineStageAt(progressSec) {
+      const scaled = routineUnits.map(u => u * 60); // minutes to seconds
+      const total = scaled.reduce((a,b)=>a+b,0);
 
       let acc = 0;
       for (let i = 0; i < scaled.length; i++) {
         const start = acc;
         const end = acc + scaled[i];
         if (progressSec >= start && progressSec < end) {
-          return { stage: i, stageStart: start, stageEnd: end, unitSec };
+          return { stage: i, stageStart: start, stageEnd: end, scaled, total };
         }
         acc = end;
       }
-      return { stage: 3, stageStart: total - scaled[3], stageEnd: total, unitSec };
+      return { stage: 3, stageStart: total - scaled[3], stageEnd: total, scaled, total };
     }
 
     let lastStage = -1;
@@ -692,10 +706,28 @@
       return fake;
     }
 
+    function clearCountdowns() {
+      cLogin.textContent  = 'Countdown: --:--';
+      cLearn.textContent  = 'Countdown: --:--';
+      cTyping.textContent = 'Countdown: --:--';
+      cLogout.textContent = 'Countdown: --:--';
+    }
+
+    function playAnnouncement(stageIndex) {
+      let src = '';
+      if (stageIndex === 0) src = 'login.mp3';
+      if (stageIndex === 1) src = 'learning.mp3';
+      if (stageIndex === 2) src = 'typing.mp3';
+      if (stageIndex === 3) src = 'logout.mp3';
+      if (!src) return;
+
+      announceAudio.src = src;
+      announceAudio.currentTime = 0;
+      announceAudio.play().catch(() => {});
+    }
+
     function tick() {
       const now = getNowForEngine();
-
-      // NEW: header date/time always follows engine time (auto OR sim)
       updateHeaderClock(now);
 
       const dayInfo = getDaySchedule(now);
@@ -708,6 +740,7 @@
         statusText.textContent = 'Weekend mode. (No bell schedule configured.)';
         stageCards.forEach(c => { c.classList.remove('active'); c.classList.add('dimmed'); });
         if (smoothFillEl) smoothFillEl.style.width = '0%';
+        clearCountdowns();
         return;
       }
 
@@ -728,14 +761,15 @@
         tLearn.textContent  = '—';
         tTyping.textContent = '—';
         tLogout.textContent = '—';
+        clearCountdowns();
         return;
       }
 
-      const segStart = seg.startMin;
-      const segEnd = seg.endMin;
-      const segLenSec = (segEnd - segStart) * 60;
-      const segElapsedSec = clamp((nowMin - segStart) * 60, 0, segLenSec);
-      const segRemainingSec = Math.max(0, segLenSec - segElapsedSec);
+      // Whole routine fits inside each class period; we just run it once per period.
+      const totalRoutineSec = routineUnits.reduce((a,b)=>a+b,0) * 60;
+      const segStartMin = seg.startMin;
+      const segElapsedSec = clamp((nowMin - segStartMin) * 60, 0, totalRoutineSec);
+      const segRemainingSec = Math.max(0, totalRoutineSec - segElapsedSec);
 
       segmentLabel.textContent = seg.current.name + ' (' + seg.current.start + '–' + seg.current.end + ')';
       timeLeftLabel.textContent = formatHMS(segRemainingSec);
@@ -743,10 +777,10 @@
       if (seg.current.type !== 'class') {
         stageCards.forEach(c => { c.classList.remove('active'); c.classList.add('dimmed'); });
 
-        const pct = (segElapsedSec / segLenSec) * 100;
+        const pct = (segElapsedSec / totalRoutineSec) * 100;
         if (smoothFillEl) smoothFillEl.style.width = clamp(pct, 0, 100) + '%';
 
-        const unitNow = Math.floor((segElapsedSec / segLenSec) * TOTAL_UNITS);
+        const unitNow = Math.floor((segElapsedSec / totalRoutineSec) * TOTAL_UNITS);
         const allUnits = timerBar.querySelectorAll('.progress-unit');
         allUnits.forEach((u, idx) => u.classList.toggle('active', idx < unitNow));
 
@@ -757,40 +791,55 @@
         tLearn.textContent  = '—';
         tTyping.textContent = '—';
         tLogout.textContent = '—';
+        clearCountdowns();
         return;
       }
 
       stageCards.forEach(c => c.classList.remove('dimmed'));
 
-      const info = routineStageAt(segElapsedSec, segLenSec);
+      const info = routineStageAt(segElapsedSec);
       const stage = info.stage;
 
       stageCards.forEach((card, idx) => card.classList.toggle('active', idx === stage));
 
-      if (lastStage !== -1 && stage !== lastStage) playStageSound();
+      if (lastStage !== -1 && stage !== lastStage) {
+        playStageSound();
+        playAnnouncement(stage);
+      }
       lastStage = stage;
 
-      const pct = (segElapsedSec / segLenSec) * 100;
+      const pct = (segElapsedSec / info.total) * 100;
       if (smoothFillEl) smoothFillEl.style.width = clamp(pct, 0, 100) + '%';
 
-      const unitNow = Math.floor((segElapsedSec / segLenSec) * TOTAL_UNITS);
+      const unitNow = Math.floor((segElapsedSec / info.total) * TOTAL_UNITS);
       const allUnits = timerBar.querySelectorAll('.progress-unit');
       allUnits.forEach((u, idx) => u.classList.toggle('active', idx < unitNow));
 
-      const unitSec = SCALE_TO_PERIOD ? (segLenSec / TOTAL_UNITS) : 60;
-      const d0 = routineUnits[0] * unitSec;
-      const d1 = routineUnits[1] * unitSec;
-      const d2 = routineUnits[2] * unitSec;
-      const d3 = routineUnits[3] * unitSec;
+      const d0 = routineUnits[0] * 60;
+      const d1 = routineUnits[1] * 60;
+      const d2 = routineUnits[2] * 60;
+      const d3 = routineUnits[3] * 60;
 
-      tLogin.textContent  = 'Duration: ' + formatHMS(d0);
-      tLearn.textContent  = 'Duration: ' + formatHMS(d1);
-      tTyping.textContent = 'Duration: ' + formatHMS(d2);
-      tLogout.textContent = 'Duration: ' + formatHMS(d3);
+      tLogin.textContent  = 'Login stage length: '   + formatHMS(d0);
+      tLearn.textContent  = 'Learning stage length: ' + formatHMS(d1);
+      tTyping.textContent = 'Typing stage length: '   + formatHMS(d2);
+      tLogout.textContent = 'Logout stage length: '   + formatHMS(d3);
 
       const stageRemaining = Math.max(0, info.stageEnd - segElapsedSec);
       statusText.textContent =
         seg.current.name + ' | Stage ' + (stage+1) + '/4 | Stage left: ' + formatHMS(stageRemaining);
+
+      clearCountdowns();
+
+      if (stage === 0) {
+        cLogin.textContent = 'Countdown: ' + formatHMS(stageRemaining);
+      } else if (stage === 1) {
+        cLearn.textContent = 'Countdown: ' + formatHMS(stageRemaining);
+      } else if (stage === 2) {
+        cTyping.textContent = 'Countdown: ' + formatHMS(stageRemaining);
+      } else if (stage === 3) {
+        cLogout.textContent = 'Countdown: ' + formatHMS(stageRemaining);
+      }
     }
 
     toggleSimBtn.addEventListener('click', () => {
