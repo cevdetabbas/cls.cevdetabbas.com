@@ -388,8 +388,11 @@
     }
     .history-overview {
       width: 100%; height: 100%; overflow-x: hidden; overflow-y: auto; padding: 2px 4px 10px;
-      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
-      grid-auto-rows: max-content; align-content: start; gap: 14px;
+      display: block;
+    }
+    .history-overview-poster {
+      display: block; width: 100%; height: auto; border-radius: 14px;
+      box-shadow: 0 16px 38px rgba(0,0,0,.3);
     }
     .history-stage-card {
       position: relative; padding: 0; overflow: hidden; border: 1px solid rgba(255,255,255,.14);
@@ -784,7 +787,9 @@
             <div class="history-progress" id="history-progress">10 stages</div>
           </div>
         </div>
-        <div class="history-overview" id="history-overview"></div>
+        <div class="history-overview" id="history-overview">
+          <img class="history-overview-poster" src="history-previews/evolution-overview.jpg?v=2" alt="Ten-stage CLS evolution overview">
+        </div>
         <img id="history-image" alt="Historical application preview">
         <div class="history-empty" id="history-empty" style="display:none">Preparing the visual timeline…</div>
       </div>
@@ -1269,14 +1274,13 @@
     function buildHistoryList() {
       if (historyBuilt) return;
       const list = document.getElementById('history-list');
-      const overview = document.getElementById('history-overview');
       for (let index = 1; index <= historyStages.length; index++) {
         const stage = historyStages[index - 1];
         const button = document.createElement('button');
         button.className = 'history-item';
         button.dataset.version = index;
         button.innerHTML = `
-          <img class="history-thumb" src="history-previews/version-${String(index).padStart(2, '0')}.jpg" alt="">
+          <img class="history-thumb" src="history-previews/version-${String(index).padStart(2, '0')}.jpg?v=2" alt="">
           <span class="history-item-copy">
             <span class="history-item-version">${String(index).padStart(2, '0')} · ${stage.title}</span>
             <span class="history-item-era">${stage.era}</span>
@@ -1284,16 +1288,6 @@
         button.onclick = () => loadHistoryVersion(index, button);
         list.appendChild(button);
 
-        const stageCard = document.createElement('button');
-        stageCard.className = 'history-stage-card';
-        stageCard.innerHTML = `
-          <img src="history-previews/version-${String(index).padStart(2, '0')}.jpg" alt="">
-          <span class="history-stage-caption">
-            <strong>${String(index).padStart(2, '0')} · ${stage.title}</strong>
-            <span>${stage.era}</span>
-          </span>`;
-        stageCard.onclick = () => loadHistoryVersion(index, button);
-        overview.appendChild(stageCard);
       }
       historyBuilt = true;
     }
@@ -1319,7 +1313,7 @@
         image.style.display = 'none';
         empty.textContent = `Could not open version ${String(index).padStart(2, '0')}`;
       };
-      image.src = `history-previews/version-${String(index).padStart(2, '0')}.jpg`;
+      image.src = `history-previews/version-${String(index).padStart(2, '0')}.jpg?v=2`;
       image.alt = `Version ${String(index).padStart(2, '0')} — ${historyEra(index)}`;
       document.getElementById('history-version-title').textContent =
         `${String(index).padStart(2, '0')} · ${historyStages[index - 1].title}`;
@@ -1333,7 +1327,7 @@
     }
 
     function showHistoryOverview() {
-      document.getElementById('history-overview').style.display = 'grid';
+      document.getElementById('history-overview').style.display = 'block';
       document.getElementById('history-image').style.display = 'none';
       document.getElementById('history-empty').style.display = 'none';
       document.getElementById('history-overview-button').style.display = 'none';
