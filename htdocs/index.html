@@ -268,7 +268,7 @@
       cursor: pointer; font-weight: 800;
     }
     .schedule-days-head {
-      display: grid; grid-template-columns: 64px repeat(5, minmax(0, 1fr));
+      display: grid; grid-template-columns: 64px repeat(7, minmax(0, 1fr));
       height: 38px; flex: 0 0 38px; border-bottom: 1px solid rgba(0,0,0,.08);
       background: rgba(255,255,255,.45);
     }
@@ -286,16 +286,36 @@
       font-variant-numeric: tabular-nums;
     }
     .schedule-days-area {
-      position: relative; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
-      background-image: repeating-linear-gradient(
-        to bottom, transparent 0, transparent calc(12.371% - 1px),
-        rgba(0,0,0,.07) calc(12.371% - 1px), rgba(0,0,0,.07) 12.371%
-      );
+      position: relative; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr));
+      background: rgba(255,255,255,.2);
     }
     .schedule-day-column { position: relative; border-right: 1px solid rgba(0,0,0,.07); min-width: 0; }
     .schedule-day-column.today { background: rgba(0,113,227,.025); }
+    .schedule-day-column.weekend { background: rgba(80,80,90,.035); }
+    .schedule-off-hours {
+      position: absolute; left: 0; right: 0; z-index: 0;
+      display: flex; align-items: center; justify-content: center;
+      background:
+        repeating-linear-gradient(
+          135deg,
+          rgba(88,88,96,.06) 0,
+          rgba(88,88,96,.06) 7px,
+          rgba(255,255,255,.08) 7px,
+          rgba(255,255,255,.08) 14px
+        );
+      border-bottom: 1px solid rgba(0,0,0,.1);
+      color: rgba(70,70,78,.48); font-size: 9px; font-weight: 900;
+      letter-spacing: 1.2px; text-transform: uppercase;
+    }
+    .schedule-off-hours.evening {
+      border-top: 1px solid rgba(0,0,0,.1); border-bottom: 0;
+    }
+    .schedule-hour-line {
+      position: absolute; left: 0; right: 0; height: 1px;
+      background: rgba(0,0,0,.07); pointer-events: none; z-index: 1;
+    }
     .schedule-event {
-      position: absolute; left: 5px; right: 5px; min-height: 18px;
+      position: absolute; left: 5px; right: 5px; min-height: 18px; z-index: 2;
       border-radius: 8px; padding: 4px 6px; overflow: hidden;
       background: rgba(0,113,227,.13); border-left: 3px solid var(--blue);
       color: #064f96;
@@ -319,8 +339,12 @@
     }
     @media (max-width: 900px) {
       #schedule-overlay { inset: 10px; }
+      .schedule-days-head { grid-template-columns: 54px repeat(7, minmax(0, 1fr)); }
+      .schedule-timeline { grid-template-columns: 54px 1fr; }
+      .schedule-day-name { font-size: 9px; }
       .schedule-event .event-meta { display: none; }
       .schedule-event { left: 2px; right: 2px; padding: 3px; }
+      .schedule-off-hours { font-size: 7px; letter-spacing: .6px; }
     }
 
     #history-overlay {
@@ -796,7 +820,48 @@
 
     const scheduleStartSeconds = 7 * 3600 + 20 * 60;
     const scheduleEndSeconds = 15 * 3600 + 25 * 60;
+    const secondsPerDay = 24 * 3600;
+    const offHoursVisualSeconds = 48 * 60;
+    const scheduleVisualSeconds =
+      offHoursVisualSeconds +
+      (scheduleEndSeconds - scheduleStartSeconds) +
+      offHoursVisualSeconds;
     const weekdayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+    const scheduleDays = [
+      { day: 6, name: 'Saturday', short: 'Sat' },
+      { day: 1, name: 'Monday', short: 'Mon' },
+      { day: 2, name: 'Tuesday', short: 'Tue' },
+      { day: 3, name: 'Wednesday', short: 'Wed' },
+      { day: 4, name: 'Thursday', short: 'Thu' },
+      { day: 5, name: 'Friday', short: 'Fri' },
+      { day: 0, name: 'Sunday', short: 'Sun' }
+    ];
+
+    function schedulePosition(seconds) {
+      const clamped = Math.max(0, Math.min(secondsPerDay, seconds));
+      let visualSeconds;
+
+      if (clamped <= scheduleStartSeconds) {
+        visualSeconds =
+          (clamped / scheduleStartSeconds) * offHoursVisualSeconds;
+      } else if (clamped <= scheduleEndSeconds) {
+        visualSeconds =
+          offHoursVisualSeconds + (clamped - scheduleStartSeconds);
+      } else {
+        visualSeconds =
+          offHoursVisualSeconds +
+          (scheduleEndSeconds - scheduleStartSeconds) +
+          ((clamped - scheduleEndSeconds) /
+            (secondsPerDay - scheduleEndSeconds)) *
+            offHoursVisualSeconds;
+      }
+
+      return (visualSeconds / scheduleVisualSeconds) * 100;
+    }
+
+    function scheduleDayIndex(day) {
+      return scheduleDays.findIndex(item => item.day === day);
+    }
 
     function isPreK2FromCode(code) {
       if (!code) return false;
@@ -956,18 +1021,44 @@
       const axis = document.getElementById('schedule-axis');
       const nowLine = document.getElementById('schedule-now-line');
       const today = new Date().getDay();
+      const morningEnd = schedulePosition(scheduleStartSeconds);
+      const eveningStart = schedulePosition(scheduleEndSeconds);
 
-      weekdayNames.forEach((name, index) => {
-        const dayNumber = index + 1;
+      scheduleDays.forEach(({ day: dayNumber, name, short }) => {
+        const weekend = dayNumber === 0 || dayNumber === 6;
         const label = document.createElement('div');
         label.className = `schedule-day-name${today === dayNumber ? ' today' : ''}`;
-        label.textContent = name;
+        label.textContent = short;
+        label.title = name;
         head.appendChild(label);
 
         const column = document.createElement('div');
-        column.className = `schedule-day-column${today === dayNumber ? ' today' : ''}`;
+        column.className = `schedule-day-column${weekend ? ' weekend' : ''}${today === dayNumber ? ' today' : ''}`;
         column.dataset.day = dayNumber;
         area.appendChild(column);
+
+        if (weekend) {
+          const weekendBand = document.createElement('div');
+          weekendBand.className = 'schedule-off-hours';
+          weekendBand.style.inset = '0';
+          weekendBand.textContent = 'Weekend';
+          column.appendChild(weekendBand);
+          return;
+        }
+
+        const morning = document.createElement('div');
+        morning.className = 'schedule-off-hours';
+        morning.style.top = '0';
+        morning.style.height = `${morningEnd}%`;
+        morning.textContent = 'Night';
+        column.appendChild(morning);
+
+        const evening = document.createElement('div');
+        evening.className = 'schedule-off-hours evening';
+        evening.style.top = `${eveningStart}%`;
+        evening.style.height = `${100 - eveningStart}%`;
+        evening.textContent = 'After school';
+        column.appendChild(evening);
 
         const daySchedule = dayNumber === 5 ? scheduleFriday : scheduleMonThu;
         daySchedule.filter(item => item.type === 'class').forEach(item => {
@@ -976,8 +1067,8 @@
           const classCode = classMap[dayNumber]?.[periodNumber];
           const start = timeToSeconds(item.start);
           const end = timeToSeconds(item.end);
-          const top = (start - scheduleStartSeconds) / (scheduleEndSeconds - scheduleStartSeconds) * 100;
-          const height = (end - start) / (scheduleEndSeconds - scheduleStartSeconds) * 100;
+          const top = schedulePosition(start);
+          const height = schedulePosition(end) - top;
           const event = document.createElement('div');
           event.className = `schedule-event${classCode ? '' : ' open-period'}`;
           event.style.top = `${top}%`;
@@ -989,16 +1080,38 @@
         });
       });
 
-      area.appendChild(nowLine);
-      for (let seconds = scheduleStartSeconds; seconds <= scheduleEndSeconds; seconds += 3600) {
+      const axisTimes = [
+        0,
+        scheduleStartSeconds,
+        8 * 3600,
+        9 * 3600,
+        10 * 3600,
+        11 * 3600,
+        12 * 3600,
+        13 * 3600,
+        14 * 3600,
+        15 * 3600,
+        scheduleEndSeconds,
+        secondsPerDay
+      ];
+      axisTimes.forEach(seconds => {
+        const top = schedulePosition(seconds);
         const label = document.createElement('div');
         const hour = Math.floor(seconds / 3600);
         const minute = Math.floor((seconds % 3600) / 60);
         label.className = 'schedule-time-label';
-        label.style.top = `${(seconds - scheduleStartSeconds) / (scheduleEndSeconds - scheduleStartSeconds) * 100}%`;
+        label.style.top = `${top}%`;
+        if (seconds === 0) label.style.transform = 'translateY(0)';
+        if (seconds === secondsPerDay) label.style.transform = 'translateY(-100%)';
         label.textContent = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
         axis.appendChild(label);
-      }
+
+        const guide = document.createElement('div');
+        guide.className = 'schedule-hour-line';
+        guide.style.top = `${top}%`;
+        area.appendChild(guide);
+      });
+      area.appendChild(nowLine);
     }
 
     function buildMiniSchedule(date) {
@@ -1141,21 +1254,20 @@
 
       const day = date.getDay();
       const seconds = date.getHours() * 3600 + date.getMinutes() * 60 + date.getSeconds();
-      const inWeek = day >= 1 && day <= 5;
-      const inRange = seconds >= scheduleStartSeconds && seconds <= scheduleEndSeconds;
+      const dayIndex = scheduleDayIndex(day);
       document.getElementById('schedule-clock-label').textContent =
         `${mode === 'flash' ? 'Flash time' : 'Live time'} · ${date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
 
-      if (!inWeek || !inRange) {
+      if (dayIndex < 0) {
         line.style.display = 'none';
         return;
       }
 
-      const top = (seconds - scheduleStartSeconds) / (scheduleEndSeconds - scheduleStartSeconds) * 100;
+      const top = schedulePosition(seconds);
       line.style.display = 'block';
       line.style.top = `${top}%`;
-      line.style.left = `${(day - 1) * 20}%`;
-      line.style.width = '20%';
+      line.style.left = `${dayIndex * (100 / scheduleDays.length)}%`;
+      line.style.width = `${100 / scheduleDays.length}%`;
       document.getElementById('schedule-now-label').textContent =
         date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
     }
