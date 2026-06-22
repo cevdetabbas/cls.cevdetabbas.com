@@ -730,7 +730,9 @@
     let simStarted = mode !== 'sim';
     let simStartIndex = 0;
     let simStartedAt = 0;
-    let suppressNextAnnouncement = false;
+    // Treat the session visible on initial page load as the baseline.
+    // Announcements should only fire when the session changes afterward.
+    let suppressNextAnnouncement = mode !== 'sim';
     let announcementToken = 0;
     let scheduleOpen = false;
     let historyOpen = false;
