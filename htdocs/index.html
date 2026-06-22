@@ -733,6 +733,7 @@
     // Treat the session visible on initial page load as the baseline.
     // Announcements should only fire when the session changes afterward.
     let suppressNextAnnouncement = mode !== 'sim';
+    let sessionStateInitialized = false;
     let announcementToken = 0;
     let scheduleOpen = false;
     let historyOpen = false;
@@ -826,6 +827,8 @@
     }
 
     function loadVoices() { voices = window.speechSynthesis.getVoices(); }
+    // Stop speech that may still be playing from the page we navigated away from.
+    window.speechSynthesis.cancel();
     loadVoices();
     if (speechSynthesis.onvoiceschanged !== undefined) { speechSynthesis.onvoiceschanged = loadVoices; }
 
@@ -1470,7 +1473,9 @@
           if (currentSecs >= acc && currentSecs < acc + dur) {
             foundActiveSession = true;
             if (activeIdx !== i) {
-              if (!suppressAnnouncement) announce(i, currentMins[i], isPreK2);
+              if (sessionStateInitialized && !suppressAnnouncement) {
+                announce(i, currentMins[i], isPreK2);
+              }
               activeIdx = i;
             }
             card.classList.add('active'); coin.classList.add('spinning');
@@ -1485,6 +1490,8 @@
           acc += dur;
         }
       }
+
+      sessionStateInitialized = true;
 
       const inActivePeriod = activeClass && currentSecs >= timeToSeconds(activeClass.start) && currentSecs < timeToSeconds(activeClass.end);
 
