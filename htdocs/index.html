@@ -359,11 +359,36 @@
       transition: opacity .25s ease, transform .25s ease, visibility .25s;
     }
     #history-overlay.open { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
-    .history-preview { position: relative; min-width: 0; background: #fff; }
-    #history-frame { width: 100%; height: 100%; border: 0; background: #fff; }
+    .history-preview {
+      position: relative; min-width: 0; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      padding: 68px 24px 24px;
+      background:
+        radial-gradient(circle at 25% 20%, rgba(var(--mode-accent-rgb),.14), transparent 35%),
+        linear-gradient(145deg, #171922, #292d3a);
+    }
+    .history-preview-head {
+      position: absolute; z-index: 2; left: 22px; right: 22px; top: 16px;
+      display: flex; align-items: center; justify-content: space-between; gap: 18px;
+      color: #fff;
+    }
+    .history-version-title { font-size: 18px; font-weight: 950; letter-spacing: -.4px; }
+    .history-version-era {
+      margin-top: 3px; color: rgba(255,255,255,.62);
+      font-size: 10px; font-weight: 850; letter-spacing: 1.2px; text-transform: uppercase;
+    }
+    .history-progress {
+      color: rgba(255,255,255,.7); font-size: 11px; font-weight: 850;
+      font-variant-numeric: tabular-nums;
+    }
+    #history-image {
+      display: none; width: 100%; height: 100%; object-fit: contain;
+      border-radius: 16px; background: #fff;
+      box-shadow: 0 22px 55px rgba(0,0,0,.34);
+    }
     .history-empty {
       position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-      color: var(--muted); font-size: 16px; font-weight: 800; pointer-events: none;
+      color: rgba(255,255,255,.7); font-size: 16px; font-weight: 800; pointer-events: none;
     }
     .history-sidebar {
       display: flex; flex-direction: column; min-width: 0;
@@ -387,12 +412,25 @@
     .history-nav-btn:disabled { opacity: .3; cursor: default; }
     .history-list { flex: 1; min-height: 0; overflow-y: auto; padding: 9px; }
     .history-item {
-      display: block; width: 100%; border: 0; background: transparent;
-      padding: 9px 11px; border-radius: 9px; text-align: left;
+      display: grid; grid-template-columns: 58px minmax(0, 1fr); align-items: center; gap: 9px;
+      width: 100%; border: 0; background: transparent;
+      padding: 6px; border-radius: 10px; text-align: left;
       color: #515158; font-size: 12px; font-weight: 800; cursor: pointer;
     }
     .history-item:hover { background: rgba(0,113,227,.08); color: var(--blue); }
     .history-item.active { background: var(--blue); color: #fff; }
+    .history-thumb {
+      width: 58px; aspect-ratio: 16 / 9; object-fit: cover; object-position: top;
+      border-radius: 6px; background: #e6e6e8;
+      box-shadow: 0 2px 6px rgba(0,0,0,.12);
+    }
+    .history-item-copy { min-width: 0; }
+    .history-item-version { display: block; font-size: 11px; font-weight: 950; }
+    .history-item-era {
+      display: block; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      color: #929298; font-size: 8px; font-weight: 850; text-transform: uppercase; letter-spacing: .5px;
+    }
+    .history-item.active .history-item-era { color: rgba(255,255,255,.72); }
     @media (max-width: 800px) {
       #history-overlay { inset: 8px; grid-template-columns: minmax(0, 1fr) 150px; }
     }
@@ -708,8 +746,15 @@
 
     <section id="history-overlay" aria-hidden="true">
       <div class="history-preview">
-        <iframe id="history-frame" title="History preview" sandbox="allow-scripts allow-same-origin"></iframe>
-        <div class="history-empty" id="history-empty">Select a version from the right</div>
+        <div class="history-preview-head">
+          <div>
+            <div class="history-version-title" id="history-version-title">Visual History</div>
+            <div class="history-version-era" id="history-version-era">Select a version from the timeline</div>
+          </div>
+          <div class="history-progress" id="history-progress">— / 63</div>
+        </div>
+        <img id="history-image" alt="Historical application preview">
+        <div class="history-empty" id="history-empty">Preparing the visual timeline…</div>
       </div>
       <aside class="history-sidebar">
         <div class="history-sidebar-head">
@@ -1182,40 +1227,57 @@
       for (let index = 1; index <= 63; index++) {
         const button = document.createElement('button');
         button.className = 'history-item';
-        button.textContent = `index${index}.html`;
-        button.dataset.file = `index${index}.html`;
+        button.dataset.version = index;
+        button.innerHTML = `
+          <img class="history-thumb" src="history-previews/version-${String(index).padStart(2, '0')}.jpg" alt="">
+          <span class="history-item-copy">
+            <span class="history-item-version">Version ${String(index).padStart(2, '0')}</span>
+            <span class="history-item-era">${historyEra(index)}</span>
+          </span>`;
         button.onclick = () => loadHistoryVersion(index, button);
         list.appendChild(button);
       }
       historyBuilt = true;
     }
 
-    async function loadHistoryVersion(index, button) {
+    function historyEra(index) {
+      if (index <= 3) return 'The beginning';
+      if (index <= 6) return 'Neon experiments';
+      if (index <= 12) return 'Bell schedule';
+      if (index <= 18) return 'Classroom timer';
+      if (index <= 28) return 'Interface studies';
+      if (index <= 39) return 'Pro evolution';
+      if (index <= 47) return 'Apple elite';
+      if (index <= 59) return 'Elite generations';
+      return 'Command center';
+    }
+
+    function loadHistoryVersion(index, button) {
       mainStage.scrollTop = 0;
       const empty = document.getElementById('history-empty');
-      const frame = document.getElementById('history-frame');
+      const image = document.getElementById('history-image');
       empty.style.display = 'flex';
-      empty.textContent = `Loading index${index}.html…`;
-
-      try {
-        const response = await fetch(`history/index${index}.html`);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        let html = await response.text();
-        const baseTag = '<base href="/">';
-        html = /<head[\s>]/i.test(html)
-          ? html.replace(/<head([^>]*)>/i, `<head$1>${baseTag}`)
-          : `${baseTag}${html}`;
-        frame.srcdoc = html;
+      empty.textContent = `Loading version ${String(index).padStart(2, '0')}…`;
+      image.style.display = 'none';
+      image.onload = () => {
+        image.style.display = 'block';
         empty.style.display = 'none';
-        document.querySelectorAll('.history-item').forEach(item => item.classList.remove('active'));
-        button.classList.add('active');
-        activeHistoryIndex = index;
-        button.scrollIntoView({ block: 'nearest' });
-        updateHistoryNavigation();
-      } catch (error) {
-        frame.removeAttribute('srcdoc');
-        empty.textContent = `Could not open index${index}.html`;
-      }
+      };
+      image.onerror = () => {
+        image.style.display = 'none';
+        empty.textContent = `Could not open version ${String(index).padStart(2, '0')}`;
+      };
+      image.src = `history-previews/version-${String(index).padStart(2, '0')}.jpg`;
+      image.alt = `Version ${String(index).padStart(2, '0')} — ${historyEra(index)}`;
+      document.getElementById('history-version-title').textContent =
+        `Version ${String(index).padStart(2, '0')}`;
+      document.getElementById('history-version-era').textContent = historyEra(index);
+      document.getElementById('history-progress').textContent = `${index} / 63`;
+      document.querySelectorAll('.history-item').forEach(item => item.classList.remove('active'));
+      button.classList.add('active');
+      activeHistoryIndex = index;
+      button.scrollIntoView({ block: 'nearest' });
+      updateHistoryNavigation();
     }
 
     function updateHistoryNavigation() {
@@ -1229,7 +1291,7 @@
       if (!activeHistoryIndex) return;
       const target = activeHistoryIndex + direction;
       if (target < 1 || target > 63) return;
-      const button = document.querySelector(`.history-item[data-file="index${target}.html"]`);
+      const button = document.querySelector(`.history-item[data-version="${target}"]`);
       if (button) loadHistoryVersion(target, button);
     }
 
@@ -1239,6 +1301,10 @@
       if (historyOpen) {
         toggleSchedule(false);
         buildHistoryList();
+        if (!activeHistoryIndex) {
+          const firstVersion = document.querySelector('.history-item[data-version="1"]');
+          if (firstVersion) loadHistoryVersion(1, firstVersion);
+        }
       }
       const overlay = document.getElementById('history-overlay');
       const button = document.getElementById('history-button');
