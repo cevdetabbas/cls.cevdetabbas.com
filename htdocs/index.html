@@ -751,7 +751,7 @@
             <div class="history-version-title" id="history-version-title">Visual History</div>
             <div class="history-version-era" id="history-version-era">Select a version from the timeline</div>
           </div>
-          <div class="history-progress" id="history-progress">— / 63</div>
+          <div class="history-progress" id="history-progress">— / 10</div>
         </div>
         <img id="history-image" alt="Historical application preview">
         <div class="history-empty" id="history-empty">Preparing the visual timeline…</div>
@@ -1221,18 +1221,32 @@
       if (scheduleOpen) updateScheduleNow(getCurrentTime());
     }
 
+    const historyStages = [
+      { title: 'The First Prototype', era: 'Simple classroom timer' },
+      { title: 'Four-Step Routine', era: 'Login · Learn · Type · Logout' },
+      { title: 'Visual Session Cards', era: 'Student-friendly activities' },
+      { title: 'Live Countdown', era: 'Real-time classroom pacing' },
+      { title: 'Bell Schedule Aware', era: 'Connected to the school day' },
+      { title: 'Classroom Controls', era: 'Teacher control panel' },
+      { title: 'Real · Sim · Flash', era: 'Testing and demonstration modes' },
+      { title: 'Daily Schedule Strip', era: 'The whole day at a glance' },
+      { title: 'Command Center Beta', era: 'The polished system takes shape' },
+      { title: 'Classroom Orchestration', era: 'The current CLS experience' }
+    ];
+
     function buildHistoryList() {
       if (historyBuilt) return;
       const list = document.getElementById('history-list');
-      for (let index = 1; index <= 63; index++) {
+      for (let index = 1; index <= historyStages.length; index++) {
+        const stage = historyStages[index - 1];
         const button = document.createElement('button');
         button.className = 'history-item';
         button.dataset.version = index;
         button.innerHTML = `
           <img class="history-thumb" src="history-previews/version-${String(index).padStart(2, '0')}.jpg" alt="">
           <span class="history-item-copy">
-            <span class="history-item-version">Version ${String(index).padStart(2, '0')}</span>
-            <span class="history-item-era">${historyEra(index)}</span>
+            <span class="history-item-version">${String(index).padStart(2, '0')} · ${stage.title}</span>
+            <span class="history-item-era">${stage.era}</span>
           </span>`;
         button.onclick = () => loadHistoryVersion(index, button);
         list.appendChild(button);
@@ -1241,15 +1255,7 @@
     }
 
     function historyEra(index) {
-      if (index <= 3) return 'The beginning';
-      if (index <= 6) return 'Neon experiments';
-      if (index <= 12) return 'Bell schedule';
-      if (index <= 18) return 'Classroom timer';
-      if (index <= 28) return 'Interface studies';
-      if (index <= 39) return 'Pro evolution';
-      if (index <= 47) return 'Apple elite';
-      if (index <= 59) return 'Elite generations';
-      return 'Command center';
+      return historyStages[index - 1]?.era || 'CLS evolution';
     }
 
     function loadHistoryVersion(index, button) {
@@ -1270,9 +1276,9 @@
       image.src = `history-previews/version-${String(index).padStart(2, '0')}.jpg`;
       image.alt = `Version ${String(index).padStart(2, '0')} — ${historyEra(index)}`;
       document.getElementById('history-version-title').textContent =
-        `Version ${String(index).padStart(2, '0')}`;
+        `${String(index).padStart(2, '0')} · ${historyStages[index - 1].title}`;
       document.getElementById('history-version-era').textContent = historyEra(index);
-      document.getElementById('history-progress').textContent = `${index} / 63`;
+      document.getElementById('history-progress').textContent = `${index} / ${historyStages.length}`;
       document.querySelectorAll('.history-item').forEach(item => item.classList.remove('active'));
       button.classList.add('active');
       activeHistoryIndex = index;
@@ -1284,13 +1290,13 @@
       const previous = document.getElementById('history-prev');
       const next = document.getElementById('history-next');
       previous.disabled = activeHistoryIndex <= 1;
-      next.disabled = activeHistoryIndex === 0 || activeHistoryIndex >= 63;
+      next.disabled = activeHistoryIndex === 0 || activeHistoryIndex >= historyStages.length;
     }
 
     function navigateHistory(direction) {
       if (!activeHistoryIndex) return;
       const target = activeHistoryIndex + direction;
-      if (target < 1 || target > 63) return;
+      if (target < 1 || target > historyStages.length) return;
       const button = document.querySelector(`.history-item[data-version="${target}"]`);
       if (button) loadHistoryVersion(target, button);
     }
