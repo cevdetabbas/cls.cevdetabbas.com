@@ -784,11 +784,11 @@
           </div>
           <div style="display:flex;align-items:center;gap:9px">
             <button class="history-overview-button" id="history-overview-button" onclick="showHistoryOverview()">All stages</button>
-            <div class="history-progress" id="history-progress">11 stages</div>
+            <div class="history-progress" id="history-progress">10 stages</div>
           </div>
         </div>
         <div class="history-overview" id="history-overview">
-          <img class="history-overview-poster" src="history-previews/evolution-overview.jpg?v=3" alt="CLS evolution overview">
+          <img class="history-overview-poster" src="history-previews/evolution-overview.jpg?v=2" alt="Ten-stage CLS evolution overview">
         </div>
         <img id="history-image" alt="Historical application preview">
         <div class="history-empty" id="history-empty" style="display:none">Preparing the visual timeline…</div>
@@ -851,139 +851,45 @@
     const mainStage = document.getElementById('main-stage');
     const bodyMain = document.getElementById('body-main');
 
-    const activeSchoolLevel = 'elementary';
-    const schoolLevelLabels = {
-      elementary: 'Elementary School (PreK-5)',
-      middle: 'Middle School (6-8)',
-      high: 'High School (9-12)'
-    };
+    const scheduleMonThu = [
+      { name: 'Breakfast', type: 'nonclass', start: '07:20', end: '07:47' },
+      { name: 'Passing',   type: 'nonclass', start: '07:47', end: '07:50' },
+      { name: 'Period 1',  type: 'class',    start: '07:50', end: '08:38' },
+      { name: 'Passing',   type: 'nonclass', start: '08:38', end: '08:41' },
+      { name: 'Period 2',  type: 'class',    start: '08:41', end: '09:29' },
+      { name: 'Passing',   type: 'nonclass', start: '09:29', end: '09:32' },
+      { name: 'Period 3',  type: 'class',    start: '09:32', end: '10:20' },
+      { name: 'Passing',   type: 'nonclass', start: '10:20', end: '10:23' },
+      { name: 'Period 4',  type: 'class',    start: '10:23', end: '11:10' },
+      { name: 'Passing',   type: 'nonclass', start: '11:10', end: '11:13' },
+      { name: 'Period 5',  type: 'class',    start: '11:13', end: '12:01' },
+      { name: 'Passing',   type: 'nonclass', start: '12:01', end: '12:04' },
+      { name: 'Period 6',  type: 'class',    start: '12:04', end: '12:52' },
+      { name: 'Passing',   type: 'nonclass', start: '12:52', end: '12:55' },
+      { name: 'Period 7',  type: 'class',    start: '12:55', end: '13:43' },
+      { name: 'Passing',   type: 'nonclass', start: '13:43', end: '13:46' },
+      { name: 'Period 8',  type: 'class',    start: '13:46', end: '14:34' },
+      { name: 'Passing',   type: 'nonclass', start: '14:34', end: '14:37' },
+      { name: 'Period 9',  type: 'class',    start: '14:37', end: '15:25' }
+    ];
 
-    const schoolBellSchedules = {
-      elementary: {
-        monThu: [
-          { name: 'Breakfast', type: 'nonclass', start: '07:20', end: '07:42' },
-          { name: 'Passing',   type: 'nonclass', start: '07:42', end: '07:45' },
-          { name: 'Period 1',  type: 'class',    start: '07:45', end: '08:38' },
-          { name: 'Passing',   type: 'nonclass', start: '08:38', end: '08:41' },
-          { name: 'Period 2',  type: 'class',    start: '08:41', end: '09:29' },
-          { name: 'Passing',   type: 'nonclass', start: '09:29', end: '09:32' },
-          { name: 'Period 3 / Funding Period', type: 'class', start: '09:32', end: '10:20' },
-          { name: 'Passing',   type: 'nonclass', start: '10:20', end: '10:23' },
-          { name: 'Period 4 / Lunch', type: 'class', start: '10:23', end: '11:10' },
-          { name: 'Passing',   type: 'nonclass', start: '11:10', end: '11:13' },
-          { name: 'Period 5',  type: 'class',    start: '11:13', end: '12:01' },
-          { name: 'Passing',   type: 'nonclass', start: '12:01', end: '12:04' },
-          { name: 'Period 6',  type: 'class',    start: '12:04', end: '12:52' },
-          { name: 'Passing',   type: 'nonclass', start: '12:52', end: '12:55' },
-          { name: 'Period 7',  type: 'class',    start: '12:55', end: '13:43' },
-          { name: 'Passing',   type: 'nonclass', start: '13:43', end: '13:46' },
-          { name: 'Period 8',  type: 'class',    start: '13:46', end: '14:34' },
-          { name: 'Passing',   type: 'nonclass', start: '14:34', end: '14:37' },
-          { name: 'Period 9',  type: 'class',    start: '14:37', end: '15:25' }
-        ],
-        friday: [
-          { name: 'Breakfast', type: 'nonclass', start: '07:20', end: '07:42' },
-          { name: 'Passing',   type: 'nonclass', start: '07:42', end: '07:45' },
-          { name: 'Period 1',  type: 'class',    start: '07:45', end: '08:34' },
-          { name: 'Passing',   type: 'nonclass', start: '08:34', end: '08:37' },
-          { name: 'Period 2',  type: 'class',    start: '08:37', end: '09:21' },
-          { name: 'Passing',   type: 'nonclass', start: '09:21', end: '09:24' },
-          { name: 'Period 3 / Funding Period', type: 'class', start: '09:24', end: '10:08' },
-          { name: 'Passing',   type: 'nonclass', start: '10:08', end: '10:11' },
-          { name: 'Period 4 / Lunch', type: 'class', start: '10:11', end: '10:54' },
-          { name: 'Passing',   type: 'nonclass', start: '10:54', end: '10:57' },
-          { name: 'Period 5',  type: 'class',    start: '10:57', end: '11:41' },
-          { name: 'Passing',   type: 'nonclass', start: '11:41', end: '11:44' },
-          { name: 'Period 6',  type: 'class',    start: '11:44', end: '12:28' },
-          { name: 'Passing',   type: 'nonclass', start: '12:28', end: '12:31' },
-          { name: 'Period 7',  type: 'class',    start: '12:31', end: '13:15' }
-        ]
-      },
-      middle: {
-        monThu: [
-          { name: 'Breakfast', type: 'nonclass', start: '07:20', end: '07:42' },
-          { name: 'Passing',   type: 'nonclass', start: '07:42', end: '07:45' },
-          { name: 'Period 1',  type: 'class',    start: '07:45', end: '08:50' },
-          { name: 'Passing',   type: 'nonclass', start: '08:50', end: '08:53' },
-          { name: 'Period 2',  type: 'class',    start: '08:53', end: '09:50' },
-          { name: 'Passing',   type: 'nonclass', start: '09:50', end: '09:53' },
-          { name: 'Period 3 / Funding Period', type: 'class', start: '09:53', end: '10:50' },
-          { name: 'Passing',   type: 'nonclass', start: '10:50', end: '10:53' },
-          { name: 'Period 4',  type: 'class',    start: '10:53', end: '11:50' },
-          { name: 'Passing',   type: 'nonclass', start: '11:50', end: '11:53' },
-          { name: 'Period 5 / Lunch', type: 'class', start: '11:53', end: '12:23' },
-          { name: 'Passing',   type: 'nonclass', start: '12:23', end: '12:26' },
-          { name: 'Period 6',  type: 'class',    start: '12:26', end: '13:23' },
-          { name: 'Passing',   type: 'nonclass', start: '13:23', end: '13:26' },
-          { name: 'Period 7',  type: 'class',    start: '13:26', end: '14:23' },
-          { name: 'Passing',   type: 'nonclass', start: '14:23', end: '14:26' },
-          { name: 'Period 8',  type: 'class',    start: '14:26', end: '15:25' }
-        ],
-        friday: [
-          { name: 'Breakfast', type: 'nonclass', start: '07:20', end: '07:42' },
-          { name: 'Passing',   type: 'nonclass', start: '07:42', end: '07:45' },
-          { name: 'Period 1',  type: 'class',    start: '07:45', end: '08:29' },
-          { name: 'Passing',   type: 'nonclass', start: '08:29', end: '08:32' },
-          { name: 'Period 2',  type: 'class',    start: '08:32', end: '09:11' },
-          { name: 'Passing',   type: 'nonclass', start: '09:11', end: '09:14' },
-          { name: 'Period 3 / Funding Period', type: 'class', start: '09:14', end: '09:53' },
-          { name: 'Passing',   type: 'nonclass', start: '09:53', end: '09:56' },
-          { name: 'Period 4',  type: 'class',    start: '09:56', end: '10:35' },
-          { name: 'Passing',   type: 'nonclass', start: '10:35', end: '10:38' },
-          { name: 'Period 5 / Lunch', type: 'class', start: '10:38', end: '11:17' },
-          { name: 'Passing',   type: 'nonclass', start: '11:17', end: '11:20' },
-          { name: 'Period 6 / Lunch Friday', type: 'class', start: '11:20', end: '11:50' },
-          { name: 'Passing',   type: 'nonclass', start: '11:50', end: '11:53' },
-          { name: 'Period 7',  type: 'class',    start: '11:53', end: '12:32' },
-          { name: 'Passing',   type: 'nonclass', start: '12:32', end: '12:35' },
-          { name: 'Period 8',  type: 'class',    start: '12:35', end: '13:15' }
-        ]
-      },
-      high: {
-        monThu: [
-          { name: 'Breakfast', type: 'nonclass', start: '07:20', end: '07:42' },
-          { name: 'Passing',   type: 'nonclass', start: '07:42', end: '07:45' },
-          { name: 'Period 1',  type: 'class',    start: '07:45', end: '08:50' },
-          { name: 'Passing',   type: 'nonclass', start: '08:50', end: '08:53' },
-          { name: 'Period 2',  type: 'class',    start: '08:53', end: '09:50' },
-          { name: 'Passing',   type: 'nonclass', start: '09:50', end: '09:53' },
-          { name: 'Period 3 / Funding Period', type: 'class', start: '09:53', end: '10:50' },
-          { name: 'Passing',   type: 'nonclass', start: '10:50', end: '10:53' },
-          { name: 'Period 4',  type: 'class',    start: '10:53', end: '11:50' },
-          { name: 'Passing',   type: 'nonclass', start: '11:50', end: '11:53' },
-          { name: 'Period 5',  type: 'class',    start: '11:53', end: '12:50' },
-          { name: 'Passing',   type: 'nonclass', start: '12:50', end: '12:53' },
-          { name: 'Period 6 / Lunch', type: 'class', start: '12:53', end: '13:23' },
-          { name: 'Passing',   type: 'nonclass', start: '13:23', end: '13:26' },
-          { name: 'Period 7',  type: 'class',    start: '13:26', end: '14:23' },
-          { name: 'Passing',   type: 'nonclass', start: '14:23', end: '14:26' },
-          { name: 'Period 8',  type: 'class',    start: '14:26', end: '15:25' }
-        ],
-        friday: [
-          { name: 'Breakfast', type: 'nonclass', start: '07:20', end: '07:42' },
-          { name: 'Passing',   type: 'nonclass', start: '07:42', end: '07:45' },
-          { name: 'Period 1',  type: 'class',    start: '07:45', end: '08:29' },
-          { name: 'Passing',   type: 'nonclass', start: '08:29', end: '08:32' },
-          { name: 'Period 2',  type: 'class',    start: '08:32', end: '09:11' },
-          { name: 'Passing',   type: 'nonclass', start: '09:11', end: '09:14' },
-          { name: 'Period 3 / Funding Period', type: 'class', start: '09:14', end: '09:53' },
-          { name: 'Passing',   type: 'nonclass', start: '09:53', end: '09:56' },
-          { name: 'Period 4',  type: 'class',    start: '09:56', end: '10:35' },
-          { name: 'Passing',   type: 'nonclass', start: '10:35', end: '10:38' },
-          { name: 'Period 5',  type: 'class',    start: '10:38', end: '11:17' },
-          { name: 'Passing',   type: 'nonclass', start: '11:17', end: '11:20' },
-          { name: 'Period 6 / Lunch', type: 'class', start: '11:20', end: '11:59' },
-          { name: 'Passing',   type: 'nonclass', start: '11:59', end: '12:02' },
-          { name: 'Period 7 / Lunch Friday', type: 'class', start: '12:02', end: '12:32' },
-          { name: 'Passing',   type: 'nonclass', start: '12:32', end: '12:35' },
-          { name: 'Period 8',  type: 'class',    start: '12:35', end: '13:15' }
-        ]
-      }
-    };
-
-    const activeBellSchedule = schoolBellSchedules[activeSchoolLevel];
-    const scheduleMonThu = activeBellSchedule.monThu;
-    const scheduleFriday = activeBellSchedule.friday;
+    const scheduleFriday = [
+      { name: 'Breakfast', type: 'nonclass', start: '07:20', end: '07:47' },
+      { name: 'Passing',   type: 'nonclass', start: '07:47', end: '07:50' },
+      { name: 'Period 1',  type: 'class',    start: '07:50', end: '08:34' },
+      { name: 'Passing',   type: 'nonclass', start: '08:34', end: '08:37' },
+      { name: 'Period 2',  type: 'class',    start: '08:37', end: '09:21' },
+      { name: 'Passing',   type: 'nonclass', start: '09:21', end: '09:24' },
+      { name: 'Period 3',  type: 'class',    start: '09:24', end: '10:08' },
+      { name: 'Passing',   type: 'nonclass', start: '10:08', end: '10:11' },
+      { name: 'Period 4',  type: 'class',    start: '10:11', end: '10:54' },
+      { name: 'Passing',   type: 'nonclass', start: '10:54', end: '10:57' },
+      { name: 'Period 5',  type: 'class',    start: '10:57', end: '11:41' },
+      { name: 'Passing',   type: 'nonclass', start: '11:41', end: '11:44' },
+      { name: 'Period 6',  type: 'class',    start: '11:44', end: '12:28' },
+      { name: 'Passing',   type: 'nonclass', start: '12:28', end: '12:31' },
+      { name: 'Period 7',  type: 'class',    start: '12:31', end: '13:15' }
+    ];
 
     // Mapping from weekday (1=Mon..5=Fri) and period number to class code from Google Calendar
     const classMap = {
@@ -994,35 +900,8 @@
       5: { 7: '1B' }
     };
 
-    const academicCalendar = {
-      year: '2026-2027',
-      firstDay: '2026-08-10',
-      lastDay: '2027-05-27',
-      quarters: [
-        { label: '1st Quarter', start: '2026-08-10', end: '2026-10-08' },
-        { label: '2nd Quarter', start: '2026-10-13', end: '2026-12-18' },
-        { label: '3rd Quarter', start: '2027-01-05', end: '2027-03-05' },
-        { label: '4th Quarter', start: '2027-03-15', end: '2027-05-27' }
-      ],
-      closures: [
-        { label: 'Student Holiday / District PD', start: '2026-08-03', end: '2026-08-07' },
-        { label: 'Labor Day', start: '2026-09-07', end: '2026-09-07' },
-        { label: 'Student Holiday', start: '2026-10-09', end: '2026-10-12' },
-        { label: 'Veterans Day', start: '2026-11-11', end: '2026-11-11' },
-        { label: 'Thanksgiving Break', start: '2026-11-23', end: '2026-11-27' },
-        { label: 'Winter Break', start: '2026-12-21', end: '2027-01-01' },
-        { label: 'MLK Day', start: '2027-01-18', end: '2027-01-18' },
-        { label: 'Presidents Day', start: '2027-02-15', end: '2027-02-15' },
-        { label: 'Spring Break', start: '2027-03-08', end: '2027-03-12' },
-        { label: 'Good Friday', start: '2027-04-02', end: '2027-04-02' },
-        { label: 'Memorial Day', start: '2027-05-31', end: '2027-05-31' },
-        { label: 'Juneteenth', start: '2027-06-18', end: '2027-06-18' }
-      ]
-    };
-
-    const allActiveScheduleItems = scheduleMonThu.concat(scheduleFriday);
-    const scheduleStartSeconds = Math.min(...allActiveScheduleItems.map(item => timeToSeconds(item.start)));
-    const scheduleEndSeconds = Math.max(...allActiveScheduleItems.map(item => timeToSeconds(item.end)));
+    const scheduleStartSeconds = 7 * 3600 + 20 * 60;
+    const scheduleEndSeconds = 15 * 3600 + 25 * 60;
     const secondsPerDay = 24 * 3600;
     const offHoursVisualSeconds = 48 * 60;
     const scheduleVisualSeconds =
@@ -1171,88 +1050,6 @@
       return h * 3600 + m * 60;
     }
 
-    function dateValue(date) {
-      return date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
-    }
-
-    function dateKeyValue(dateKey) {
-      const [year, month, day] = dateKey.split('-').map(Number);
-      return year * 10000 + month * 100 + day;
-    }
-
-    function dateKey(date) {
-      return [
-        date.getFullYear(),
-        String(date.getMonth() + 1).padStart(2, '0'),
-        String(date.getDate()).padStart(2, '0')
-      ].join('-');
-    }
-
-    function formatCalendarDate(dateKeyText) {
-      const [year, month, day] = dateKeyText.split('-').map(Number);
-      return new Date(year, month - 1, day).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
-      });
-    }
-
-    function isWithinSchoolYear(date) {
-      const value = dateValue(date);
-      return value >= dateKeyValue(academicCalendar.firstDay) &&
-        value <= dateKeyValue(academicCalendar.lastDay);
-    }
-
-    function calendarClosureForDate(date) {
-      const value = dateValue(date);
-      return academicCalendar.closures.find(event =>
-        value >= dateKeyValue(event.start) && value <= dateKeyValue(event.end)
-      );
-    }
-
-    function quarterForDate(date) {
-      const value = dateValue(date);
-      return academicCalendar.quarters.find(quarter =>
-        value >= dateKeyValue(quarter.start) && value <= dateKeyValue(quarter.end)
-      );
-    }
-
-    function isSchoolDay(date) {
-      const day = date.getDay();
-      return day >= 1 && day <= 5 &&
-        isWithinSchoolYear(date) &&
-        !calendarClosureForDate(date);
-    }
-
-    function getScheduleForDayNumber(dayNumber) {
-      if (dayNumber === 5) return scheduleFriday;
-      if (dayNumber >= 1 && dayNumber <= 4) return scheduleMonThu;
-      return [];
-    }
-
-    function getLiveScheduleForDate(date) {
-      return isSchoolDay(date) ? getScheduleForDayNumber(date.getDay()) : [];
-    }
-
-    function getCalendarStatusLabel(date) {
-      const day = date.getDay();
-      const closure = calendarClosureForDate(date);
-      const value = dateValue(date);
-
-      if (closure) return closure.label;
-      if (day === 0 || day === 6) return 'Weekend';
-      if (value < dateKeyValue(academicCalendar.firstDay)) {
-        return `School starts ${formatCalendarDate(academicCalendar.firstDay)}`;
-      }
-      if (value > dateKeyValue(academicCalendar.lastDay)) {
-        return `${academicCalendar.year} school year complete`;
-      }
-
-      const quarter = quarterForDate(date);
-      const weekday = weekdayNames[day - 1] || 'School Day';
-      return quarter ? `${weekday} - ${quarter.label}` : weekday;
-    }
-
     function setVirtualTime(date, suppressAnnouncement = false) {
       announcementToken++;
       window.speechSynthesis.cancel();
@@ -1272,7 +1069,8 @@
     }
 
     function getScheduledSession(date) {
-      const schedule = getLiveScheduleForDate(date);
+      const day = date.getDay();
+      const schedule = day === 5 ? scheduleFriday : scheduleMonThu;
       const currentSecs = date.getHours() * 3600 + date.getMinutes() * 60 + date.getSeconds();
       const activeClass = schedule.find(item =>
         item.type === 'class' &&
@@ -1304,8 +1102,6 @@
       const area = document.getElementById('schedule-days-area');
       const axis = document.getElementById('schedule-axis');
       const nowLine = document.getElementById('schedule-now-line');
-      document.querySelector('.schedule-title').textContent =
-        `${schoolLevelLabels[activeSchoolLevel]} Schedule`;
       const today = new Date().getDay();
       const morningEnd = schedulePosition(scheduleStartSeconds);
       const eveningStart = schedulePosition(scheduleEndSeconds);
@@ -1346,7 +1142,7 @@
         evening.textContent = 'After school';
         column.appendChild(evening);
 
-        const daySchedule = getScheduleForDayNumber(dayNumber);
+        const daySchedule = dayNumber === 5 ? scheduleFriday : scheduleMonThu;
         daySchedule.filter(item => item.type === 'class').forEach(item => {
           const periodMatch = item.name.match(/Period\s+(\d+)/);
           const periodNumber = periodMatch ? Number(periodMatch[1]) : 0;
@@ -1404,12 +1200,12 @@
       const day = date.getDay();
       const track = document.getElementById('mini-schedule-track');
       track.querySelectorAll('.mini-schedule-event').forEach(event => event.remove());
-      miniScheduleDay = dateKey(date);
+      miniScheduleDay = day;
       document.getElementById('mini-schedule-day').textContent =
-        getCalendarStatusLabel(date);
+        day >= 1 && day <= 5 ? weekdayNames[day - 1] : 'Weekend';
 
-      const daySchedule = getLiveScheduleForDate(date);
-      if (!daySchedule.length) return;
+      if (day < 1 || day > 5) return;
+      const daySchedule = day === 5 ? scheduleFriday : scheduleMonThu;
       daySchedule.filter(item => item.type === 'class').forEach(item => {
         const periodMatch = item.name.match(/Period\s+(\d+)/);
         const periodNumber = periodMatch ? Number(periodMatch[1]) : 0;
@@ -1430,11 +1226,11 @@
     }
 
     function updateMiniSchedule(date) {
-      if (miniScheduleDay !== dateKey(date)) buildMiniSchedule(date);
+      if (miniScheduleDay !== date.getDay()) buildMiniSchedule(date);
       const line = document.getElementById('mini-now-line');
       const label = document.getElementById('mini-now-time');
       const seconds = date.getHours() * 3600 + date.getMinutes() * 60 + date.getSeconds();
-      const inRange = isSchoolDay(date) &&
+      const inRange = date.getDay() >= 1 && date.getDay() <= 5 &&
         seconds >= scheduleStartSeconds && seconds <= scheduleEndSeconds;
 
       if (!inRange) {
@@ -1472,8 +1268,7 @@
       { title: 'Real · Sim · Flash', era: 'Testing and demonstration modes' },
       { title: 'Daily Schedule Strip', era: 'The whole day at a glance' },
       { title: 'Command Center Beta', era: 'The polished system takes shape' },
-      { title: 'Classroom Orchestration', era: 'The current CLS experience' },
-      { title: '2025-2026 Live Build', era: 'Archived before the 2026-2027 schedule update' }
+      { title: 'Classroom Orchestration', era: 'The current CLS experience' }
     ];
 
     function buildHistoryList() {
@@ -1485,7 +1280,7 @@
         button.className = 'history-item';
         button.dataset.version = index;
         button.innerHTML = `
-          <img class="history-thumb" src="history-previews/version-${String(index).padStart(2, '0')}.jpg?v=3" alt="">
+          <img class="history-thumb" src="history-previews/version-${String(index).padStart(2, '0')}.jpg?v=2" alt="">
           <span class="history-item-copy">
             <span class="history-item-version">${String(index).padStart(2, '0')} · ${stage.title}</span>
             <span class="history-item-era">${stage.era}</span>
@@ -1518,7 +1313,7 @@
         image.style.display = 'none';
         empty.textContent = `Could not open version ${String(index).padStart(2, '0')}`;
       };
-      image.src = `history-previews/version-${String(index).padStart(2, '0')}.jpg?v=3`;
+      image.src = `history-previews/version-${String(index).padStart(2, '0')}.jpg?v=2`;
       image.alt = `Version ${String(index).padStart(2, '0')} — ${historyEra(index)}`;
       document.getElementById('history-version-title').textContent =
         `${String(index).padStart(2, '0')} · ${historyStages[index - 1].title}`;
@@ -1583,9 +1378,9 @@
       const seconds = date.getHours() * 3600 + date.getMinutes() * 60 + date.getSeconds();
       const dayIndex = scheduleDayIndex(day);
       document.getElementById('schedule-clock-label').textContent =
-        `${mode === 'flash' ? 'Flash time' : 'Live time'} - ${getCalendarStatusLabel(date)} - ${date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+        `${mode === 'flash' ? 'Flash time' : 'Live time'} · ${date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
 
-      if (dayIndex < 0 || !isSchoolDay(date)) {
+      if (dayIndex < 0) {
         line.style.display = 'none';
         return;
       }
@@ -1627,14 +1422,13 @@
       }
 
       const current = getCurrentTime();
-      const schedule = getLiveScheduleForDate(current);
+      const schedule = current.getDay() === 5 ? scheduleFriday : scheduleMonThu;
       const currentSecs = current.getHours() * 3600 + current.getMinutes() * 60 + current.getSeconds();
       const targetClass = schedule.find(item =>
         item.type === 'class' &&
         currentSecs >= timeToSeconds(item.start) &&
         currentSecs < timeToSeconds(item.end)
       ) || schedule.find(item => item.type === 'class');
-      if (!targetClass) return;
       const duration = timeToSeconds(targetClass.end) - timeToSeconds(targetClass.start);
       const sessionMins = [3, Math.max(1, Math.round(duration / 60) - 15), 10, 2];
       const offsetMins = sessionMins.slice(0, index).reduce((sum, value) => sum + value, 0);
@@ -1830,7 +1624,7 @@
       suppressNextAnnouncement = false;
 
       const day = now.getDay();
-      const schedule = getLiveScheduleForDate(now);
+      const schedule = (day === 5) ? scheduleFriday : scheduleMonThu;
       const currentSecs = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
 
       let activeClass = null;
@@ -1929,20 +1723,6 @@
           }
           acc += dur;
         }
-      } else {
-        document.getElementById('class-badge').style.display = 'none';
-        for (let i = 0; i < 4; i++) {
-          const card = document.getElementById(`card${i}`);
-          const ring = document.getElementById(`ring${i}`);
-          const tm = document.getElementById(`tm${i}`);
-          const coin = document.getElementById(`coin${i}`);
-          const info = card.querySelector('.session-info');
-          card.classList.remove('active');
-          coin.classList.remove('spinning');
-          ring.style.strokeDashoffset = 283;
-          tm.textContent = `${mins[i].toString().padStart(2, '0')}:00`;
-          if (info) info.textContent = `Session ${i + 1} - ${mins[i]} Min`;
-        }
       }
 
       sessionStateInitialized = true;
@@ -1978,29 +1758,27 @@
           showClassTransition(isPassingTime ? previousClass : null, isPassingTime ? nextClass : null, day);
         } else {
           document.getElementById('class-transition').classList.remove('visible');
+          let checkDay = (day + 1) % 7;
+          let daysAway = 1;
           let foundNextDay = false;
-          const startOfToday = new Date(now);
-          startOfToday.setHours(0, 0, 0, 0);
-          for (let daysAway = 1; daysAway <= 370; daysAway++) {
-            const checkDate = new Date(startOfToday);
-            checkDate.setDate(startOfToday.getDate() + daysAway);
-            const checkSchedule = getLiveScheduleForDate(checkDate);
+          while (daysAway < 7) {
+            const checkSchedule = (checkDay === 5) ? scheduleFriday : scheduleMonThu;
             const firstClass = checkSchedule.find(s => s.type === 'class');
-            if (firstClass) {
-              const targetDate = new Date(checkDate);
-              const [hours, minutes] = firstClass.start.split(':').map(Number);
-              targetDate.setHours(hours, minutes, 0, 0);
-              const diff = Math.max(0, Math.floor((targetDate.getTime() - now.getTime()) / 1000));
+            if (firstClass && checkDay !== 0 && checkDay !== 6) {
+              const secondsInDay = 86400;
+              let diff = (secondsInDay - currentSecs) + ((daysAway - 1) * secondsInDay) + timeToSeconds(firstClass.start);
               const h = Math.floor(diff/3600), m = Math.floor((diff%3600)/60), s = diff%60;
               document.getElementById('slotTime').textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
               document.getElementById('deck-label').textContent = "Next Class Starts In";
               foundNextDay = true;
               break;
             }
+            checkDay = (checkDay + 1) % 7;
+            daysAway++;
           }
           if (!foundNextDay) {
             document.getElementById('slotTime').textContent = "--:--:--";
-            document.getElementById('deck-label').textContent = getCalendarStatusLabel(now);
+            document.getElementById('deck-label').textContent = "No More Classes Today";
           }
         }
       }

@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const historyDir = path.join(root, 'htdocs', 'history');
 const currentApp = path.join(root, 'htdocs', 'index.html');
+const archivedCurrentApp = path.join(historyDir, 'index11.html');
 
 await mkdir(historyDir, { recursive: true });
 
@@ -89,6 +90,15 @@ const stages = [
     feature: 'command',
     status: 'CLASSROOM SYSTEM READY',
     note: 'Glass surfaces, weekly planning, and stronger visual hierarchy came together.'
+  },
+  {
+    title: 'Classroom Orchestration',
+    subtitle: 'The current CLS experience',
+    accent: '#105ee8',
+    background: '#eef6ff',
+    feature: 'command',
+    status: 'CLASSROOM ORCHESTRATION LIVE',
+    note: 'The live command center version was stabilized before the 2026-2027 school year update.'
   }
 ];
 
@@ -159,7 +169,7 @@ function page(stage, index) {
     <strong>${index >= 4 ? '21:14' : stage.title}</strong>
   </section>
   <div class="timeline">
-    <div class="slot">5A · 07:50</div><div class="slot">2B · 08:41</div>
+    <div class="slot">5A · 07:45</div><div class="slot">2B · 08:41</div>
     <div class="slot">3A · 09:32</div><div class="slot">1A · 12:04</div>
     <div class="slot">PKB · 14:37</div>
   </div>
@@ -180,11 +190,11 @@ for (let index = 1; index <= stages.length; index++) {
   await writeFile(path.join(historyDir, `index${index}.html`), cleanPage, 'utf8');
 }
 
-const currentHtml = await readFile(currentApp, 'utf8');
+const currentHtml = await readFile(archivedCurrentApp, 'utf8').catch(() => readFile(currentApp, 'utf8'));
 const historyReadyCurrentHtml = currentHtml
   .replaceAll('src="images/', 'src="../images/')
   .replaceAll("url(\"images/", "url(\"../images/")
   .replaceAll("url('images/", "url('../images/")
   .replace(/[ \t]+$/gm, '');
-await writeFile(path.join(historyDir, 'index10.html'), historyReadyCurrentHtml, 'utf8');
-console.log('Created 10 curated history versions.');
+await writeFile(path.join(historyDir, 'index11.html'), historyReadyCurrentHtml, 'utf8');
+console.log('Created 11 curated history versions.');
