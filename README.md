@@ -45,6 +45,16 @@ The project is designed as a standalone static web application that can be hoste
 - **Logic:** Vanilla JavaScript (No external frameworks/libraries required).
 - **Audio:** Web Speech API for announcements and Web Audio API for chime sounds.
 
+## 🐳 Local WSL Docker
+
+Run the static site in WSL with Docker:
+
+```bash
+./start-cls-wsl.sh
+```
+
+The script detects the current WSL `eth0` address, writes it to `.env` and `.wsl-ip`, then starts Apache using `compose.wsl.yml`.
+
 ---
 
 # Mr. Oz Tech Zone Elite - Sınıf Yönetim Sistemi (Türkçe Özet)
