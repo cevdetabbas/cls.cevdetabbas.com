@@ -169,7 +169,7 @@ function page(stage, index) {
     <strong>${index >= 4 ? '21:14' : stage.title}</strong>
   </section>
   <div class="timeline">
-    <div class="slot">5A · 07:45</div><div class="slot">2B · 08:41</div>
+    <div class="slot">2A/B Art · 07:50</div><div class="slot">3A Tech · 08:41</div>
     <div class="slot">3A · 09:32</div><div class="slot">1A · 12:04</div>
     <div class="slot">PKB · 14:37</div>
   </div>

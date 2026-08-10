@@ -853,7 +853,7 @@
 
     const activeSchoolLevel = 'elementary';
     const schoolLevelLabels = {
-      elementary: 'Elementary School (PreK-5)',
+      elementary: 'M. Ozpay - Tech Apps / Science',
       middle: 'Middle School (6-8)',
       high: 'High School (9-12)'
     };
@@ -861,15 +861,15 @@
     const schoolBellSchedules = {
       elementary: {
         monThu: [
-          { name: 'Breakfast', type: 'nonclass', start: '07:20', end: '07:42' },
-          { name: 'Passing',   type: 'nonclass', start: '07:42', end: '07:45' },
-          { name: 'Period 1',  type: 'class',    start: '07:45', end: '08:38' },
+          { name: 'Breakfast', type: 'nonclass', start: '07:20', end: '07:47' },
+          { name: 'Passing',   type: 'nonclass', start: '07:47', end: '07:50' },
+          { name: 'Period 1',  type: 'class',    start: '07:50', end: '08:38' },
           { name: 'Passing',   type: 'nonclass', start: '08:38', end: '08:41' },
           { name: 'Period 2',  type: 'class',    start: '08:41', end: '09:29' },
           { name: 'Passing',   type: 'nonclass', start: '09:29', end: '09:32' },
-          { name: 'Period 3 / Funding Period', type: 'class', start: '09:32', end: '10:20' },
+          { name: 'Period 3',  type: 'class',    start: '09:32', end: '10:20' },
           { name: 'Passing',   type: 'nonclass', start: '10:20', end: '10:23' },
-          { name: 'Period 4 / Lunch', type: 'class', start: '10:23', end: '11:10' },
+          { name: 'Period 4',  type: 'class',    start: '10:23', end: '11:10' },
           { name: 'Passing',   type: 'nonclass', start: '11:10', end: '11:13' },
           { name: 'Period 5',  type: 'class',    start: '11:13', end: '12:01' },
           { name: 'Passing',   type: 'nonclass', start: '12:01', end: '12:04' },
@@ -882,15 +882,15 @@
           { name: 'Period 9',  type: 'class',    start: '14:37', end: '15:25' }
         ],
         friday: [
-          { name: 'Breakfast', type: 'nonclass', start: '07:20', end: '07:42' },
-          { name: 'Passing',   type: 'nonclass', start: '07:42', end: '07:45' },
-          { name: 'Period 1',  type: 'class',    start: '07:45', end: '08:34' },
+          { name: 'Breakfast', type: 'nonclass', start: '07:20', end: '07:47' },
+          { name: 'Passing',   type: 'nonclass', start: '07:47', end: '07:50' },
+          { name: 'Period 1',  type: 'class',    start: '07:50', end: '08:34' },
           { name: 'Passing',   type: 'nonclass', start: '08:34', end: '08:37' },
           { name: 'Period 2',  type: 'class',    start: '08:37', end: '09:21' },
           { name: 'Passing',   type: 'nonclass', start: '09:21', end: '09:24' },
-          { name: 'Period 3 / Funding Period', type: 'class', start: '09:24', end: '10:08' },
+          { name: 'Period 3',  type: 'class',    start: '09:24', end: '10:08' },
           { name: 'Passing',   type: 'nonclass', start: '10:08', end: '10:11' },
-          { name: 'Period 4 / Lunch', type: 'class', start: '10:11', end: '10:54' },
+          { name: 'Period 4',  type: 'class',    start: '10:11', end: '10:54' },
           { name: 'Passing',   type: 'nonclass', start: '10:54', end: '10:57' },
           { name: 'Period 5',  type: 'class',    start: '10:57', end: '11:41' },
           { name: 'Passing',   type: 'nonclass', start: '11:41', end: '11:44' },
@@ -985,9 +985,61 @@
     const scheduleMonThu = activeBellSchedule.monThu;
     const scheduleFriday = activeBellSchedule.friday;
 
-    // 2026-2027 class assignments will be filled here after the teacher schedule is imported.
-    // Until then, the UI falls back to official bell schedule labels instead of last year's map.
-    const classMap = {};
+    const classMap = {
+      1: {
+        1: '2A/B Art',
+        2: '3A Tech',
+        3: '1B Tech',
+        4: 'Lunch & Recess',
+        5: 'PLANNING',
+        6: '5A Tech',
+        7: 'PLANNING',
+        8: 'KB Tech',
+        9: '5B Tech'
+      },
+      2: {
+        1: 'PLANNING',
+        2: '1A Tech',
+        3: '1A/B Art',
+        4: 'Lunch & Recess',
+        5: '3B Tech',
+        6: '5A Tech',
+        7: '2A Tech',
+        8: 'KB Tech',
+        9: '5B Tech'
+      },
+      3: {
+        1: 'PLANNING',
+        2: '1A Tech',
+        3: 'KA/B Art',
+        4: 'Lunch & Recess',
+        5: '3B Tech',
+        6: 'PLANNING',
+        7: '2A Tech',
+        8: 'KA Tech',
+        9: 'PKA Tech'
+      },
+      4: {
+        1: 'PLANNING',
+        2: '3A Tech',
+        3: '1A/B Art',
+        4: 'Lunch & Recess',
+        5: 'PLANNING',
+        6: '2B Tech',
+        7: 'KA Tech',
+        8: '4A Tech',
+        9: 'PKB Tech'
+      },
+      5: {
+        1: 'GT',
+        2: 'GT',
+        3: '1B Tech',
+        4: 'Lunch & Recess',
+        5: 'PLANNING',
+        6: '4A Tech',
+        7: '2B Tech'
+      }
+    };
 
     const academicCalendar = {
       year: '2026-2027',
@@ -1065,7 +1117,7 @@
       if (!code) return false;
       const t = code.toUpperCase();
       if (t.startsWith('PK')) return true;
-      if (t === 'K' || t === 'KA' || t === 'KB') return true;
+      if (t.startsWith('K')) return true;
       const m = t.match(/^(\d)/);
       if (m) { const d = parseInt(m[1], 10); if (d === 1 || d === 2) return true; }
       return false;
@@ -1079,6 +1131,12 @@
     function getAssignmentCode(day, scheduleItem) {
       const periodNumber = getPeriodNumber(scheduleItem);
       return periodNumber ? classMap[day]?.[periodNumber] : undefined;
+    }
+
+    function isTeachingSession(day, scheduleItem) {
+      const assignment = getAssignmentCode(day, scheduleItem);
+      if (!assignment) return scheduleItem?.type === 'class';
+      return !/^(PLANNING|Lunch & Recess)$/i.test(assignment);
     }
 
     function getClassLabel(day, scheduleItem) {
@@ -1283,9 +1341,11 @@
 
     function getScheduledSession(date) {
       const schedule = getLiveScheduleForDate(date);
+      const day = date.getDay();
       const currentSecs = date.getHours() * 3600 + date.getMinutes() * 60 + date.getSeconds();
       const activeClass = schedule.find(item =>
         item.type === 'class' &&
+        isTeachingSession(day, item) &&
         currentSecs >= timeToSeconds(item.start) &&
         currentSecs < timeToSeconds(item.end)
       );
@@ -1359,12 +1419,13 @@
         const daySchedule = getScheduleForDayNumber(dayNumber);
         daySchedule.filter(item => item.type === 'class').forEach(item => {
           const classLabel = getClassLabel(dayNumber, item);
+          const isTeachingBlock = isTeachingSession(dayNumber, item);
           const start = timeToSeconds(item.start);
           const end = timeToSeconds(item.end);
           const top = schedulePosition(start);
           const height = schedulePosition(end) - top;
           const event = document.createElement('div');
-          event.className = 'schedule-event';
+          event.className = `schedule-event${isTeachingBlock ? '' : ' open-period'}`;
           event.style.top = `${top}%`;
           event.style.height = `${height}%`;
           event.innerHTML = `
@@ -1420,12 +1481,13 @@
       if (!daySchedule.length) return;
       daySchedule.filter(item => item.type === 'class').forEach(item => {
         const classLabel = getClassLabel(day, item);
+        const isTeachingBlock = isTeachingSession(day, item);
         const start = timeToSeconds(item.start);
         const end = timeToSeconds(item.end);
         const left = (start - scheduleStartSeconds) / (scheduleEndSeconds - scheduleStartSeconds) * 100;
         const width = (end - start) / (scheduleEndSeconds - scheduleStartSeconds) * 100;
         const event = document.createElement('div');
-        event.className = 'mini-schedule-event';
+        event.className = `mini-schedule-event${isTeachingBlock ? '' : ' open-period'}`;
         event.style.left = `${left}%`;
         event.style.width = `${width}%`;
         event.innerHTML = `
@@ -1634,12 +1696,14 @@
 
       const current = getCurrentTime();
       const schedule = getLiveScheduleForDate(current);
+      const day = current.getDay();
       const currentSecs = current.getHours() * 3600 + current.getMinutes() * 60 + current.getSeconds();
       const targetClass = schedule.find(item =>
         item.type === 'class' &&
+        isTeachingSession(day, item) &&
         currentSecs >= timeToSeconds(item.start) &&
         currentSecs < timeToSeconds(item.end)
-      ) || schedule.find(item => item.type === 'class');
+      ) || schedule.find(item => item.type === 'class' && isTeachingSession(day, item));
       if (!targetClass) return;
       const duration = timeToSeconds(targetClass.end) - timeToSeconds(targetClass.start);
       const sessionMins = [3, Math.max(1, Math.round(duration / 60) - 15), 10, 2];
@@ -1845,22 +1909,23 @@
 
       for (let i = 0; i < schedule.length; i++) {
         const s = schedule[i];
+        const isTeachingBlock = s.type === 'class' && isTeachingSession(day, s);
         const start = timeToSeconds(s.start);
         const end = timeToSeconds(s.end);
         if (currentSecs >= start && currentSecs < end) {
-          if (s.type === 'class') activeClass = s;
+          if (isTeachingBlock) activeClass = s;
         }
-        if (start > currentSecs && s.type === 'class') {
+        if (start > currentSecs && isTeachingBlock) {
           if (!nextClass) nextClass = s;
         }
-        if (end <= currentSecs && s.type === 'class') {
+        if (end <= currentSecs && isTeachingBlock) {
           previousClass = s;
         }
       }
 
       // Determine which class to display on cards (current or last one started)
       let displayClass = null;
-      const classesOnly = schedule.filter(s => s.type === 'class');
+      const classesOnly = schedule.filter(s => s.type === 'class' && isTeachingSession(day, s));
       for (const c of classesOnly) {
         if (currentSecs >= timeToSeconds(c.start)) displayClass = c;
       }
@@ -1989,7 +2054,8 @@
             const checkDate = new Date(startOfToday);
             checkDate.setDate(startOfToday.getDate() + daysAway);
             const checkSchedule = getLiveScheduleForDate(checkDate);
-            const firstClass = checkSchedule.find(s => s.type === 'class');
+            const checkDay = checkDate.getDay();
+            const firstClass = checkSchedule.find(s => s.type === 'class' && isTeachingSession(checkDay, s));
             if (firstClass) {
               const targetDate = new Date(checkDate);
               const [hours, minutes] = firstClass.start.split(':').map(Number);
