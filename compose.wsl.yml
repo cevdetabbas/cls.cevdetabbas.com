@@ -6,4 +6,12 @@ services:
       - "${WSL_IP:?Set WSL_IP or run ./start-cls-wsl.sh}:2880:80"
     volumes:
       - ./htdocs:/usr/local/apache2/htdocs:ro
+      - ./apache/cls-cache-control.conf:/usr/local/apache2/conf/extra/cls-cache-control.conf:ro
+    command:
+      - sh
+      - -c
+      - |
+        grep -q 'Include conf/extra/cls-cache-control.conf' /usr/local/apache2/conf/httpd.conf ||
+          printf '\nInclude conf/extra/cls-cache-control.conf\n' >> /usr/local/apache2/conf/httpd.conf
+        exec httpd-foreground
     restart: unless-stopped
