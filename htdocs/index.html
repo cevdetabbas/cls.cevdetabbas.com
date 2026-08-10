@@ -985,14 +985,9 @@
     const scheduleMonThu = activeBellSchedule.monThu;
     const scheduleFriday = activeBellSchedule.friday;
 
-    // Mapping from weekday (1=Mon..5=Fri) and period number to class code from Google Calendar
-    const classMap = {
-      1: { 1: '5A', 2: '2B', 3: '3A', 6: '1A', 7: '2A', 9: 'PKB' },
-      2: { 2: '2B', 3: '4A', 5: '3A', 6: '1B', 7: '2A', 8: 'PKC', 9: '1A' },
-      3: { 1: '4B', 5: 'KB', 6: '5B', 8: 'PKA', 9: 'KA' },
-      4: { 1: '4A', 2: '4B', 3: '5B', 6: 'KA', 7: 'KB' },
-      5: { 7: '1B' }
-    };
+    // 2026-2027 class assignments will be filled here after the teacher schedule is imported.
+    // Until then, the UI falls back to official bell schedule labels instead of last year's map.
+    const classMap = {};
 
     const academicCalendar = {
       year: '2026-2027',
@@ -1076,11 +1071,26 @@
       return false;
     }
 
+    function getPeriodNumber(scheduleItem) {
+      const match = scheduleItem?.name.match(/Period\s+(\d+)/);
+      return match ? Number(match[1]) : null;
+    }
+
+    function getAssignmentCode(day, scheduleItem) {
+      const periodNumber = getPeriodNumber(scheduleItem);
+      return periodNumber ? classMap[day]?.[periodNumber] : undefined;
+    }
+
     function getClassLabel(day, scheduleItem) {
       if (!scheduleItem) return '—';
-      const match = scheduleItem.name.match(/Period\s+(\d+)/);
-      const periodNumber = match ? Number(match[1]) : null;
-      return (periodNumber && classMap[day]?.[periodNumber]) || scheduleItem.name;
+      const assignedCode = getAssignmentCode(day, scheduleItem);
+      if (assignedCode) return assignedCode;
+
+      const periodNumber = getPeriodNumber(scheduleItem);
+      if (!periodNumber) return scheduleItem.name;
+      if (scheduleItem.name.includes('Funding Period')) return `P${periodNumber} Funding`;
+      if (scheduleItem.name.includes('Lunch')) return `P${periodNumber} Lunch`;
+      return `P${periodNumber}`;
     }
 
     function showClassTransition(previousClass, nextClass, day) {
@@ -1348,19 +1358,17 @@
 
         const daySchedule = getScheduleForDayNumber(dayNumber);
         daySchedule.filter(item => item.type === 'class').forEach(item => {
-          const periodMatch = item.name.match(/Period\s+(\d+)/);
-          const periodNumber = periodMatch ? Number(periodMatch[1]) : 0;
-          const classCode = classMap[dayNumber]?.[periodNumber];
+          const classLabel = getClassLabel(dayNumber, item);
           const start = timeToSeconds(item.start);
           const end = timeToSeconds(item.end);
           const top = schedulePosition(start);
           const height = schedulePosition(end) - top;
           const event = document.createElement('div');
-          event.className = `schedule-event${classCode ? '' : ' open-period'}`;
+          event.className = 'schedule-event';
           event.style.top = `${top}%`;
           event.style.height = `${height}%`;
           event.innerHTML = `
-            <div class="event-class">${classCode || 'Open'}</div>
+            <div class="event-class">${classLabel}</div>
             <div class="event-meta">${item.name} · ${item.start}–${item.end}</div>`;
           column.appendChild(event);
         });
@@ -1411,19 +1419,17 @@
       const daySchedule = getLiveScheduleForDate(date);
       if (!daySchedule.length) return;
       daySchedule.filter(item => item.type === 'class').forEach(item => {
-        const periodMatch = item.name.match(/Period\s+(\d+)/);
-        const periodNumber = periodMatch ? Number(periodMatch[1]) : 0;
-        const classCode = classMap[day]?.[periodNumber];
+        const classLabel = getClassLabel(day, item);
         const start = timeToSeconds(item.start);
         const end = timeToSeconds(item.end);
         const left = (start - scheduleStartSeconds) / (scheduleEndSeconds - scheduleStartSeconds) * 100;
         const width = (end - start) / (scheduleEndSeconds - scheduleStartSeconds) * 100;
         const event = document.createElement('div');
-        event.className = `mini-schedule-event${classCode ? '' : ' open-period'}`;
+        event.className = 'mini-schedule-event';
         event.style.left = `${left}%`;
         event.style.width = `${width}%`;
         event.innerHTML = `
-          <div class="mini-event-class">${classCode || 'Open'}</div>
+          <div class="mini-event-class">${classLabel}</div>
           <div class="mini-event-time">${item.start}</div>`;
         track.appendChild(event);
       });
@@ -1870,16 +1876,14 @@
         const learningMins = totalDurationMins - 15;
         const currentMins = [3, learningMins, 10, 2];
 
-        // Determine class code by weekday and period number
-        const periodMatch = displayClass.name.match(/Period\s+(\d+)/);
-        const periodNum = periodMatch ? parseInt(periodMatch[1], 10) : null;
-        const classCode = (periodNum != null) ? (classMap[day] ? classMap[day][periodNum] : undefined) : undefined;
+        const classCode = getAssignmentCode(day, displayClass);
+        const classLabel = getClassLabel(day, displayClass);
         const isPreK2 = isPreK2FromCode(classCode);
 
         // Update class badge
         const badge = document.getElementById('class-badge');
-        if (classCode) {
-          badge.textContent = classCode;
+        if (classLabel) {
+          badge.textContent = classLabel;
           badge.style.display = 'inline-block';
         } else {
           badge.style.display = 'none';
