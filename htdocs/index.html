@@ -560,6 +560,22 @@
       transition: transform .25s ease, box-shadow .25s ease;
     }
     .mini-schedule-event:hover { transform: translateY(-1px); box-shadow: 0 6px 14px rgba(var(--mode-accent-rgb),.15); }
+    .mini-schedule-event.planning-period {
+      background: rgba(52,199,89,.16); border-left-color: #34c759; color: #1d6f36;
+    }
+    .mini-schedule-event.art-period {
+      background: rgba(124,58,237,.15); border-left-color: #7c3aed; color: #5b21b6;
+    }
+    .mini-schedule-event.lunch-period {
+      background: rgba(255,204,0,.18); border-left-color: #ffcc00; color: #7a5a00;
+    }
+    .mini-schedule-event.duty-period {
+      top: 27px; bottom: 3px; min-width: 12px; padding: 1px 4px;
+      background: rgba(255,59,48,.18); border-left-color: #ff3b30; color: #a62820;
+      z-index: 5;
+    }
+    .mini-schedule-event.duty-period .mini-event-class { font-size: 8px; }
+    .mini-schedule-event.duty-period .mini-event-time { display: none; }
 
     main::before {
       content: ""; position: absolute; inset: 0; pointer-events: none;
@@ -646,6 +662,20 @@
     .schedule-close, .history-nav-btn { transition: transform .18s ease, background .18s ease; }
     .schedule-close:hover, .history-nav-btn:hover:not(:disabled) { transform: scale(1.07); }
     #schedule-overlay, #history-overlay { border-color: rgba(var(--mode-accent-rgb),.14); }
+    .schedule-event.planning-period {
+      background: rgba(52,199,89,.14); border-left-color: #34c759; color: #1d6f36;
+    }
+    .schedule-event.art-period {
+      background: rgba(124,58,237,.14); border-left-color: #7c3aed; color: #5b21b6;
+    }
+    .schedule-event.lunch-period {
+      background: rgba(255,204,0,.18); border-left-color: #ffcc00; color: #7a5a00;
+    }
+    .schedule-event.duty-period {
+      background: rgba(255,59,48,.16); border-left-color: #ff3b30; color: #a62820;
+      z-index: 5; box-shadow: 0 4px 10px rgba(255,59,48,.11);
+    }
+    .schedule-event.duty-period.side-event { left: 42%; right: 4px; }
 
     :focus-visible { outline: 3px solid rgba(var(--mode-accent-rgb),.3); outline-offset: 2px; }
     @media (prefers-reduced-motion: reduce) {
@@ -1041,6 +1071,28 @@
       }
     };
 
+    const dutyMap = {
+      2: [
+        {
+          name: 'Duty: Middle School Lunch Monitor',
+          type: 'duty',
+          start: '11:53',
+          end: '12:23',
+          location: 'Large Cafeteria',
+          lane: 'side'
+        }
+      ],
+      5: [
+        {
+          name: 'Duty: PreK-5 Car Ushers',
+          type: 'duty',
+          start: '07:30',
+          end: '07:47',
+          location: 'PreK-5 Car Line'
+        }
+      ]
+    };
+
     const academicCalendar = {
       year: '2026-2027',
       firstDay: '2026-08-10',
@@ -1054,12 +1106,15 @@
       closures: [
         { label: 'Student Holiday / District PD', start: '2026-08-03', end: '2026-08-07' },
         { label: 'Labor Day', start: '2026-09-07', end: '2026-09-07' },
+        { label: 'Student Holiday / Campus PD', start: '2026-09-18', end: '2026-09-18' },
+        { label: 'Parent/Teacher Conference', start: '2026-10-02', end: '2026-10-02' },
         { label: 'Student Holiday', start: '2026-10-09', end: '2026-10-12' },
         { label: 'Veterans Day', start: '2026-11-11', end: '2026-11-11' },
         { label: 'Thanksgiving Break', start: '2026-11-23', end: '2026-11-27' },
         { label: 'Winter Break', start: '2026-12-21', end: '2027-01-01' },
         { label: 'MLK Day', start: '2027-01-18', end: '2027-01-18' },
         { label: 'Presidents Day', start: '2027-02-15', end: '2027-02-15' },
+        { label: 'New Teacher PD', start: '2027-02-26', end: '2027-02-26' },
         { label: 'Spring Break', start: '2027-03-08', end: '2027-03-12' },
         { label: 'Good Friday', start: '2027-04-02', end: '2027-04-02' },
         { label: 'Memorial Day', start: '2027-05-31', end: '2027-05-31' },
@@ -1149,6 +1204,46 @@
       if (scheduleItem.name.includes('Funding Period')) return `P${periodNumber} Funding`;
       if (scheduleItem.name.includes('Lunch')) return `P${periodNumber} Lunch`;
       return `P${periodNumber}`;
+    }
+
+    function getScheduleItemKind(day, scheduleItem) {
+      if (scheduleItem?.type === 'duty') return 'duty';
+
+      const label = getClassLabel(day, scheduleItem);
+      if (/^PLANNING$/i.test(label)) return 'planning';
+      if (/^Lunch & Recess$/i.test(label)) return 'lunch';
+      if (/\bArt\b/i.test(label)) return 'art';
+      return 'tech';
+    }
+
+    function getScheduleEventClasses(baseClass, day, scheduleItem) {
+      const classes = [baseClass, `${getScheduleItemKind(day, scheduleItem)}-period`];
+      if (scheduleItem.type === 'class' && !isTeachingSession(day, scheduleItem)) {
+        classes.push('open-period');
+      }
+      if (scheduleItem.lane === 'side') classes.push('side-event');
+      return classes.join(' ');
+    }
+
+    function getScheduleEventLabel(day, scheduleItem) {
+      if (scheduleItem.type === 'duty') return scheduleItem.name;
+      return getClassLabel(day, scheduleItem);
+    }
+
+    function getMiniScheduleEventLabel(day, scheduleItem) {
+      if (scheduleItem.type === 'duty') return 'Duty';
+      return getScheduleEventLabel(day, scheduleItem);
+    }
+
+    function getScheduleEventMeta(day, scheduleItem) {
+      if (scheduleItem.type === 'duty') {
+        return `${scheduleItem.location || 'Duty'} - ${scheduleItem.start}-${scheduleItem.end}`;
+      }
+      return `${scheduleItem.name} - ${scheduleItem.start}-${scheduleItem.end}`;
+    }
+
+    function getScheduleEventTitle(day, scheduleItem) {
+      return `${getScheduleEventLabel(day, scheduleItem)} - ${getScheduleEventMeta(day, scheduleItem)}`;
     }
 
     function showClassTransition(previousClass, nextClass, day) {
@@ -1298,8 +1393,20 @@
       return [];
     }
 
+    function getDutiesForDayNumber(dayNumber) {
+      return dutyMap[dayNumber] || [];
+    }
+
+    function getDisplayScheduleForDayNumber(dayNumber) {
+      return getScheduleForDayNumber(dayNumber).concat(getDutiesForDayNumber(dayNumber));
+    }
+
     function getLiveScheduleForDate(date) {
       return isSchoolDay(date) ? getScheduleForDayNumber(date.getDay()) : [];
+    }
+
+    function getLiveDisplayScheduleForDate(date) {
+      return isSchoolDay(date) ? getDisplayScheduleForDayNumber(date.getDay()) : [];
     }
 
     function getCalendarStatusLabel(date) {
@@ -1416,21 +1523,21 @@
         evening.textContent = 'After school';
         column.appendChild(evening);
 
-        const daySchedule = getScheduleForDayNumber(dayNumber);
-        daySchedule.filter(item => item.type === 'class').forEach(item => {
-          const classLabel = getClassLabel(dayNumber, item);
-          const isTeachingBlock = isTeachingSession(dayNumber, item);
+        const daySchedule = getDisplayScheduleForDayNumber(dayNumber);
+        daySchedule.filter(item => item.type === 'class' || item.type === 'duty').forEach(item => {
+          const eventLabel = getScheduleEventLabel(dayNumber, item);
           const start = timeToSeconds(item.start);
           const end = timeToSeconds(item.end);
           const top = schedulePosition(start);
           const height = schedulePosition(end) - top;
           const event = document.createElement('div');
-          event.className = `schedule-event${isTeachingBlock ? '' : ' open-period'}`;
+          event.className = getScheduleEventClasses('schedule-event', dayNumber, item);
           event.style.top = `${top}%`;
           event.style.height = `${height}%`;
+          event.title = getScheduleEventTitle(dayNumber, item);
           event.innerHTML = `
-            <div class="event-class">${classLabel}</div>
-            <div class="event-meta">${item.name} · ${item.start}–${item.end}</div>`;
+            <div class="event-class">${eventLabel}</div>
+            <div class="event-meta">${getScheduleEventMeta(dayNumber, item)}</div>`;
           column.appendChild(event);
         });
       });
@@ -1477,21 +1584,21 @@
       document.getElementById('mini-schedule-day').textContent =
         getCalendarStatusLabel(date);
 
-      const daySchedule = getLiveScheduleForDate(date);
+      const daySchedule = getLiveDisplayScheduleForDate(date);
       if (!daySchedule.length) return;
-      daySchedule.filter(item => item.type === 'class').forEach(item => {
-        const classLabel = getClassLabel(day, item);
-        const isTeachingBlock = isTeachingSession(day, item);
+      daySchedule.filter(item => item.type === 'class' || item.type === 'duty').forEach(item => {
+        const eventLabel = getMiniScheduleEventLabel(day, item);
         const start = timeToSeconds(item.start);
         const end = timeToSeconds(item.end);
         const left = (start - scheduleStartSeconds) / (scheduleEndSeconds - scheduleStartSeconds) * 100;
         const width = (end - start) / (scheduleEndSeconds - scheduleStartSeconds) * 100;
         const event = document.createElement('div');
-        event.className = `mini-schedule-event${isTeachingBlock ? '' : ' open-period'}`;
+        event.className = getScheduleEventClasses('mini-schedule-event', day, item);
         event.style.left = `${left}%`;
         event.style.width = `${width}%`;
+        event.title = getScheduleEventTitle(day, item);
         event.innerHTML = `
-          <div class="mini-event-class">${classLabel}</div>
+          <div class="mini-event-class">${eventLabel}</div>
           <div class="mini-event-time">${item.start}</div>`;
         track.appendChild(event);
       });
