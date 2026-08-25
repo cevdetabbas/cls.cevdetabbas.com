@@ -1,5 +1,7 @@
 # Mr. Oz Tech Zone Elite - Classroom Management System
 
+Pilot workspace for `pilotcls.cevdetabbas.com`.
+
 A sophisticated, web-based classroom management and session tracking tool designed for educators. This system synchronizes with a predefined school schedule to provide real-time updates, automated announcements, and visual progress tracking for classroom activities.
 
 ## 🚀 Interactive Live Preview
@@ -53,7 +55,7 @@ Run the static site in WSL with Docker:
 ./start-cls-wsl.sh
 ```
 
-The script detects the current WSL `eth0` address, writes it to `.env` and `.wsl-ip`, then starts Apache using `compose.wsl.yml`.
+The script detects the current WSL `eth0` address, writes it to `.env` and `.wsl-ip`, then starts Apache using `compose.wsl.yml` on port `2881`.
 
 ---
 

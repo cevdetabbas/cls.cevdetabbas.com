@@ -25,8 +25,8 @@ export WSL_IP
 printf '%s\n' "$WSL_IP" > .wsl-ip
 printf 'WSL_IP=%s\n' "$WSL_IP" > .env
 
-PROJECT_NAME="cls-wsl"
-CONTAINER_NAME="cls.cevdetabbas.com"
+PROJECT_NAME="pilotcls-wsl"
+CONTAINER_NAME="pilotcls.cevdetabbas.com"
 docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1 || true
 
 exec /usr/bin/docker compose \
