@@ -1,0 +1,323 @@
+:root {
+  --pilot-ink: #07111f;
+  --pilot-panel: rgba(255, 255, 255, 0.82);
+  --pilot-panel-strong: rgba(255, 255, 255, 0.94);
+  --pilot-line: rgba(7, 17, 31, 0.12);
+  --pilot-blue: #0b5fff;
+  --pilot-cyan: #00a3ff;
+  --pilot-green: #1fbf75;
+  --pilot-amber: #f4a523;
+  --pilot-red: #e44848;
+  --pilot-violet: #7a5cff;
+  --pilot-shadow: 0 20px 52px rgba(7, 17, 31, 0.12);
+}
+
+body.pilot-commercial {
+  background:
+    linear-gradient(120deg, rgba(11, 95, 255, 0.09), transparent 34%),
+    linear-gradient(230deg, rgba(31, 191, 117, 0.08), transparent 32%),
+    #f4f7fb;
+}
+
+body.pilot-commercial header {
+  min-height: 76px;
+  background:
+    linear-gradient(90deg, rgba(7, 17, 31, 0.94), rgba(10, 31, 62, 0.9) 48%, rgba(7, 17, 31, 0.94)),
+    #07111f;
+  color: #fff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 16px 38px rgba(7, 17, 31, 0.2);
+}
+
+body.pilot-commercial header::after {
+  opacity: 0.18;
+}
+
+body.pilot-commercial h1 {
+  letter-spacing: 0;
+  text-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
+}
+
+body.pilot-commercial .brand-kicker {
+  color: rgba(255, 255, 255, 0.64);
+}
+
+body.pilot-commercial .head-label {
+  color: rgba(255, 255, 255, 0.58);
+}
+
+body.pilot-commercial .head-val {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.13);
+  color: #fff;
+}
+
+body.pilot-commercial #class-badge {
+  background: linear-gradient(135deg, var(--pilot-green), var(--pilot-cyan)) !important;
+  border-radius: 999px !important;
+  box-shadow: 0 10px 24px rgba(31, 191, 117, 0.25);
+}
+
+#pilot-command-ribbon {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: minmax(220px, 1.3fr) repeat(3, minmax(160px, 1fr));
+  gap: 10px;
+  padding: 10px 34px;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.86), rgba(244, 247, 251, 0.86)),
+    #fff;
+  border-bottom: 1px solid var(--pilot-line);
+  box-shadow: 0 12px 34px rgba(7, 17, 31, 0.06);
+  z-index: 34;
+}
+
+.pilot-metric {
+  min-width: 0;
+  height: 58px;
+  display: grid;
+  align-content: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--pilot-panel-strong);
+  border: 1px solid rgba(7, 17, 31, 0.08);
+  box-shadow: 0 8px 22px rgba(7, 17, 31, 0.045);
+  overflow: hidden;
+}
+
+.pilot-metric.security {
+  background:
+    linear-gradient(135deg, rgba(31, 191, 117, 0.13), rgba(0, 163, 255, 0.1)),
+    var(--pilot-panel-strong);
+}
+
+.pilot-metric .k {
+  color: #5b6472;
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: 1.1px;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.pilot-metric .v {
+  min-width: 0;
+  color: var(--pilot-ink);
+  font-size: clamp(15px, 1.1vw, 19px);
+  font-weight: 950;
+  line-height: 1.05;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pilot-metric .s {
+  color: #6e7786;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pilot-live-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: var(--pilot-green);
+  box-shadow: 0 0 0 5px rgba(31, 191, 117, 0.12);
+}
+
+#pilot-shield-panel {
+  position: fixed;
+  right: 24px;
+  bottom: 92px;
+  z-index: 120;
+  width: min(380px, calc(100vw - 32px));
+  padding: 16px;
+  border-radius: 10px;
+  color: #fff;
+  background:
+    linear-gradient(145deg, rgba(7, 17, 31, 0.97), rgba(13, 34, 65, 0.96)),
+    #07111f;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 24px 72px rgba(7, 17, 31, 0.28);
+  transform: translateY(14px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s;
+}
+
+#pilot-shield-panel.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+#pilot-shield-panel[inert] {
+  pointer-events: none;
+}
+
+.pilot-shield-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 16px;
+  font-weight: 950;
+}
+
+.pilot-shield-close {
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+}
+
+.pilot-shield-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.pilot-shield-item {
+  min-height: 54px;
+  padding: 9px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pilot-shield-item b {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+}
+
+.pilot-shield-item span {
+  display: block;
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.pilot-command-button {
+  border: none;
+  border-radius: 10px;
+  min-height: 34px;
+  padding: 7px 11px;
+  background: rgba(255, 255, 255, 0.84);
+  color: var(--pilot-ink);
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  box-shadow: 0 2px 7px rgba(20, 25, 38, 0.06);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
+}
+
+.pilot-command-button:hover {
+  color: var(--pilot-blue);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(11, 95, 255, 0.13);
+}
+
+#pilot-exit-focus {
+  position: fixed;
+  right: 24px;
+  top: 92px;
+  z-index: 130;
+  display: none;
+  min-height: 40px;
+  padding: 9px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--pilot-blue), var(--pilot-violet));
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 18px 42px rgba(7, 17, 31, 0.24);
+}
+
+body.pilot-focus-mode #pilot-exit-focus {
+  display: block;
+}
+
+body.pilot-focus-mode #mini-schedule,
+body.pilot-focus-mode #pilot-command-ribbon,
+body.pilot-focus-mode footer {
+  display: none;
+}
+
+body.pilot-focus-mode main {
+  padding: 28px;
+}
+
+body.pilot-focus-mode .grid {
+  max-width: 1540px;
+}
+
+body.pilot-commercial .card {
+  border-radius: 12px;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.94), rgba(242, 247, 255, 0.78)),
+    #fff;
+  border: 1px solid rgba(7, 17, 31, 0.08);
+  box-shadow: var(--pilot-shadow);
+}
+
+body.pilot-commercial .card.active {
+  box-shadow: 0 30px 78px rgba(11, 95, 255, 0.18), 0 0 0 1px rgba(11, 95, 255, 0.18);
+}
+
+body.pilot-commercial .schedule-event,
+body.pilot-commercial .mini-schedule-event {
+  border-radius: 6px;
+}
+
+body.pilot-commercial :focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px rgba(11, 95, 255, 0.45);
+}
+
+@media (max-width: 1120px) {
+  #pilot-command-ribbon {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding-inline: 18px;
+  }
+}
+
+@media (max-width: 760px) {
+  #pilot-command-ribbon {
+    grid-template-columns: 1fr;
+    gap: 7px;
+    padding: 8px 12px;
+  }
+
+  .pilot-metric {
+    height: 50px;
+  }
+
+  #pilot-shield-panel {
+    right: 12px;
+    bottom: 74px;
+  }
+
+  #pilot-exit-focus {
+    right: 12px;
+    top: 82px;
+  }
+}

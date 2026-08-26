@@ -1,0 +1,15 @@
+{
+  "name": "Pilot CLS Command Center",
+  "short_name": "Pilot CLS",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07111f",
+  "theme_color": "#0b5fff",
+  "icons": [
+    {
+      "src": "images/learning.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

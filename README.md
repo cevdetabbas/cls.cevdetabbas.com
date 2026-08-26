@@ -2,6 +2,8 @@
 
 Pilot workspace for `pilotcls.cevdetabbas.com`.
 
+This branch runs as a hardened staging command center on port `2881`, with a pilot-only commercial UI layer, strict response headers, and a local audit script.
+
 A sophisticated, web-based classroom management and session tracking tool designed for educators. This system synchronizes with a predefined school schedule to provide real-time updates, automated announcements, and visual progress tracking for classroom activities.
 
 ## 🚀 Interactive Live Preview
@@ -46,6 +48,15 @@ The project is designed as a standalone static web application that can be hoste
 - **Frontend:** HTML5, CSS3 (CSS Variables, Grid, Flexbox).
 - **Logic:** Vanilla JavaScript (No external frameworks/libraries required).
 - **Audio:** Web Speech API for announcements and Web Audio API for chime sounds.
+
+## 🛡 Pilot Hardening
+- Security headers are configured in `apache/cls-cache-control.conf`.
+- Pilot UI additions live in `htdocs/pilot.css` and `htdocs/pilot.js`.
+- Run the local audit with:
+
+```bash
+node scripts/audit-pilot.mjs
+```
 
 ## 🐳 Local WSL Docker
 
