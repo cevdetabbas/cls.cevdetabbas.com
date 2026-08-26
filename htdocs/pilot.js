@@ -24,6 +24,10 @@
     return activeCard.querySelector('.time-left')?.textContent?.trim() || text('slotTime');
   }
 
+  function cleanCalendarLabel(value) {
+    return value.replace(/\s*-\s*\d+(st|nd|rd|th)\s+Quarter\s*$/i, '').trim();
+  }
+
   function createRibbon() {
     if (document.getElementById('pilot-command-ribbon')) return;
 
@@ -68,11 +72,6 @@
     button?.setAttribute('aria-expanded', String(open));
   }
 
-  function setFocusMode(open) {
-    document.body.classList.toggle('pilot-focus-mode', open);
-    document.getElementById('pilot-focus-button')?.setAttribute('aria-pressed', String(open));
-  }
-
   function createShieldPanel() {
     if (document.getElementById('pilot-shield-panel')) return;
 
@@ -102,20 +101,6 @@
     });
   }
 
-  function createFocusExit() {
-    if (document.getElementById('pilot-exit-focus')) return;
-
-    const exit = document.createElement('button');
-    exit.id = 'pilot-exit-focus';
-    exit.type = 'button';
-    exit.dataset.pilotAction = 'exit-focus';
-    exit.textContent = 'Exit Focus';
-    exit.addEventListener('click', () => {
-      setFocusMode(false);
-    });
-    document.body.appendChild(exit);
-  }
-
   function addPilotControls() {
     const modeSwitch = document.querySelector('.mode-switch');
     if (modeSwitch && !document.getElementById('pilot-shield-button')) {
@@ -135,21 +120,10 @@
     }
 
     const tools = document.getElementById('mode-tools');
-    if (tools && !document.getElementById('pilot-focus-button')) {
-      const focus = document.createElement('button');
-      focus.className = 'pilot-command-button';
-      focus.id = 'pilot-focus-button';
-      focus.type = 'button';
-      focus.dataset.pilotAction = 'focus';
-      focus.setAttribute('aria-pressed', 'false');
-      focus.textContent = 'Focus';
-      focus.addEventListener('click', () => {
-        setFocusMode(!document.body.classList.contains('pilot-focus-mode'));
-      });
-      tools.prepend(focus);
-
+    if (tools && !document.getElementById('pilot-fullscreen-button')) {
       const full = document.createElement('button');
       full.className = 'pilot-command-button';
+      full.id = 'pilot-fullscreen-button';
       full.type = 'button';
       full.dataset.pilotAction = 'fullscreen';
       full.textContent = 'Full';
@@ -164,11 +138,23 @@
     }
   }
 
+  function updateMiniScheduleLabel() {
+    const day = document.getElementById('mini-schedule-day');
+    if (!day) return '-';
+
+    const cleaned = cleanCalendarLabel(day.textContent || '');
+    if (cleaned && day.textContent !== cleaned) day.textContent = cleaned;
+    return cleaned || '-';
+  }
+
   function updateRibbon() {
     const mode = text('mode-title', 'REAL');
     const status = text('status-text', 'SYNC');
-    const badge = text('class-badge', '');
-    const current = badge || (status.includes('READY') ? 'Simulation Standby' : 'Campus Standby');
+    const current = mode === 'SIM'
+      ? 'Simulation Standby'
+      : mode === 'FLASH'
+        ? 'Flash Timeline'
+        : 'Live Classroom';
     const phase = activePhase();
     const timer = activeTimer();
 
@@ -180,17 +166,16 @@
     const clock = document.getElementById('pilot-clock');
 
     if (currentClass) currentClass.textContent = current;
-    if (currentSub) currentSub.textContent = `${mode} / ${status}`;
+    if (currentSub) currentSub.textContent = status;
     if (phaseEl) phaseEl.textContent = phase;
     if (phaseSub) phaseSub.textContent = `Timer ${timer}`;
-    if (calendar) calendar.textContent = text('mini-schedule-day');
+    if (calendar) calendar.textContent = updateMiniScheduleLabel();
     if (clock) clock.textContent = `${text('dDisp')} / ${text('tDisp')}`;
   }
 
   function bootPilot() {
     createRibbon();
     createShieldPanel();
-    createFocusExit();
     addPilotControls();
     updateRibbon();
     window.setInterval(updateRibbon, 1000);
